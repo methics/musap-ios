@@ -17,17 +17,17 @@ public class KeyURI: Codable, Equatable, Hashable {
     private var keyUriMap: [String: String] = [:]
     
     
-    init(name: String?, sscd: String?, loa: String?) {
+    public init(name: String?, sscd: String?, loa: String?) {
         if name != nil { self.keyUriMap["name"] = name }
         if sscd != nil { self.keyUriMap["sscd"] = sscd }
         if loa  != nil { self.keyUriMap["loa"]  = loa  }
     }
     
-    init(keyUri: String) {
+    public init(keyUri: String) {
         self.keyUriMap = self.parseUri(keyUri)
     }
     
-    init(key: MusapKey) {
+    public init(key: MusapKey) {
         if key.getKeyAlias()    != nil { keyUriMap["alias"]      = key.getKeyAlias()                            }
         if key.getAlgorithm()   != nil { keyUriMap["algorithm"]  = (key.getAlgorithm()?.isEc())! ? "EC" : "RSA" }
         if key.getCreatedDate() != nil { keyUriMap["created_dt"] = key.getCreatedDate()?.ISO8601Format()        }

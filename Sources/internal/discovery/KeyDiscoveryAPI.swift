@@ -17,11 +17,11 @@ public class KeyDiscoveryAPI {
         KeyDiscoveryAPI.enabledSscds = KeyDiscoveryAPI.enabledSscds
     }
     
-    func listEnabledSscds() -> [any MusapSscdProtocol] {
+    public func listEnabledSscds() -> [any MusapSscdProtocol] {
         return KeyDiscoveryAPI.enabledSscds
     }
     
-    func listMatchingSscds(req: SscdSearchReq) -> [any MusapSscdProtocol] {
+    public func listMatchingSscds(req: SscdSearchReq) -> [any MusapSscdProtocol] {
         return KeyDiscoveryAPI.enabledSscds
     }
     
@@ -30,7 +30,7 @@ public class KeyDiscoveryAPI {
         return storage.listActiveSscds()
     }
     
-    func enableSscd(_ sscd: any MusapSscdProtocol) -> Void {
+    public func enableSscd(_ sscd: any MusapSscdProtocol) -> Void {
         let isAlreadyEnabled = KeyDiscoveryAPI.enabledSscds.contains { existingSscd in
             existingSscd.getSscdInfo().sscdName == sscd.getSscdInfo().sscdName
         }

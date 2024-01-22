@@ -29,7 +29,7 @@ public class MusapKey: Codable, Identifiable {
     private var did: String?
     private var state: String?
             
-    init(
+    public init(
         keyAlias:         String,
         keyType:          String? = nil,
         keyId:            String? = nil,
@@ -73,78 +73,78 @@ public class MusapKey: Codable, Identifiable {
     
     
     // KeyAlias
-    func getKeyAlias() -> String? { keyAlias }
-    func setKeyAlias(value: String?) { keyAlias = value }
+    public func getKeyAlias() -> String? { keyAlias }
+    public func setKeyAlias(value: String?) { keyAlias = value }
 
     // KeyType
-    func getKeyType() -> String? { keyType }
-    func setKeyType(value: String?) { keyType = value }
+    public func getKeyType() -> String? { keyType }
+    public func setKeyType(value: String?) { keyType = value }
 
     // KeyId
-    func getKeyId() -> String? { keyId }
-    func setKeyId(value: String?) { keyId = value }
+    public func getKeyId() -> String? { keyId }
+    public func setKeyId(value: String?) { keyId = value }
 
     // SscdId
-    func getSscdId() -> String? { sscdId }
-    func setSscdId(value: String?) { sscdId = value }
+    public func getSscdId() -> String? { sscdId }
+    public func setSscdId(value: String?) { sscdId = value }
 
     // SscdType
-    func getSscdType() -> String? { sscdType }
-    func setSscdType(value: String?) { sscdType = value }
+    public func getSscdType() -> String? { sscdType }
+    public func setSscdType(value: String?) { sscdType = value }
 
     // CreatedDate
-    func getCreatedDate() -> Date? { createdDate }
-    func setCreatedDate(value: Date?) { createdDate = value }
+    public func getCreatedDate() -> Date? { createdDate }
+    public func setCreatedDate(value: Date?) { createdDate = value }
 
     // PublicKey
-    func getPublicKey() -> PublicKey? { publicKey }
-    func setPublicKey(value: PublicKey?) { publicKey = value }
+    public func getPublicKey() -> PublicKey? { publicKey }
+    public func setPublicKey(value: PublicKey?) { publicKey = value }
 
     // Certificate
-    func getCertificate() -> MusapCertificate? { certificate }
-    func setCertificate(value: MusapCertificate?) { certificate = value }
+    public func getCertificate() -> MusapCertificate? { certificate }
+    public func setCertificate(value: MusapCertificate?) { certificate = value }
 
     // CertificateChain
-    func getCertificateChain() -> [MusapCertificate]? { certificateChain }
-    func setCertificateChain(value: [MusapCertificate]?) { certificateChain = value }
+    public func getCertificateChain() -> [MusapCertificate]? { certificateChain }
+    public func setCertificateChain(value: [MusapCertificate]?) { certificateChain = value }
 
     // Attributes
-    func getAttributes() -> [KeyAttribute]? { attributes }
-    func setAttributes(value: [KeyAttribute]?) { attributes = value }
+    public func getAttributes() -> [KeyAttribute]? { attributes }
+    public func setAttributes(value: [KeyAttribute]?) { attributes = value }
 
     // KeyUsages
-    func getKeyUsages() -> [String]? { keyUsages }
-    func setKeyUsages(value: [String]?) { keyUsages = value }
+    public func getKeyUsages() -> [String]? { keyUsages }
+    public func setKeyUsages(value: [String]?) { keyUsages = value }
 
     // Loa
-    func getLoa() -> [MusapLoa]? { loa }
-    func setLoa(value: [MusapLoa]?) { loa = value }
+    public func getLoa() -> [MusapLoa]? { loa }
+    public func setLoa(value: [MusapLoa]?) { loa = value }
 
     // Algorithm
-    func getAlgorithm() -> KeyAlgorithm? { algorithm }
-    func setAlgorithm(value: KeyAlgorithm?) { algorithm = value }
+    public func getAlgorithm() -> KeyAlgorithm? { algorithm }
+    public func setAlgorithm(value: KeyAlgorithm?) { algorithm = value }
 
     // KeyUri
-    func getKeyUri() -> KeyURI? { keyUri }
-    func setKeyUri(value: KeyURI?) { keyUri = value }
+    public func getKeyUri() -> KeyURI? { keyUri }
+    public func setKeyUri(value: KeyURI?) { keyUri = value }
 
     // Attestation
-    func getAttestation() -> KeyAttestation? { attestation }
-    func setAttestation(value: KeyAttestation?) { attestation = value }
+    public func getAttestation() -> KeyAttestation? { attestation }
+    public func setAttestation(value: KeyAttestation?) { attestation = value }
 
     // IsBiometricRequired
-    func getIsBiometricRequired() -> Bool { isBiometricRequired }
-    func setIsBiometricRequired(value: Bool) { isBiometricRequired = value }
+    public func getIsBiometricRequired() -> Bool { isBiometricRequired }
+    public func setIsBiometricRequired(value: Bool) { isBiometricRequired = value }
 
     // Did
-    func getDid() -> String? { did }
-    func setDid(value: String?) { did = value }
+    public func getDid() -> String? { did }
+    public func setDid(value: String?) { did = value }
 
     // State
-    func getState() -> String? { state }
-    func setState(value: String?) { state = value }
+    public func getState() -> String? { state }
+    public func setState(value: String?) { state = value }
     
-    func getSscdImplementation() -> (any MusapSscdProtocol)? {
+    public func getSscdImplementation() -> (any MusapSscdProtocol)? {
         let sscdType = self.sscdType
         print("Looking for SSCD with type: \(String(describing: sscdType))")
         

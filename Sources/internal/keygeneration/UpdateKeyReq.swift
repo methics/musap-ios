@@ -16,7 +16,7 @@ public class UpdateKeyReq {
     private let role:       String?
     private let state:      String?
     
-    init(key:        MusapKey,
+    public init(key:        MusapKey,
          keyAlias:   String?,
          did:        String?,
          attributes: [KeyAttribute]?,

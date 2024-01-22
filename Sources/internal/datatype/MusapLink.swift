@@ -22,7 +22,7 @@ public class MusapLink: Encodable, Decodable {
     private var aesKey:  String?
     private var macKey:  String?
     
-    init(url: String, musapId: String?) {
+    public init(url: String, musapId: String?) {
         self.url = url
         self.musapId = musapId
     }
@@ -330,7 +330,7 @@ public class MusapLink: Encodable, Decodable {
         task.resume()
     }
     
-    func sign(payload: ExternalSignaturePayload, completion: @escaping (Result<ExternalSignatureResponsePayload, Error>) -> Void) {
+    public func sign(payload: ExternalSignaturePayload, completion: @escaping (Result<ExternalSignatureResponsePayload, Error>) -> Void) {
         guard let payloadBase64 = payload.getBase64Encoded() else {
             print("Could not get payload as base64")
             completion(.failure(MusapError.internalError))
@@ -435,7 +435,7 @@ public class MusapLink: Encodable, Decodable {
         }
     }
     
-    func sendRequest(_ msg: MusapMessage, completion: @escaping (MusapMessage?, Error?) -> Void) {
+    public func sendRequest(_ msg: MusapMessage, completion: @escaping (MusapMessage?, Error?) -> Void) {
         guard let jsonData = try? JSONEncoder().encode(msg) else {
             print("MusapLink.sendRequest(): Could not turn MusapMessage to JsonData")
             completion(nil, NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to encode message"]))

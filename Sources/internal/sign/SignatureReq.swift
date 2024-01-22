@@ -9,16 +9,16 @@ import Foundation
 
 public class SignatureReq {
     
-    let key:         MusapKey
-    let data:        Data
-    let algorithm:   SignatureAlgorithm
-    let format:      SignatureFormat
-    let displayText: String
-    let attributes:  [SignatureAttribute]
+    public let key:         MusapKey
+    public let data:        Data
+    public let algorithm:   SignatureAlgorithm
+    public let format:      SignatureFormat
+    public let displayText: String
+    public let attributes:  [SignatureAttribute]
     
     private let transId: String? = "" //TODO: ?
     
-    init(key: MusapKey, data: Data, algorithm: SignatureAlgorithm, format: SignatureFormat, displayText: String, attributes: [SignatureAttribute]) {
+    public init(key: MusapKey, data: Data, algorithm: SignatureAlgorithm, format: SignatureFormat, displayText: String, attributes: [SignatureAttribute]) {
         self.key         = key
         self.data        = data
         self.algorithm   = algorithm

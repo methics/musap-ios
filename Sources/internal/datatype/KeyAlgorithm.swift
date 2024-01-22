@@ -11,52 +11,52 @@ import Security
 
 public struct KeyAlgorithm: Codable, Equatable {
     
-    static let PRIMITIVE_RSA = kSecAttrKeyTypeRSA as String
-    static let PRIMITIVE_EC = kSecAttrKeyTypeECSECPrimeRandom as String
+    public static let PRIMITIVE_RSA = kSecAttrKeyTypeRSA as String
+    public static let PRIMITIVE_EC = kSecAttrKeyTypeECSECPrimeRandom as String
 
-    static let CURVE_SECP256K1 = "secp256k1"
-    static let CURVE_SECP384K1 = "secp384k1"
-    static let CURVE_SECP256R1 = "secp256r1"
-    static let CURVE_SECP384R1 = "secp384r1"
+    public static let CURVE_SECP256K1 = "secp256k1"
+    public static let CURVE_SECP384K1 = "secp384k1"
+    public static let CURVE_SECP256R1 = "secp256r1"
+    public static let CURVE_SECP384R1 = "secp384r1"
     
-    static let RSA_1K = KeyAlgorithm(primitive: PRIMITIVE_RSA, bits: 1024) // YubiKey supports 1024 and 2048 only
-    static let RSA_2K = KeyAlgorithm(primitive: PRIMITIVE_RSA, bits: 2048)
-    static let RSA_4K = KeyAlgorithm(primitive: PRIMITIVE_RSA, bits: 4096)
-    static let ECC_P256_K1 = KeyAlgorithm(primitive: PRIMITIVE_EC, curve: CURVE_SECP256K1, bits: 256)
-    static let ECC_P384_K1 = KeyAlgorithm(primitive: PRIMITIVE_EC, curve: CURVE_SECP384K1, bits: 384)
-    static let ECC_P256_R1 = KeyAlgorithm(primitive: PRIMITIVE_EC, curve: CURVE_SECP256R1, bits: 256)
-    static let ECC_P384_R1 = KeyAlgorithm(primitive: PRIMITIVE_EC, curve: CURVE_SECP384R1, bits: 384)
+    public static let RSA_1K = KeyAlgorithm(primitive: PRIMITIVE_RSA, bits: 1024) // YubiKey supports 1024 and 2048 only
+    public static let RSA_2K = KeyAlgorithm(primitive: PRIMITIVE_RSA, bits: 2048)
+    public static let RSA_4K = KeyAlgorithm(primitive: PRIMITIVE_RSA, bits: 4096)
+    public static let ECC_P256_K1 = KeyAlgorithm(primitive: PRIMITIVE_EC, curve: CURVE_SECP256K1, bits: 256)
+    public static let ECC_P384_K1 = KeyAlgorithm(primitive: PRIMITIVE_EC, curve: CURVE_SECP384K1, bits: 384)
+    public static let ECC_P256_R1 = KeyAlgorithm(primitive: PRIMITIVE_EC, curve: CURVE_SECP256R1, bits: 256)
+    public static let ECC_P384_R1 = KeyAlgorithm(primitive: PRIMITIVE_EC, curve: CURVE_SECP384R1, bits: 384)
 
-    let primitive: String
-    let curve: String?
-    let bits: Int
+    public let primitive: String
+    public let curve: String?
+    public let bits: Int
 
     /// Initialize for RSA with bit size
-    init(primitive: String, bits: Int) {
+    public init(primitive: String, bits: Int) {
         self.primitive = primitive
         self.bits = bits
         self.curve = nil
     }
 
     /// Initialize for EC with a curve and bit size
-    init(primitive: String, curve: String, bits: Int) {
+    public init(primitive: String, curve: String, bits: Int) {
         self.primitive = primitive
         self.curve = curve
         self.bits = bits
     }
 
     /// Check if it is RSA key
-    func isRsa() -> Bool {
+    public func isRsa() -> Bool {
         return primitive == KeyAlgorithm.PRIMITIVE_RSA
     }
 
     /// Check if it is EC key
-    func isEc() -> Bool {
+    public func isEc() -> Bool {
         return primitive == KeyAlgorithm.PRIMITIVE_EC
     }
 
     /// Description of key algorithm
-    func description() -> String {
+    public func description() -> String {
         if let curve = curve {
             return "[\(primitive)/\(curve)/\(bits)]"
         } else {
@@ -64,7 +64,7 @@ public struct KeyAlgorithm: Codable, Equatable {
         }
     }
     
-    func toSignatureAlgorithm() -> SignatureAlgorithm {
+    public func toSignatureAlgorithm() -> SignatureAlgorithm {
         if isRsa() {
             switch bits {
             case 1024, 2048:
@@ -94,18 +94,18 @@ public struct KeyAlgorithm: Codable, Equatable {
     }
 }
 
-enum KeyAlgorithmEnum {
+public enum KeyAlgorithmEnum {
     case rsa(Int)   // Bits
     case ec(ECType) // EC Curve Type
 
-    enum ECType {
+    public enum ECType {
         case secp256k1
         case secp384k1
         case secp256r1 // This is Secure enclave supported
         case secp384r1
         case ed25519
 
-        var bits: Int {
+        public var bits: Int {
             switch self {
             case .secp256k1, .secp256r1, .ed25519:
                 return 256
@@ -114,7 +114,7 @@ enum KeyAlgorithmEnum {
             }
         }
 
-        var curveName: String {
+        public var curveName: String {
             switch self {
             case .secp256k1: return "secp256k1"
             case .secp384k1: return "secp384k1"
@@ -125,7 +125,7 @@ enum KeyAlgorithmEnum {
         }
     }
 
-    var description: String {
+    public var description: String {
         switch self {
         case .rsa(let bits):
             return "[RSA/\(bits)]"

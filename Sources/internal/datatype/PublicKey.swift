@@ -12,15 +12,15 @@ public class PublicKey: Codable {
     
     private var publickeyDer: Data
 
-    init(publicKey: Data) {
+    public init(publicKey: Data) {
         self.publickeyDer = publicKey
     }
 
-    func getDER() -> Data {
+    public func getDER() -> Data {
         return publickeyDer
     }
 
-    func getPEM() -> String {
+    public func getPEM() -> String {
         let base64Signature = publickeyDer.base64EncodedString()
 
         var pem = "-----BEGIN PUBLIC KEY-----\n"
@@ -40,7 +40,7 @@ public class PublicKey: Codable {
     }
     
     //TODO: Do we even need this?
-    func toSecKey(keyType: String) -> SecKey? {
+    public func toSecKey(keyType: String) -> SecKey? {
         let keyData = publickeyDer
         
         var attributes: [String: Any] = [
@@ -66,7 +66,7 @@ public class PublicKey: Codable {
         return secKey
     }
     
-    func toSecKey(keyType: YKFPIVKeyType) -> SecKey? {
+    public func toSecKey(keyType: YKFPIVKeyType) -> SecKey? {
         let keyData = publickeyDer
         
         var attributes: [String: Any] = [

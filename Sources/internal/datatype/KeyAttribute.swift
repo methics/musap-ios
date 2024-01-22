@@ -9,8 +9,8 @@ import Foundation
 
 public struct KeyAttribute: Codable {
     
-    var name: String
-    var value: String?
+    public var name: String
+    public var value: String?
     
     init(name: String, value: String?) {
         self.name = name

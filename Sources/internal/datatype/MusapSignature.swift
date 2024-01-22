@@ -16,7 +16,7 @@ public class MusapSignature {
     
 
     /// Create a new MUSAP signture object
-    init(rawSignature: Data, key: MusapKey, algorithm: SignatureAlgorithm, format: SignatureFormat) {
+    public init(rawSignature: Data, key: MusapKey, algorithm: SignatureAlgorithm, format: SignatureFormat) {
         self.rawSignature = rawSignature
         self.key          = key
         self.algorithm    = algorithm
@@ -24,14 +24,14 @@ public class MusapSignature {
     }
     
     /// Create a new raw signature without any meta-data
-    init(rawSignature: Data) {
+    public init(rawSignature: Data) {
         self.rawSignature = rawSignature
         self.key          = nil
         self.algorithm    = nil
         self.format       = nil
     }
     
-    init(rawSignature: Data, key: MusapKey) {
+    public init(rawSignature: Data, key: MusapKey) {
         self.rawSignature = rawSignature
         self.key          = key
         self.algorithm    = nil

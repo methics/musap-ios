@@ -9,16 +9,16 @@ import Foundation
 
 public class MusapSscd: Codable, Identifiable {
     
-    var sscdName:        String?
-    var sscdType:        String?
-    var sscdId:          String?
-    var country:         String?
-    var provider:        String?
-    let keyGenSupported: Bool
-    let algorithms:      [KeyAlgorithm]
-    let formats:         [SignatureFormat]
+    public var sscdName:        String?
+    public var sscdType:        String?
+    public var sscdId:          String?
+    public var country:         String?
+    public var provider:        String?
+    public let keyGenSupported: Bool
+    public let algorithms:      [KeyAlgorithm]
+    public let formats:         [SignatureFormat]
     
-    init(
+    public init(
         sscdName: String,
         sscdType: String,
         sscdId: String,

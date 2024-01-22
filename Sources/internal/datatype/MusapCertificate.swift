@@ -13,14 +13,14 @@ public class MusapCertificate: Codable {
     private let certificate: Data
     private let publicKey: PublicKey
     
-    init(subject: String, certificate: Data, publicKey: PublicKey) {
+    public init(subject: String, certificate: Data, publicKey: PublicKey) {
         self.subject = subject
         self.certificate = certificate
         self.publicKey = publicKey
     }
     
     
-    init?(cert: SecCertificate) {
+    public init?(cert: SecCertificate) {
         if let subjectCFString = SecCertificateCopySubjectSummary(cert) as String? {
             self.subject = subjectCFString
         } else {

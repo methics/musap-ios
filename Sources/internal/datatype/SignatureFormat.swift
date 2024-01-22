@@ -15,7 +15,7 @@ public class SignatureFormat: Codable {
     
     private var format: String;
     
-    init(_ format: String) {
+    public init(_ format: String) {
         self.format = format
     }
     

@@ -19,7 +19,7 @@ public class MusapImportData: Codable {
     
     public init() {}
     
-    func toJson() -> String? {
+    public func toJson() -> String? {
         let encoder = JSONEncoder()
         encoder.outputFormatting = .prettyPrinted
         do {

@@ -17,7 +17,7 @@ public class KeyBindReq {
     private var generateNewKey: Bool
     private var displayText: String
     
-    init(
+    public init(
         keyAlias:       String,
         did:            String,
         role:           String,

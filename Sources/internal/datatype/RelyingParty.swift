@@ -12,12 +12,12 @@ public class RelyingParty: Codable {
     private var name: String
     private var linkId: String
     
-    init(payload: LinkAccountResponsePayload) {
+    public init(payload: LinkAccountResponsePayload) {
         self.linkId = payload.linkid
         self.name   = payload.name
     }
     
-    init(name: String, linkId: String) {
+    public init(name: String, linkId: String) {
         self.name = name
         self.linkId = linkId
     }

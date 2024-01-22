@@ -19,7 +19,7 @@ public class MusapMessage: Codable {
     public var mac:       String?
     public var iv:        String?
     
-    init(payload:   String,
+    public init(payload:   String,
          musapid:   String,
          type:      String,
          uuid:      String,

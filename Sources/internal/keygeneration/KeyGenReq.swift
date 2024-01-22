@@ -9,14 +9,14 @@ import Foundation
 
 public class KeyGenReq {
     
-    let keyAlias:     String
-    let did:          String?
-    let role:         String
-    let stepUpPolicy: StepUpPolicy?
-    let attributes:   [KeyAttribute]?
-    let keyAlgorithm: KeyAlgorithm?
+    public let keyAlias:     String
+    public let did:          String?
+    public let role:         String
+    public let stepUpPolicy: StepUpPolicy?
+    public let attributes:   [KeyAttribute]?
+    public let keyAlgorithm: KeyAlgorithm?
     
-    init(
+    public init(
         keyAlias:     String,
         did:          String? = nil,
         role:         String,

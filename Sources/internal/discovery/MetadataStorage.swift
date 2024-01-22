@@ -61,7 +61,7 @@ public class MetadataStorage {
     /**
      List available MUSAP keys
      */
-    func listKeys() -> [MusapKey] {
+    public func listKeys() -> [MusapKey] {
         let keyNames = getKeyNames()
         var keyList: [MusapKey] = []
 
@@ -77,7 +77,7 @@ public class MetadataStorage {
         return keyList
     }
     
-    func listKeys(req: KeySearchReq) -> [MusapKey] {
+    public func listKeys(req: KeySearchReq) -> [MusapKey] {
         let keyNames = self.getKeyNames()
         var keyList = [MusapKey]()
         
@@ -103,7 +103,7 @@ public class MetadataStorage {
     /**
      Remove key metadata from storage
      */
-    func removeKey(key: MusapKey) -> Bool {
+    public func removeKey(key: MusapKey) -> Bool {
         guard let keyName = key.getKeyAlias() else {
             print("Can't remove key. Keyname was nil")
             return false
@@ -125,7 +125,7 @@ public class MetadataStorage {
     /**
      Store metadata of an active MUSAP SSCD
      */
-    func addSscd(sscd: MusapSscd) {
+    public func addSscd(sscd: MusapSscd) {
         guard let sscdId = sscd.sscdId else {
             print("Cant addSscd: SSCD ID was nil")
             return
@@ -149,7 +149,7 @@ public class MetadataStorage {
     /**
      List available active MUSAP SSCDs
      */
-    func listActiveSscds() -> [MusapSscd] {
+    public func listActiveSscds() -> [MusapSscd] {
         let sscdIds = getSscdIds()
         var sscdList: [MusapSscd] = []
         
@@ -209,7 +209,7 @@ public class MetadataStorage {
         return self.makeStoreName(keyName: keyName)
     }
     
-    func printAllData() {
+    public func printAllData() {
         // Print all key names
         let keyNames = getKeyNames()
         print("All Key Names: \(keyNames)")
