@@ -423,6 +423,16 @@ public class MusapLink: Encodable, Decodable {
     }
     
     public func sendRequest(_ msg: MusapMessage, completion: @escaping (MusapMessage?, Error?) -> Void) {
+        print("start of sendRequest")
+        
+        print("")
+        
+        debugPrint(msg)
+        
+        debugPrint("msg payload: \(String(describing: msg.payload))")
+        
+        print("")
+        //TODO: Problem lies here?
         guard let jsonData = try? JSONEncoder().encode(msg) else {
             print("MusapLink.sendRequest(): Could not turn MusapMessage to JsonData")
             completion(nil, NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to encode message"]))
