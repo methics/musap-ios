@@ -15,7 +15,7 @@ public class ExternalSignaturePayload: Codable {
     public var data:     String?
     public var display:  String?
     public var format:   String?
-    public var publicKey: String?
+    public var publickey: String?
     public var timeout: String?
     public var transid: String?
     public var attributes: [String:String]?

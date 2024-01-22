@@ -82,8 +82,22 @@ public class ExternalSscd: MusapSscdProtocol {
                         return
                     }
                     
+                    guard let publickey = response.publickey else {
+                        print("ExternalSscd.bindKey(): No Public Key")
+                        return
+                    }
+                    
+                    print("public key from resp: \(publickey)")
+                    
+            
+                    guard let publicKeyData = publickey.data(using: .utf8) else {
+                        print("could not turn publick ey string to data")
+                        return
+                    }
+                    
                     print("the signature: \(signature)")
                     
+                    /*
                     guard let certData = Data(base64Encoded: signature) else {
                         print("unable to create Data() from signature")
                         return
@@ -93,23 +107,15 @@ public class ExternalSscd: MusapSscdProtocol {
                         print("unable to create certificate")
                         return
                     }
-                    
-                    guard let publicKey = MusapCertificate(cert: certificate)?.getPublicKey().getDER() else {
-                        print("bad publickey")
-                        return
-                    }
-                    /*
-                    guard let publicKeyData = publicKey.data(using: .utf8) else {
-                        print("Could not get public key in bindKey()")
-                        return
-                    }
                      */
+                    
+
                     print("Succesfully signed and got public keye")
                     
                     theKey =  MusapKey(
                         keyAlias: req.getKeyAlias(),
                         sscdType: ExternalSscd.SSCD_TYPE,
-                        publicKey: PublicKey(publicKey: publicKey),
+                        publicKey: PublicKey(publicKey: publicKeyData),
                         keyUri: KeyURI(name: req.getKeyAlias(), sscd: ExternalSscd.SSCD_TYPE, loa: "loa2") //TODO: What LoA?
                     )
                     

@@ -9,15 +9,15 @@ import Foundation
 
 public class ExternalSignatureResponsePayload: ResponsePayload {
     let signature: String?
-    let publicKey: String?
+    let publickey: String?
     let certificate: String?
     
     let transid: String
     let attributes: [String: String]?
     
-    init(signature: String?, publicKey: String, certificate: String, transid: String, attributes: [String : String], status: String, errorCode: String?) {
+    init(signature: String?, publickey: String, certificate: String, transid: String, attributes: [String : String], status: String, errorCode: String?) {
         self.signature = signature
-        self.publicKey = publicKey
+        self.publickey = publickey
         self.certificate = certificate
         self.transid = transid
         self.attributes = attributes
@@ -29,7 +29,7 @@ public class ExternalSignatureResponsePayload: ResponsePayload {
         
         // Decode each property
         signature = try container.decodeIfPresent(String.self, forKey: .signature)
-        publicKey = try container.decodeIfPresent(String.self, forKey: .publicKey)
+        publickey = try container.decodeIfPresent(String.self, forKey: .publicKey)
         certificate = try container.decodeIfPresent(String.self, forKey: .certificate)
         transid = try container.decode(String.self, forKey: .transid)
         attributes = try container.decodeIfPresent([String: String].self, forKey: .attributes)
@@ -49,7 +49,7 @@ public class ExternalSignatureResponsePayload: ResponsePayload {
     }
     
     public func getPublicKey() -> String? {
-        return self.publicKey
+        return self.publickey
     }
     
     private enum CodingKeys: String, CodingKey {
