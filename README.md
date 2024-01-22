@@ -13,39 +13,25 @@ It provides a set of tools and utilities to streamline the implementation of sec
 
 To integrate MUSAP into your iOS project, follow these steps:
 
-1. Add the following dependency to your app's build.gradle file:
+1. Open your Xcode project.
 
-```gradle
-    implementation (files("libs/musap-[version].aar"))
-```
+2. Go to "File" > "Swift Packages" > "Add Package Dependency..."
 
-2. Add the following dependencies required by the MUSAP library:
-```gradle
-    implementation("com.squareup.okhttp3:okhttp:4.10.0")
-    implementation("com.google.code.gson:gson:2.8.8")
-    implementation ("org.slf4j:slf4j-api:2.0.7")
-    implementation("org.bouncycastle:bcpkix-jdk15to18:1.71")
-    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
-    implementation("com.google.firebase:firebase-messaging")
-```
+3. Enter the URL for musap-ios, which is https://github.com/methics/musap-ios
+
+4. Choose the version or branch you want to use.
+
+5. Click "Next" and then "Finish."          
+
 
 ## Usage
 
 ### Enabling an SSCD
 
-Call `MusapClient.init()` and `MusapClient.enableSscd()`
+Call `MusapClient.enableSscd()`
 
-```java
-public class MyApplication extends Application {
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        MusapClient.init(this);
-        MusapClient.enableSscd(new AndroidKeystoreSscd(this));
-        MusapClient.enableSscd(new YubiKeySscd(this));
-    }
-}
+```swift
+MusapClient.enableSscd(sscd: YubikeySscd())
 
 ```
 
@@ -53,25 +39,34 @@ public class MyApplication extends Application {
 
 Create a key generation request and call `MusapClient.generateKey()`. The key generation result is delivered asynchronously through the given callback.
 
-```java
-KeyGenReq req = new KeyGenReqBuilder()
-        .setActivity(this.getActivity())
-        .setView(this.getView())
-        .setAlias("my key")
-        .setKeyAlgorithm(KeyAlgorithm.RSA_2K)
-        .createKeyGenReq();
+```swift
+let sscdImplementation = YubikeySscd()
+let keyAlgo            = KeyAlgorithm(primitive: KeyAlgorithm.PRIMITIVE_EC, bits: 384)
+let keyGenReq          = KeyGenReq(keyAlias: self.keyAlias, role: "personal", keyAlgorithm: keyAlgo)
 
-MusapClient.generateKey(sscd, req, new MusapCallback<MusapKey>() {
-    @Override
-    public void onSuccess(MusapKey result) {
-        MLog.d("Successfully generated key " + alias);
-    }
+Task {
 
-    @Override
-    public void onException(MusapException e) {
-        MLog.e("Failed to generate key " + alias, e);
-    }
-});
+            await MusapClient.generateKey(sscd: sscdImplementation, req: keyGenReq) {
+                result in
+                
+                
+                switch result {
+                case .success(let musapKey):
+                    print("Success! Keyname: \(String(describing: musapKey.getKeyAlias()))")
+                    print("Musap Key:        \(String(describing: musapKey.getPublicKey()?.getPEM()))")
+                    
+                    print("isEC? \(String(describing: musapKey.getAlgorithm()?.isEc()))")
+                    print("isRSA? \(String(describing: musapKey.getAlgorithm()?.isRsa()))")
+                    print("Bits: \(String(describing: musapKey.getAlgorithm()?.bits))")
+                    
+                case .failure(let error):
+                    print("ERROR: \(error.errorCode)")
+                    print(error.localizedDescription)
+                    self.errorMessage = "Error creating musap key"
+                    self.isErrorPopupVisible = true
+                }
+            }
+}
 
 ```
 
@@ -79,27 +74,30 @@ MusapClient.generateKey(sscd, req, new MusapCallback<MusapKey>() {
 
 Select a key, create a signature request and a `MusapSigner`. Finally call `MusapSigner.sign()`. The signature result is delivered asynchronously through the given callback.
 
-```java
-MusapKey       key = MusapClient.getKeyByUri(keyuri);
-SignatureReq   req = new SignatureReqBuilder().setKey(key).setData(data).setActivity(this.getActivity()).createSignatureReq();
-MusapSigner signer = new MusapSigner(key, this.getActivity());
+```swift
+let algo = SignatureAlgorithm(algorithm: .ecdsaSignatureMessageX962SHA256)
+let signatureFormat = SignatureFormat("RAW")
 
-try {
-    signer.sign(data, new MusapCallback<MusapSignature>() {
-        @Override
-        public void onSuccess(MusapSignature mSig) {
-            String signatureStr = mSig.getB64Signature();
-            MLog.d("Signature successful: " + signatureStr);
-        }
+let sigReq = SignatureReq(key: musapKey, data: data, algorithm: algo, format: signatureFormat, displayText: "Display text", attributes: [SignatureAttribute(name: "someKey", value: "SomeValue")])
 
-        @Override
-        public void onException(MusapException e) {
-            MLog.e("Failed to sign", e.getCause());
-        }
-    });
-} catch (MusapException e) {
-    MLog.e("Failed to sign", e.getCause());
+
+Task {
+            await MusapClient.sign(req: sigReq) { result in
+                
+                switch result {
+                case .success(let musapSignature):
+                    print("Success!")
+                    print(" B64 signature: \(musapSignature.getB64Signature()) ")
+                    base64Signature = musapSignature.getB64Signature()
+                    self.isSignDone = true
+                case .failure(let error):
+                    print("ERROR: \(error.localizedDescription)")
+                    self.isSignDone = true
+                }
+            }
+
 }
+
 
 ```
 
