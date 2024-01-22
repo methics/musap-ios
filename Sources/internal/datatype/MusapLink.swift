@@ -496,6 +496,7 @@ public class MusapLink: Encodable, Decodable {
                 msg.musapid = self.getMusapId()
 
                 self.sendRequest(msg) { respMsg, error in
+                    /*
                     if let error = error {
                         print("MusapLink.pollForSignature: We had an error in the link response")
                         DispatchQueue.main.async {
@@ -504,6 +505,7 @@ public class MusapLink: Encodable, Decodable {
                         return
                     }
 
+                     */
                     guard let respMsg = respMsg,
                           let msgPayload = respMsg.payload,
                           let payloadData = Data(base64Encoded: msgPayload) else {
