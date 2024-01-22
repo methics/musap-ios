@@ -16,7 +16,7 @@ public class ExternalSscdSettings: SscdSettings {
     private var settings: [String: String] = [:]
     private var timeout: TimeInterval
     
-    init(clientId: String) {
+    public init(clientId: String) {
         self.timeout = 2 * 60
         settings[ExternalSscdSettings.SETTINGS_TIMEOUT]   = String(self.timeout * 1000)
         settings[ExternalSscdSettings.SETTINGS_CLIENT_ID] = clientId
