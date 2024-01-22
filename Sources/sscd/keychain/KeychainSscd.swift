@@ -15,6 +15,9 @@ public class KeychainSscd: MusapSscdProtocol {
     
     private let settings = KeychainSscdSettings()
     
+    /// Required public init to make class on internal
+    public init() {}
+    
     public func bindKey(req: KeyBindReq) throws -> MusapKey {
         fatalError("Unsupported operation")
     }

@@ -25,7 +25,7 @@ public class YubikeySscd: MusapSscdProtocol {
     
     var onRequirePinEntry: ((_ completion: @escaping (String) -> Void) -> Void)?
     
-    init() {
+    public init() {
         self.yubiKitManager = YubiKitManager.shared
         self.type = YubikeySscd.MANAGEMENT_KEY_TYPE
     }

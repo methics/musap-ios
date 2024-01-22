@@ -17,6 +17,8 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
     
     private let settings = SecureEnclaveSettings()
     
+    /// Required public init to make class on internal
+    public init() {}
     
     public func bindKey(req: KeyBindReq) throws -> MusapKey {
         // Old keys cannot be bound to musap?
