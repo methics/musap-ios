@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "yubikit-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Yubico/yubikit-ios",
+      "state" : {
+        "revision" : "02403a2384997c64b84a967c8f587e86fc1e605d",
+        "version" : "4.4.0"
+      }
+    }
+  ],
+  "version" : 2
+}
