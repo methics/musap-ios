@@ -497,6 +497,7 @@ public class MusapLink: Encodable, Decodable {
 
                 self.sendRequest(msg) { respMsg, error in
                     if let error = error {
+                        print("MusapLink.pollForSignature: We had an error in the link response")
                         DispatchQueue.main.async {
                             completion(.failure(error))
                         }
