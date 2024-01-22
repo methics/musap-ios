@@ -463,6 +463,7 @@ public class MusapLink: Encodable, Decodable {
                 if let jsonString = String(data: data, encoding: .utf8) {
                     print("sendRequest jsonString from retrieved http data: \(jsonString)")
                     if jsonString == "null" {
+                        print("jsonString was null, trying to send completion(nil, nil)")
                         completion(nil, nil)
                         return
                     }
