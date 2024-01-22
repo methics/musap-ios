@@ -26,6 +26,10 @@ public class MetadataStorage {
     
     private let userDefaults = UserDefaults.standard
     
+    
+    // Public initializer required or else iOS apps will think the class is internal
+    public init() {}
+    
     /// Store a MusapKey
     public func storeKey(key: MusapKey, sscd: MusapSscd) throws {
         guard let keyName = key.getKeyAlias() else {
