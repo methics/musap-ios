@@ -9,4 +9,7 @@ import Foundation
 
 public class StepUpPolicy {
     //TODO: What do we do here?
+    public init() {
+        
+    }
 }
