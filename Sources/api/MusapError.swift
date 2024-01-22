@@ -22,7 +22,7 @@ public enum MusapError: Error {
     case internalError
     case illegalArgument
     
-    var errorCode: Int {
+    public var errorCode: Int {
         switch self {
         case .wrongParam:        return 101
         case .missingParam:      return 102
@@ -43,10 +43,10 @@ public enum MusapError: Error {
 }
 
 public class MusapException: Error {
-    let error: MusapError
-    let errorName: String
+    public let error: MusapError
+    public let errorName: String
     
-    init(_ error: MusapError, _ msg: String = "") {
+    public init(_ error: MusapError, _ msg: String = "") {
         self.error = error
         self.errorName = MusapException.getErrorName(error)
         print("MusapException: \(errorName) - \(msg)")
