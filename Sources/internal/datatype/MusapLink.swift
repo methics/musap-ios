@@ -391,7 +391,7 @@ public class MusapLink: Encodable, Decodable {
                                 
                             switch result {
                             case .success(let payload):
-                                print("got payload: \(payload.isSuccess())")
+                                print("got payload of MusapLink.pollForSignature: \(payload.isSuccess())")
                                 guard let signature = payload.signature,
                                       let signatureData = signature.data(using: .utf8)
                                 else {
@@ -400,19 +400,6 @@ public class MusapLink: Encodable, Decodable {
                                 }
                                 
                                 completion(.success(payload))
-                            
-                                /*
-                                let musapSignature = MusapSignature(rawSignature: signatureData)
-                                do {
-                                    print("Sending signatureCallback")
-                                    try self.sendSignatureCallback(signature: musapSignature, transId: payload.transid)
-                                    completion(.success(resp))
-                                } catch {
-                                    completion(.failure(error))
-                                }
-                                
-                                //completion(.success(payload))
-                                 */
                             case .failure(let error):
                                 print("Error: \(error)")
                                 completion(.failure(error))
@@ -442,8 +429,7 @@ public class MusapLink: Encodable, Decodable {
             return
         }
         
-        print("JSON STRING OF REQUEST: \(jsonData.base64EncodedString())")
-        
+        print("sendRequest: JSON STRING OF REQUEST: \(jsonData.base64EncodedString())")
         
         guard let url = URL(string: self.url) else {
             print("MUsapLink.sendRequest(): No URL")
@@ -465,12 +451,17 @@ public class MusapLink: Encodable, Decodable {
 
             if let data = data {
                 if let jsonString = String(data: data, encoding: .utf8) {
-                    print("sendRequest jsonString: \(jsonString)")
+                    print("sendRequest jsonString from retrieved http data: \(jsonString)")
                 }
             }
+            
+            guard let data = data else {
+                print("sendRequest: No data")
+                completion(nil, error)
+                return
+            }
 
-            guard let data = data,
-                  let responseMsg = try? JSONDecoder().decode(MusapMessage.self, from: data)
+            guard let responseMsg = try? JSONDecoder().decode(MusapMessage.self, from: data)
             else {
                 print("Failed to parse json to MusapMEssage")
                 completion(nil, NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to decode response"]))
