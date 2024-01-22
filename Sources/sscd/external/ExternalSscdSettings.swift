@@ -44,11 +44,11 @@ public class ExternalSscdSettings: SscdSettings {
         return clientId
     }
     
-    func getSettings() -> [String : String]? {
+    public func getSettings() -> [String : String]? {
         return ["": ""]
     }
     
-    func getMusapLink() -> MusapLink? {
+    public func getMusapLink() -> MusapLink? {
         return MusapClient.getMusapLink()
     }
     

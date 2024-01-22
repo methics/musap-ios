@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol SscdSettings {
+public protocol SscdSettings {
     
     func getSettings() -> [String:String]?
     
@@ -15,7 +15,7 @@ protocol SscdSettings {
     
 }
 
-extension SscdSettings {
+public extension SscdSettings {
     
     func getSetting(forKey key: String) -> String? {
         

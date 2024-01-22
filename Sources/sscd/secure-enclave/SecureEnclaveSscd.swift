@@ -11,20 +11,20 @@ import CommonCrypto
 
 public class SecureEnclaveSscd: MusapSscdProtocol {
     
-    typealias CustomSscdSettings = SecureEnclaveSettings
+    public typealias CustomSscdSettings = SecureEnclaveSettings
     
     static let SSCD_TYPE = "SE"
     
     private let settings = SecureEnclaveSettings()
     
     
-    func bindKey(req: KeyBindReq) throws -> MusapKey {
+    public func bindKey(req: KeyBindReq) throws -> MusapKey {
         // Old keys cannot be bound to musap?
         // Use generateKey instead
         fatalError("Unsupported operation")
     }
 
-    func generateKey(req: KeyGenReq) throws -> MusapKey {
+    public func generateKey(req: KeyGenReq) throws -> MusapKey {
         print("Starting MusapKey generation")
         let sscd = self.getSscdInfo()
         
@@ -116,7 +116,7 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
         return generatedKey
     }
     
-    func sign(req: SignatureReq) throws -> MusapSignature {
+    public func sign(req: SignatureReq) throws -> MusapSignature {
         guard let keyAlias = req.key.getKeyAlias() else {
             print("Signing failed: keyName was empty")
             throw MusapError.internalError
@@ -174,7 +174,7 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
         return MusapSignature(rawSignature: signatureData, key: req.getKey(), algorithm: SignatureAlgorithm.init(algorithm: .ecdsaSignatureMessageX962SHA256), format: SignatureFormat.RAW)
     }
     
-    func getSscdInfo() -> MusapSscd {
+    public func getSscdInfo() -> MusapSscd {
         let musapSscd = MusapSscd(
             sscdName:        "SE",
             sscdType:        SecureEnclaveSscd.SSCD_TYPE,
@@ -191,23 +191,23 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
         return musapSscd
     }
     
-    func generateSscdId(key: MusapKey) -> String {
+    public func generateSscdId(key: MusapKey) -> String {
         return "SE" //TODO: How do we generate sscd id? UUID?
     }
     
-    func isKeygenSupported() -> Bool {
+    public func isKeygenSupported() -> Bool {
         return self.getSscdInfo().keyGenSupported
     }
     
-    func getSettings() -> SecureEnclaveSettings {
+    public func getSettings() -> SecureEnclaveSettings {
         return self.settings
     }
     
-    func getSettings() -> [String : String]? {
+    public func getSettings() -> [String : String]? {
         return self.settings.getSettings()
     }
     
-    func resolveAlgorithmParameterSpec(req: KeyGenReq) -> SecKeyAlgorithm? {
+    public func resolveAlgorithmParameterSpec(req: KeyGenReq) -> SecKeyAlgorithm? {
         guard let algorithm = req.keyAlgorithm else {
             return SecKeyAlgorithm.ecdsaSignatureMessageX962SHA256
         }

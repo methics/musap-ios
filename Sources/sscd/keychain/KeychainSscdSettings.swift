@@ -8,7 +8,7 @@
 import Foundation
 
 public class KeychainSscdSettings: SscdSettings {
-    func getSettings() -> [String : String]? {
+    public func getSettings() -> [String : String]? {
         return ["": ""]
     }
     

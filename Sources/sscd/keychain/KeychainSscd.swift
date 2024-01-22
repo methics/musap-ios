@@ -9,17 +9,17 @@ import Foundation
 
 public class KeychainSscd: MusapSscdProtocol {
     
-    typealias CustomSscdSettings = KeychainSscdSettings
+    public typealias CustomSscdSettings = KeychainSscdSettings
     
     static let SSCD_TYPE = "Keychain"
     
     private let settings = KeychainSscdSettings()
     
-    func bindKey(req: KeyBindReq) throws -> MusapKey {
+    public func bindKey(req: KeyBindReq) throws -> MusapKey {
         fatalError("Unsupported operation")
     }
     
-    func generateKey(req: KeyGenReq) throws -> MusapKey {
+    public func generateKey(req: KeyGenReq) throws -> MusapKey {
         print("Starting MusapKey generation")
         
         let sscd = self.getSscdInfo()
@@ -98,7 +98,7 @@ public class KeychainSscd: MusapSscdProtocol {
         return generatedKey
     }
     
-    func sign(req: SignatureReq) throws -> MusapSignature {
+    public func sign(req: SignatureReq) throws -> MusapSignature {
         guard let keyAlias = req.key.getKeyAlias() else {
             print("Signing failed: keyName was empty")
             throw MusapError.internalError
@@ -144,7 +144,7 @@ public class KeychainSscd: MusapSscdProtocol {
         
     }
     
-    func getSscdInfo() -> MusapSscd {
+    public func getSscdInfo() -> MusapSscd {
         let musapSscd = MusapSscd(
             sscdName: "Keychain",
             sscdType: KeychainSscd.SSCD_TYPE,
@@ -162,19 +162,19 @@ public class KeychainSscd: MusapSscdProtocol {
         return musapSscd
     }
     
-    func generateSscdId(key: MusapKey) -> String {
+    public func generateSscdId(key: MusapKey) -> String {
         return "keychain"
     }
     
-    func isKeygenSupported() -> Bool {
+    public func isKeygenSupported() -> Bool {
         return self.getSscdInfo().keyGenSupported
     }
     
-    func getSettings() -> [String : String]? {
+    public func getSettings() -> [String : String]? {
         return self.settings.getSettings()
     }
     
-    func getSettings() -> KeychainSscdSettings {
+    public func getSettings() -> KeychainSscdSettings {
         return self.settings
     }
     

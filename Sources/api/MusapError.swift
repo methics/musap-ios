@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum MusapError: Error {
+public enum MusapError: Error {
     case wrongParam
     case missingParam
     case invalidAlgorithm

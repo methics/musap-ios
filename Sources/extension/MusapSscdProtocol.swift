@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol MusapSscdProtocol: SscdSettings {
+public protocol MusapSscdProtocol: SscdSettings {
     
     associatedtype CustomSscdSettings: SscdSettings
     

@@ -11,7 +11,7 @@ import SwiftUI
 
 public class YubikeySscd: MusapSscdProtocol {
     
-    typealias CustomSscdSettings = YubikeySscdSettings
+    public typealias CustomSscdSettings = YubikeySscdSettings
     private let settings = YubikeySscdSettings()
     
     private static let ATTRIBUTE_SERIAL = "serial"
@@ -30,11 +30,11 @@ public class YubikeySscd: MusapSscdProtocol {
         self.type = YubikeySscd.MANAGEMENT_KEY_TYPE
     }
     
-    func bindKey(req: KeyBindReq) throws -> MusapKey {
+    public func bindKey(req: KeyBindReq) throws -> MusapKey {
         throw MusapError.bindUnsupported
     }
     
-    func generateKey(req: KeyGenReq) throws -> MusapKey {
+    public func generateKey(req: KeyGenReq) throws -> MusapKey {
         let sscd = self.getSscdInfo()
         
         var thePin: String? = nil
@@ -110,7 +110,7 @@ public class YubikeySscd: MusapSscdProtocol {
         return generatedKey
     }
     
-    func sign(req: SignatureReq) throws -> MusapSignature {
+    public func sign(req: SignatureReq) throws -> MusapSignature {
         print("Trying to sign with YubiKey")
         var thePin: String? = nil
         let semaphore = DispatchSemaphore(value: 0)
@@ -161,7 +161,7 @@ public class YubikeySscd: MusapSscdProtocol {
         return signature
     }
     
-    func getSscdInfo() -> MusapSscd {
+    public func getSscdInfo() -> MusapSscd {
         let musapSscd = MusapSscd(sscdName:        "Yubikey",
                                   sscdType:        YubikeySscd.SSCD_TYPE,
                                   sscdId:          "Yubikey",
@@ -174,7 +174,7 @@ public class YubikeySscd: MusapSscdProtocol {
         return musapSscd
     }
     
-    func generateSscdId(key: MusapKey) -> String {
+    public func generateSscdId(key: MusapKey) -> String {
         guard let attributeValue = key.getAttributeValue(attrName: YubikeySscd.ATTRIBUTE_SERIAL) else {
             return YubikeySscd.SSCD_TYPE
         }
@@ -182,15 +182,15 @@ public class YubikeySscd: MusapSscdProtocol {
         return YubikeySscd.SSCD_TYPE + "/\(attributeValue)"
     }
     
-    func isKeygenSupported() -> Bool {
+    public func isKeygenSupported() -> Bool {
         true
     }
     
-    func getSettings() -> [String : String]? {
+    public func getSettings() -> [String : String]? {
         return settings.getSettings()
     }
     
-    func getSettings() -> YubikeySscdSettings {
+    public func getSettings() -> YubikeySscdSettings {
         return self.settings
     }
     

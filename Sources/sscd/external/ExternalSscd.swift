@@ -14,7 +14,7 @@ import Security
  */
 public class ExternalSscd: MusapSscdProtocol {
 
-    typealias CustomSscdSettings = ExternalSscdSettings
+    public typealias CustomSscdSettings = ExternalSscdSettings
     
     static let SSCD_TYPE           = "External Signature"
     static let ATTRIBUTE_MSISDN    = "msisdn"
@@ -25,13 +25,13 @@ public class ExternalSscd: MusapSscdProtocol {
     private let settings:  ExternalSscdSettings
     private let musapLink: MusapLink
     
-    init(settings: ExternalSscdSettings, clientid: String, musapLink: MusapLink) {
+    public init(settings: ExternalSscdSettings, clientid: String, musapLink: MusapLink) {
         self.settings = settings
         self.clientid = settings.getClientId() ?? "LOCAL"
         self.musapLink = settings.getMusapLink()! //TODO: Dont use !
     }
     
-    func bindKey(req: KeyBindReq) throws -> MusapKey {
+    public func bindKey(req: KeyBindReq) throws -> MusapKey {
         print("ExternalSscd.bindKey() started")
         let request: ExternalSignaturePayload = ExternalSignaturePayload(clientid: self.clientid)
         
@@ -137,11 +137,11 @@ public class ExternalSscd: MusapSscdProtocol {
         throw MusapError.internalError
     }
     
-    func generateKey(req: KeyGenReq) throws -> MusapKey {
+    public func generateKey(req: KeyGenReq) throws -> MusapKey {
         fatalError("Unsupported Operation")
     }
     
-    func sign(req: SignatureReq) throws -> MusapSignature {
+    public func sign(req: SignatureReq) throws -> MusapSignature {
         let request = ExternalSignaturePayload(clientid: self.clientid)
         
         var theMsisdn: String? = nil // Eventually this gets set into the attributes
@@ -197,7 +197,7 @@ public class ExternalSscd: MusapSscdProtocol {
         throw MusapError.internalError
     }
     
-    func getSscdInfo() -> MusapSscd {
+    public func getSscdInfo() -> MusapSscd {
         let sscd = MusapSscd(sscdName: self.settings.getSscdName(),
                              sscdType: ExternalSscd.SSCD_TYPE,
                              sscdId: "", //TODO: Fix
@@ -210,19 +210,19 @@ public class ExternalSscd: MusapSscdProtocol {
         return sscd
     }
     
-    func generateSscdId(key: MusapKey) -> String {
+    public func generateSscdId(key: MusapKey) -> String {
         return ExternalSscd.SSCD_TYPE + "/" + (key.getAttributeValue(attrName: ExternalSscd.ATTRIBUTE_MSISDN) ?? "")
     }
     
-    func isKeygenSupported() -> Bool {
+    public func isKeygenSupported() -> Bool {
         return false
     }
     
-    func getSettings() -> [String : String]? {
+    public func getSettings() -> [String : String]? {
         return self.settings.getSettings()
     }
     
-    func getSettings() -> ExternalSscdSettings {
+    public func getSettings() -> ExternalSscdSettings {
         return self.settings
     }
     
