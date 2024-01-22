@@ -38,7 +38,7 @@ public class MusapClient {
 
      - Note: Asynchronous execution, leveraging `BindKeyTask` for the key binding operation.
      */
-    static func bindKey(sscd: any MusapSscdProtocol, req: KeyBindReq, completion: @escaping (Result<MusapKey, MusapError>) -> Void) async {
+    public static func bindKey(sscd: any MusapSscdProtocol, req: KeyBindReq, completion: @escaping (Result<MusapKey, MusapError>) -> Void) async {
         let bindKeyTask = BindKeyTask()
         do {
             let musapKey = try await bindKeyTask.bindKey(req: req, sscd: sscd)
@@ -57,7 +57,7 @@ public class MusapClient {
 
      - Note: The signing process is asynchronous, utilizing `SignTask` for the operation.
      */
-    static func sign(req: SignatureReq, completion: @escaping (Result<MusapSignature, MusapError>) -> Void) async {
+    public static func sign(req: SignatureReq, completion: @escaping (Result<MusapSignature, MusapError>) -> Void) async {
         do {
             let signTask = SignTask()
             let signature = try await signTask.sign(req: req)
@@ -74,7 +74,7 @@ public class MusapClient {
 
      - Returns: An array of enabled SSCDs conforming to `MusapSscdProtocol`, or nil if no SSCDs are enabled.
      */
-    static func listEnabledSscds() -> [any MusapSscdProtocol]? {
+    public static func listEnabledSscds() -> [any MusapSscdProtocol]? {
         let keyDiscovery = KeyDiscoveryAPI(storage: MetadataStorage())
         let enabledSscds = keyDiscovery.listEnabledSscds()
         print("enabledSscds in MusapClient: \(enabledSscds.count)")
@@ -88,7 +88,7 @@ public class MusapClient {
        - req: A `SscdSearchReq` to filter the list of SSCDs.
      - Returns: An array of SSCDs matching the search criteria.
      */
-    static func listEnabledSscds(req: SscdSearchReq) -> [any MusapSscdProtocol] {
+    public static func listEnabledSscds(req: SscdSearchReq) -> [any MusapSscdProtocol] {
         let keyDiscovery = KeyDiscoveryAPI(storage: MetadataStorage())
         
         //TODO: Will this work? What is the issue?
@@ -101,7 +101,7 @@ public class MusapClient {
      - Returns: An array of active SSCDs that can generate or bind keys.
      */
 
-    static func listActiveSscds() -> [MusapSscd] {
+    public static func listActiveSscds() -> [MusapSscd] {
         return KeyDiscoveryAPI(storage: MetadataStorage()).listActiveSscds()
     }
     
@@ -146,7 +146,7 @@ public class MusapClient {
      - Parameters:
        - sscd: The SSCD to be enabled.
      */
-    static func enableSscd(sscd: any MusapSscdProtocol) {
+    public static func enableSscd(sscd: any MusapSscdProtocol) {
         let keyDiscovery = KeyDiscoveryAPI(storage: MetadataStorage())
         keyDiscovery.enableSscd(sscd)
     }
@@ -290,7 +290,7 @@ public class MusapClient {
         //TODO: Do this
     }
     
-    static func pollLink(completion: @escaping (Result<PollResponsePayload, MusapError>) -> Void) async {
+    public static func pollLink(completion: @escaping (Result<PollResponsePayload, MusapError>) -> Void) async {
         guard let link = self.getMusapLink() else {
             completion(.failure(MusapError.internalError))
             return
@@ -339,7 +339,7 @@ public class MusapClient {
         - couplingCode: Coupling code entered by the user.
         - completion:   CompletionHandler
      */
-    static func coupleWithRelyingParty(couplingCode: String, completion: @escaping (Result<RelyingParty, MusapError>) -> Void) async {
+    public static func coupleWithRelyingParty(couplingCode: String, completion: @escaping (Result<RelyingParty, MusapError>) -> Void) async {
         guard let musapId = self.getMusapId() else {
             print("Error in coupling with relying party: No Musap ID")
             return

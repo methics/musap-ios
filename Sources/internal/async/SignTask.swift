@@ -7,7 +7,7 @@
 
 import Foundation
 
-class SignTask {
+public class SignTask {
 
     func sign(req: SignatureReq) async throws -> MusapSignature {
         let sscd = req.getKey().getSscdImplementation()

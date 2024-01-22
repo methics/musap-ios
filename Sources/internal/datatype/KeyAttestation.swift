@@ -7,6 +7,6 @@
 
 import Foundation
 
-struct KeyAttestation: Codable {
+public struct KeyAttestation: Codable {
     
 }

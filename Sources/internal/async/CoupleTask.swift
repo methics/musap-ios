@@ -7,9 +7,7 @@
 
 import Foundation
 
-import Foundation
-
-class CoupleTask {
+public class CoupleTask {
     
     func couple(link: MusapLink, couplingCode: String, appId: String) async throws -> RelyingParty {
         do {
