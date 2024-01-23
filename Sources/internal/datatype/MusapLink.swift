@@ -618,8 +618,13 @@ public class MusapLink: Encodable, Decodable {
                 return
             }
             
-            guard let respMsg = respMsg,
-                  let msgPayload = respMsg.payload,
+            guard let respMsg = respMsg else {
+                print("sendRequest: No data or empty response")
+                completion(.keepPolling)
+                return
+            }
+            
+            guard let msgPayload = respMsg.payload,
                   let payloadData = Data(base64Encoded: msgPayload) else {
                 completion(.failure)
                 return
