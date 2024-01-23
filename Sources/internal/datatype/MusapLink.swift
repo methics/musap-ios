@@ -521,68 +521,6 @@ public class MusapLink: Encodable, Decodable {
                     }
                     
                 }
-                
-                
-                /*
-                let payload = ExternalSignaturePayload()
-                payload.transid = transId
-
-                guard let payloadBase64 = payload.getBase64Encoded() else {
-                    completion(.failure(MusapError.internalError))
-                    return
-                }
-
-                let msg = MusapMessage()
-                msg.payload = payloadBase64
-                msg.type    = MusapLink.SIGN_MSG_TYPE
-                msg.musapid = self.getMusapId()
-
-                self.sendRequest(msg) { respMsg, error in
-                    if let error = error {
-                        print("MusapLink.pollForSignature: We had an error in the link response")
-                        /*
-                        DispatchQueue.main.async {
-                            isPollingDone = true
-                            completion(.failure(error))
-                        }
-                         */
-                        return
-                    }
-                     
-                     
-                    guard let respMsg = respMsg,
-                          let msgPayload = respMsg.payload,
-                          let payloadData = Data(base64Encoded: msgPayload) else {
-                        DispatchQueue.main.async {
-                            completion(.failure(MusapError.internalError))
-                        }
-                        return
-                    }
-
-                    if let resp = try? JSONDecoder().decode(ExternalSignatureResponsePayload.self, from: payloadData) {
-                        DispatchQueue.main.async {
-                            if resp.status == "pending" {
-                                print("Status is pending")
-                                return
-                            } else if resp.status == "failed" {
-                                print("Status was marked as failed")
-                                isPollingDone = true
-                                completion(.failure(MusapError.internalError))
-                                return
-                            }
-
-                            print("Returning success")
-                            isPollingDone = true
-                            completion(.success(resp))
-                            return
-                        }
-                    } else {
-                        DispatchQueue.main.async {
-                            completion(.failure(MusapError.internalError))
-                        }
-                    }
-                }
-                */
             }
         }
     }
