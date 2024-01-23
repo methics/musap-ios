@@ -476,6 +476,8 @@ public class MusapLink: Encodable, Decodable {
                 completion(nil, error)
                 return
             }
+            
+            print("sendRequest Data: \(data.base64EncodedString())")
 
             guard let responseMsg = try? JSONDecoder().decode(MusapMessage.self, from: data)
             else {
