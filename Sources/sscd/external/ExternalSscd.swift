@@ -94,9 +94,7 @@ public class ExternalSscd: MusapSscdProtocol {
                         print("could not turn publick ey string to data")
                         return
                     }
-                    
-                    print("the signature: \(signature)")
-                    
+                                        
                     /*
                     guard let certData = Data(base64Encoded: signature) else {
                         print("unable to create Data() from signature")
@@ -110,7 +108,7 @@ public class ExternalSscd: MusapSscdProtocol {
                      */
                     
 
-                    print("Succesfully signed and got public keye")
+                    print("Succesfully signed and got public key")
                     
                     theKey =  MusapKey(
                         keyAlias: req.getKeyAlias(),

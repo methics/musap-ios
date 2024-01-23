@@ -458,6 +458,7 @@ public class MusapLink: Encodable, Decodable {
                 return
             }
 
+            /*
             if let data = data {
                 if let jsonString = String(data: data, encoding: .utf8) {
                     print("sendRequest jsonString from retrieved http data: \(jsonString)")
@@ -468,6 +469,7 @@ public class MusapLink: Encodable, Decodable {
                     }
                 }
             }
+             */
             
             guard let data = data else {
                 print("sendRequest: No data")
