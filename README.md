@@ -114,9 +114,44 @@ Task {
     }
 
 }
+```
 
+### Get enabled SSCDs
+```swift
+guard let enabledSscds = MusapClient.listEnabledSscds() else {
+    print("No enabled SSCDs")
+    return
+}
+
+for sscd in enabledSscds {
+    // Get SSCD name so we can display it in a list
+    guard let sscdName = sscd.getSscdInfo().sscdName else {
+        print("No name for sscd ")
+        continue
+    }
+    print("SSCD: \(sscdName)")
+
+    enabledSscdList.append(sscd.getSscdInfo())
+}
+```
+
+### Get active SSCDs
+
+```swift
+let activeSscds = MusapClient.listActiveSscds()
+
+for sscd in activeSscds {
+    // get something from sscd, like name to display in a list
+    guard let sscdName = sscd.sscdName else {
+        print("SSCD does not have a name set")
+        continue
+    }
+
+    activeSscdList.append(sscd)
+}
 
 ```
+
 
 ## License
 
