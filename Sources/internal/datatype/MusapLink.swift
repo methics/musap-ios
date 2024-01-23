@@ -324,7 +324,7 @@ public class MusapLink: Encodable, Decodable {
                 return
             }
             
-            print("Response payload: \(String(describing: responseMsg.payload))")
+            print("sendSignatureCallback response payload: \(String(describing: responseMsg.payload))")
             
         }
         task.resume()
