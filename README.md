@@ -9,6 +9,11 @@ It provides a set of tools and utilities to streamline the implementation of sec
 * **Secure Signature Creation**: Implement secure and standardized methods for creating digital signatures within your application.
 * **Customizable**: MUSAP is designed with flexibility in mind, allowing developers to customize and extend its functionality according to specific project requirements.
 
+### Reference implementation app
+
+We have a reference implementation app available that serves as an example on how to use the library.
+You can find the app project from https://github.com/methics/MUSAP-Demo-App-iOS
+
 ## Installing
 
 To integrate MUSAP into your iOS project, follow these steps:
