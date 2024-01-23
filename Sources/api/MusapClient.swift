@@ -278,8 +278,25 @@ public class MusapClient {
         MusapStorage().removeLink()
     }
     
-    public static func sendSignatureCallback() {
-        //TODO: DO THIS?
+    public static func sendSignatureCallback(signature: MusapSignature, txnId: String) {
+        guard let link = self.getMusapLink() else {
+            print("sendSignatureCallback Error: Can't getMusapLink()")
+            return
+        }
+        
+        guard let musapId = self.getMusapId() else {
+            print("sendSignatureCallback Error: Can't get musap ID")
+            return
+        }
+        
+        link.setMusapId(musapId: musapId)
+        
+        do {
+            try SignatureCallbackTask().runTask(link: link, signature: signature, txnId: txnId)
+        } catch {
+            print("sendSignatureCallback Error: \(error)")
+        }
+        
     }
     
     public static func sendKeygenCallback() {

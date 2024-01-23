@@ -47,6 +47,7 @@ public class ExternalSscd: MusapSscdProtocol {
             }
         } else {
             theMsisdn = msisdn
+            semaphore.signal()
         }
         
         semaphore.wait()
@@ -81,6 +82,15 @@ public class ExternalSscd: MusapSscdProtocol {
                         print("no signature")
                         return
                     }
+                            
+                    guard let signatureData = signature.data(using: .utf8) else {
+                        print("Can't turn string to data")
+                        return
+                    }
+                    
+                    // Send signature?
+                    let musapSignature = MusapSignature(rawSignature: signatureData)
+                    MusapClient.sendSignatureCallback(signature: musapSignature, txnId: response.transid)
                     
                     guard let publickey = response.publickey else {
                         print("ExternalSscd.bindKey(): No Public Key")
@@ -111,11 +121,18 @@ public class ExternalSscd: MusapSscdProtocol {
                     print("Succesfully signed and got public key")
                     
                     theKey =  MusapKey(
-                        keyAlias: req.getKeyAlias(),
-                        sscdType: ExternalSscd.SSCD_TYPE,
+                        keyAlias:  req.getKeyAlias(),
+                        sscdType:  ExternalSscd.SSCD_TYPE,
                         publicKey: PublicKey(publicKey: publicKeyData),
-                        keyUri: KeyURI(name: req.getKeyAlias(), sscd: ExternalSscd.SSCD_TYPE, loa: "loa2") //TODO: What LoA?
+                        algorithm: KeyAlgorithm.RSA_2K,  //TODO: resolve this
+                        keyUri:    KeyURI(name: req.getKeyAlias(),
+                                          sscd: ExternalSscd.SSCD_TYPE,
+                                          loa: "loa2"
+                                         ) //TODO: What LoA?
                     )
+                    theKey?.addAttribute(attr: KeyAttribute(name: ExternalSscd.ATTRIBUTE_MSISDN, value: theMsisdn))
+                    
+                    
                     
                 case .failure(let error):
                     print("bindKey()->musapLink->sign() error while binding key: \(error)")
