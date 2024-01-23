@@ -217,6 +217,9 @@ for sscd in activeSscds {
 
 ```
 
+## Architecture
+
+![Musap Library architecture image](docs/musap-lib-overview.png)
 
 ## License
 
