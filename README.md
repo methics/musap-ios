@@ -31,6 +31,25 @@ To integrate MUSAP into your iOS project, follow these steps:
 Call `MusapClient.enableSscd()`
 
 ```swift
+import SwiftUI
+import musap_ios
+
+@main
+struct MyApp: App {
+
+    init() {
+        // Enable SSCDs. For example YubikeySscd
+        MusapClient.enableSscd(sscd: YubikeySscd())
+    }
+
+    var body: some Scene {
+        WindowGroup {
+            NavigationTabView()
+        }
+    }
+}
+
+
 MusapClient.enableSscd(sscd: YubikeySscd())
 
 ```
