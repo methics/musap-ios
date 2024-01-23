@@ -502,6 +502,28 @@ public class MusapLink: Encodable, Decodable {
         for i in 0..<MusapLink.POLL_AMOUNT {
             DispatchQueue.global().asyncAfter(deadline: .now() + .seconds(2 * i)) {
                 guard !isPollingDone else { return }
+                
+                self.performPollIteration(transId: transId) { result in
+                
+                    switch result {
+                    case .failure:
+                        isPollingDone = true
+                        DispatchQueue.main.async {
+                            completion(.failure(MusapError.internalError))
+                        }
+                    case .success(let response):
+                        isPollingDone = true
+                        DispatchQueue.main.async {
+                            completion(.success(response))
+                        }
+                    case .keepPolling:
+                        break
+                    }
+                    
+                }
+                
+                
+                /*
                 let payload = ExternalSignaturePayload()
                 payload.transid = transId
 
@@ -516,16 +538,17 @@ public class MusapLink: Encodable, Decodable {
                 msg.musapid = self.getMusapId()
 
                 self.sendRequest(msg) { respMsg, error in
-                    /*
                     if let error = error {
                         print("MusapLink.pollForSignature: We had an error in the link response")
+                        /*
                         DispatchQueue.main.async {
                             isPollingDone = true
                             completion(.failure(error))
                         }
+                         */
                         return
                     }
-                     */
+                     
                      
                     guard let respMsg = respMsg,
                           let msgPayload = respMsg.payload,
@@ -559,12 +582,66 @@ public class MusapLink: Encodable, Decodable {
                         }
                     }
                 }
+                */
             }
         }
     }
     
     public func getMusapId() -> String? {
         return self.musapId
+    }
+    
+    private enum PollIterationResult {
+        case success(ExternalSignatureResponsePayload)
+        case failure
+        case keepPolling
+    }
+    
+    private func performPollIteration(transId: String, completion: @escaping (PollIterationResult) -> Void) {
+        let payload = ExternalSignaturePayload()
+        payload.transid = transId
+        
+        guard let payloadBase64 = payload.getBase64Encoded() else {
+            completion(.failure)
+            return
+        }
+        
+        let musapMsg = MusapMessage()
+        musapMsg.payload = payloadBase64
+        musapMsg.type    = MusapLink.SIGN_MSG_TYPE
+        musapMsg.musapid = self.getMusapId()
+        
+        self.sendRequest(musapMsg) { respMsg, error in
+            if let error = error {
+                print("MusapLink.pollForSignature: Error in the link response - \(error.localizedDescription)")
+                completion(.failure)
+                return
+            }
+            
+            guard let respMsg = respMsg,
+                  let msgPayload = respMsg.payload,
+                  let payloadData = Data(base64Encoded: msgPayload) else {
+                completion(.failure)
+                return
+            }
+            
+            if let resp = try? JSONDecoder().decode(ExternalSignatureResponsePayload.self, from: payloadData) {
+                if resp.status == "pending" {
+                    print("Status is pending")
+                    completion(.keepPolling)
+                } else if resp.status == "failed" {
+                    print("Status was marked as failed")
+                    completion(.failure)
+                } else {
+                    print("Returning success")
+                    completion(.success(resp))
+                }
+            } else {
+                completion(.failure)
+            }
+            
+        }
+        
     }
     
 }
