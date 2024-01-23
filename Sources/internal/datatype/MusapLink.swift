@@ -471,7 +471,9 @@ public class MusapLink: Encodable, Decodable {
             }
              */
             
-            guard let data = data else {
+            guard let data = data,
+                  !data.isEmpty
+            else {
                 print("sendRequest: No data")
                 completion(nil, error)
                 return
