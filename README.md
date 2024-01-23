@@ -46,26 +46,26 @@ let keyGenReq          = KeyGenReq(keyAlias: self.keyAlias, role: "personal", ke
 
 Task {
 
-            await MusapClient.generateKey(sscd: sscdImplementation, req: keyGenReq) {
-                result in
-                
-                
-                switch result {
-                case .success(let musapKey):
-                    print("Success! Keyname: \(String(describing: musapKey.getKeyAlias()))")
-                    print("Musap Key:        \(String(describing: musapKey.getPublicKey()?.getPEM()))")
-                    
-                    print("isEC? \(String(describing: musapKey.getAlgorithm()?.isEc()))")
-                    print("isRSA? \(String(describing: musapKey.getAlgorithm()?.isRsa()))")
-                    print("Bits: \(String(describing: musapKey.getAlgorithm()?.bits))")
-                    
-                case .failure(let error):
-                    print("ERROR: \(error.errorCode)")
-                    print(error.localizedDescription)
-                    self.errorMessage = "Error creating musap key"
-                    self.isErrorPopupVisible = true
-                }
-            }
+await MusapClient.generateKey(sscd: sscdImplementation, req: keyGenReq) {
+    result in
+
+
+    switch result {
+    case .success(let musapKey):
+        print("Success! Keyname: \(String(describing: musapKey.getKeyAlias()))")
+        print("Musap Key:        \(String(describing: musapKey.getPublicKey()?.getPEM()))")
+
+        print("isEC? \(String(describing: musapKey.getAlgorithm()?.isEc()))")
+        print("isRSA? \(String(describing: musapKey.getAlgorithm()?.isRsa()))")
+        print("Bits: \(String(describing: musapKey.getAlgorithm()?.bits))")
+
+    case .failure(let error):
+        print("ERROR: \(error.errorCode)")
+        print(error.localizedDescription)
+        self.errorMessage = "Error creating musap key"
+        self.isErrorPopupVisible = true
+    }
+}
 }
 
 ```
@@ -82,19 +82,17 @@ let sigReq = SignatureReq(key: musapKey, data: data, algorithm: algo, format: si
 
 
 Task {
-            await MusapClient.sign(req: sigReq) { result in
-                
-                switch result {
-                case .success(let musapSignature):
-                    print("Success!")
-                    print(" B64 signature: \(musapSignature.getB64Signature()) ")
-                    base64Signature = musapSignature.getB64Signature()
-                    self.isSignDone = true
-                case .failure(let error):
-                    print("ERROR: \(error.localizedDescription)")
-                    self.isSignDone = true
-                }
-            }
+    await MusapClient.sign(req: sigReq) { result in
+
+        switch result {
+        case .success(let musapSignature):
+            print("Success!")
+            print(" B64 signature: \(musapSignature.getB64Signature()) ")
+            base64Signature = musapSignature.getB64Signature()
+        case .failure(let error):
+            print("ERROR: \(error.localizedDescription)")
+        }
+    }
 
 }
 
