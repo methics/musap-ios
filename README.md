@@ -28,6 +28,66 @@ To integrate MUSAP into your iOS project, follow these steps:
 
 5. Click "Next" and then "Finish."          
 
+## Configuration
+
+Depending on your setup, there might be some configuration required.
+When using Yubikey SSCD, we need to conform to yubikit requirements. [See requirements from Yubikit github repository.](https://github.com/Yubico/yubikit-ios)
+
+
+Example info.plist from reference implementation app below.
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleIdentifier</key>
+	<string></string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>App requires to use biometric authentication to access keys</string>
+	<key>keychain-access-groups</key>
+	<array>
+		<string>$(AppIdentifierPrefix)fi.methics.MUSAP-demo-app-ios</string>
+	</array>
+	<key>NFCReaderUsageDescription</key>
+	<string>The application needs access to NFC reading to communicate with your YubiKey.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>The app is using camera for something</string>
+	<key>UISupportedExternalAccessoryProtocols</key>
+	<array>
+		<string>com.yubico.ylp</string>
+	</array>
+	<key>com.apple.developer.nfc.readersession.iso7816.select-identifiers</key>
+	<array>
+		<string>A000000308</string>
+		<string>A0000005272101</string>
+		<string>A000000527471117</string>
+		<string>A0000006472F0001</string>
+	</array>
+</dict>
+</plist>
+
+```
+
+Example .entitlements file below.
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>com.apple.developer.nfc.readersession.formats</key>
+	<array>
+		<string>TAG</string>
+	</array>
+	<key>keychain-access-groups</key>
+	<array>
+		<string>$(AppIdentifierPrefix)fi.methics.MUSAP-demo-app-ios</string>
+	</array>
+</dict>
+</plist>
+
+```
 
 ## Usage
 
