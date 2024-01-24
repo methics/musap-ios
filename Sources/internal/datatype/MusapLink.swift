@@ -346,10 +346,10 @@ public class MusapLink: Encodable, Decodable {
 
         self.sendRequest(msg) { respMsg, error in
             if let error = error {
+                print("sendRequest had an error: \(error)")
                 DispatchQueue.main.async {
                     completion(.failure(error))
                 }
-                print("MusapLink.sign() error: \(error)")
                 return
             }
 
