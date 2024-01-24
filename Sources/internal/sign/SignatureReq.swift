@@ -61,4 +61,8 @@ public class SignatureReq {
         return self.displayText
     }
     
+    public func getTransId() -> String? {
+        return self.transId
+    }
+    
 }
