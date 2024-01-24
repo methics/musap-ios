@@ -93,7 +93,11 @@ public class ExternalSscd: MusapSscdProtocol {
                     // Send signature?
                     let musapSignature = MusapSignature(rawSignature: signatureData)
                     
-                    MusapClient.sendSignatureCallback(signature: musapSignature, txnId: response.transid)
+                    guard let transid = request.transid else {
+                        return
+                    }
+                    
+                    MusapClient.sendSignatureCallback(signature: musapSignature, txnId: transid)
                     
                     guard let publickey = response.publickey else {
                         print("ExternalSscd.bindKey(): No Public Key")
