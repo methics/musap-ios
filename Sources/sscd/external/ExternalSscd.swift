@@ -72,7 +72,6 @@ public class ExternalSscd: MusapSscdProtocol {
             var theKey: MusapKey?
             
             let signSemaphore = DispatchSemaphore(value: 0)
-            print("Starting sign for key bind")
             self.musapLink.sign(payload: request) { result in
                 
                 switch result {
@@ -130,7 +129,6 @@ public class ExternalSscd: MusapSscdProtocol {
                 throw MusapError.internalError
             }
             
-            print("RETURNING MUSAP KEY \(musapKey.getPublicKey())")
             return musapKey
 
         } catch {
