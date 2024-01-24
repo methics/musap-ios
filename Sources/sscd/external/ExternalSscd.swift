@@ -201,6 +201,8 @@ public class ExternalSscd: MusapSscdProtocol {
         
         do {
             var theSignature: MusapSignature?
+            
+            let signSemaphore = DispatchSemaphore(value: 0)
             self.musapLink.sign(payload: request) { result in
                 
                 switch result {
@@ -216,8 +218,11 @@ public class ExternalSscd: MusapSscdProtocol {
                     print("an error occured: \(error)")
                 }
                 
+                signSemaphore.signal()
+                
             }
             
+            signSemaphore.wait()
             guard let signature = theSignature else {
                 throw MusapError.internalError
             }
