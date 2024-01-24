@@ -155,7 +155,7 @@ public class MusapKey: Codable, Identifiable {
         for sscd in enabledSscds! {
             print("sscd found: \(sscd.getSscdInfo().sscdType ?? "sscdType = nil")")
             //TODO: SSCD Type should never be nil
-            guard let sscdType = sscd.getSscdInfo().sscdId else {
+            guard let sscdType = sscd.getSscdInfo().sscdType else {
                 print("SSCD type not set!")
                 return nil
             }
