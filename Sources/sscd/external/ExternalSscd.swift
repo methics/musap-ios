@@ -87,17 +87,6 @@ public class ExternalSscd: MusapSscdProtocol {
                         print("Can't turn string to data")
                         return
                     }
-                    
-                    /*
-                    // Send signature?
-                    let musapSignature = MusapSignature(rawSignature: signatureData)
-                    
-                    guard let transid = request.transid else {
-                        return
-                    }
-                    
-                    MusapClient.sendSignatureCallback(signature: musapSignature, txnId: transid)
-                    */
                      
                     guard let publickey = response.publickey else {
                         print("ExternalSscd.bindKey(): No Public Key")
@@ -198,8 +187,8 @@ public class ExternalSscd: MusapSscdProtocol {
                     guard let rawSignature = response.getRawSignature() else {
                         return
                     }
-                    
-                    theSignature = MusapSignature(rawSignature: rawSignature)
+
+                    theSignature = MusapSignature(rawSignature: rawSignature, key: req.getKey())
                     
                 case .failure(let error):
                     print("an error occured: \(error)")

@@ -62,7 +62,7 @@ public class MusapSignature {
         guard let key = self.getKey() else {
             return nil
         }
-        return self.key?.getPublicKey()
+        return key.getPublicKey()
     }
     
     
