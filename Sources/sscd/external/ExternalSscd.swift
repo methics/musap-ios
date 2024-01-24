@@ -188,7 +188,7 @@ public class ExternalSscd: MusapSscdProtocol {
                         return
                     }
 
-                    theSignature = MusapSignature(rawSignature: rawSignature, key: req.getKey())
+                    theSignature = MusapSignature(rawSignature: rawSignature, key: req.getKey(), algorithm: req.algorithm, format: req.format)
                     
                 case .failure(let error):
                     print("an error occured: \(error)")
