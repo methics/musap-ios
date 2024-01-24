@@ -16,7 +16,7 @@ public class SignatureReq {
     public let displayText: String
     public let attributes:  [SignatureAttribute]
     
-    private let transId: String? = "" //TODO: ?
+    private var transId: String?
     
     public init(key: MusapKey, data: Data, algorithm: SignatureAlgorithm, format: SignatureFormat, displayText: String, attributes: [SignatureAttribute]) {
         self.key         = key
@@ -63,6 +63,10 @@ public class SignatureReq {
     
     public func getTransId() -> String? {
         return self.transId
+    }
+    
+    public func setTransId(transId: String) {
+        self.transId = transId
     }
     
 }

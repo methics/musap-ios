@@ -30,6 +30,7 @@ public class PollResponsePayload: ResponsePayload {
     
     public func toSignatureReq(key: MusapKey) -> SignatureReq? {
         let req = self.signaturePayload.toSignatureReq(key: key)
+        req?.setTransId(transId: self.transId)
         
         guard req != nil else {
             return nil
