@@ -42,6 +42,7 @@ public class SignaturePayload: Decodable {
     
     public func toSignatureReq(key: MusapKey) -> SignatureReq? {
         guard let format = self.format else {
+            print("toSignatureReq: format was nil")
             return nil
         }
         let signatureFormat = SignatureFormat.fromString(format: format)
@@ -61,6 +62,7 @@ public class SignaturePayload: Decodable {
         }
         
         guard let dataBase64 = data.data(using: .utf8)?.base64EncodedData() else {
+            print("Cant turn base64 to data")
             return nil
         }
         
