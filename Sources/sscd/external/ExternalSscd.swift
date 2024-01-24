@@ -193,6 +193,12 @@ public class ExternalSscd: MusapSscdProtocol {
         
         print("ExternalSscd.sign() attributes: \(String(describing: request.attributes))")
         
+        if request.attributes == nil {
+            request.attributes = [String: String]()
+        }
+        
+        request.attributes?[ExternalSscd.ATTRIBUTE_MSISDN] = theMsisdn
+        
         do {
             var theSignature: MusapSignature?
             self.musapLink.sign(payload: request) { result in
