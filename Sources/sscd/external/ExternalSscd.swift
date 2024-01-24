@@ -61,6 +61,7 @@ public class ExternalSscd: MusapSscdProtocol {
         request.clientid = self.clientid
         request.display  = req.getDisplayText()
         request.format   = "RAW"
+        request.attributes?[ExternalSscd.ATTRIBUTE_MSISDN] = theMsisdn
         
         if request.attributes == nil {
             request.attributes = [String: String]()
@@ -196,7 +197,7 @@ public class ExternalSscd: MusapSscdProtocol {
                 
                 switch result {
                 case .success(let response):
-                    
+                    print("Got success: \(response.isSuccess())")
                     guard let rawSignature = response.getRawSignature() else {
                         return
                     }
