@@ -40,6 +40,14 @@ public class PollResponsePayload: ResponsePayload {
         return req
     }
     
+    public func toKeygenReq() -> KeyGenReq? {
+        guard let keyGenReq = self.signaturePayload.toKeygenReq() else {
+            return nil
+        }
+        
+        return keyGenReq
+    }
+    
     public func getSignaturePayload() -> SignaturePayload {
         return self.signaturePayload
     }

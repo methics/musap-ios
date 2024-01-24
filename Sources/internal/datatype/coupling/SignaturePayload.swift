@@ -79,6 +79,12 @@ public class SignaturePayload: Decodable {
         
         return sigReq
     }
+    
+    //TODO: finish
+    public func toKeygenReq() -> KeyGenReq? {
+        let req = KeyGenReq(keyAlias: self.key?.keyAlias ?? "musap_key", role: "user")
+        return req
+    }
 
     
     public class KeyIdentifier: Decodable {

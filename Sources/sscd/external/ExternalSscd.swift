@@ -61,7 +61,6 @@ public class ExternalSscd: MusapSscdProtocol {
         request.clientid = self.clientid
         request.display  = req.getDisplayText()
         request.format   = "RAW"
-        request.attributes?[ExternalSscd.ATTRIBUTE_MSISDN] = theMsisdn
         
         if request.attributes == nil {
             request.attributes = [String: String]()
@@ -91,35 +90,18 @@ public class ExternalSscd: MusapSscdProtocol {
                     
                     // Send signature?
                     let musapSignature = MusapSignature(rawSignature: signatureData)
+                    
                     MusapClient.sendSignatureCallback(signature: musapSignature, txnId: response.transid)
                     
                     guard let publickey = response.publickey else {
                         print("ExternalSscd.bindKey(): No Public Key")
                         return
                     }
-                    
-                    print("public key from resp: \(publickey)")
-                    
             
                     guard let publicKeyData = publickey.data(using: .utf8) else {
                         print("could not turn publick ey string to data")
                         return
                     }
-                                        
-                    /*
-                    guard let certData = Data(base64Encoded: signature) else {
-                        print("unable to create Data() from signature")
-                        return
-                    }
-                    
-                    guard let certificate = SecCertificateCreateWithData(nil, certData as CFData) else {
-                        print("unable to create certificate")
-                        return
-                    }
-                     */
-                    
-
-                    print("Succesfully signed and got public key")
                     
                     theKey =  MusapKey(
                         keyAlias:  req.getKeyAlias(),
