@@ -191,6 +191,8 @@ public class ExternalSscd: MusapSscdProtocol {
         request.format   = req.getFormat().getFormat()
         request.data     = dataBase64
         
+        print("ExternalSscd.sign() attributes: \(String(describing: request.attributes))")
+        
         do {
             var theSignature: MusapSignature?
             self.musapLink.sign(payload: request) { result in
