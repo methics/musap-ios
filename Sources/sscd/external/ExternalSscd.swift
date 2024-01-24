@@ -88,8 +88,7 @@ public class ExternalSscd: MusapSscdProtocol {
                         return
                     }
                     
-                    
-                    
+                    /*
                     // Send signature?
                     let musapSignature = MusapSignature(rawSignature: signatureData)
                     
@@ -98,7 +97,8 @@ public class ExternalSscd: MusapSscdProtocol {
                     }
                     
                     MusapClient.sendSignatureCallback(signature: musapSignature, txnId: transid)
-                    
+                    */
+                     
                     guard let publickey = response.publickey else {
                         print("ExternalSscd.bindKey(): No Public Key")
                         return
