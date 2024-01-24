@@ -14,7 +14,7 @@ public class PollResponsePayload: ResponsePayload {
     public static let MODE_GENONLY = "generate-only"
     
     private let signaturePayload: SignaturePayload
-    private let transId: String
+    private var transId: String
     
     init(signaturePayload: SignaturePayload, transId: String, status: String?, errorCode: String?) {
         self.signaturePayload = signaturePayload
@@ -34,11 +34,8 @@ public class PollResponsePayload: ResponsePayload {
             return nil
         }
 
+        print("PollResponsePayload: setting transid to \(self.transId)")
         req.setTransId(transId: self.transId)
-        
-        guard req != nil else {
-            return nil
-        }
         
         return req
     }
@@ -61,6 +58,14 @@ public class PollResponsePayload: ResponsePayload {
     
     public func shouldSign() -> Bool {
         return PollResponsePayload.MODE_GENONLY != self.getMode()
+    }
+    
+    public func getTransId() -> String? {
+        return self.transId
+    }
+    
+    public func setTransId(transId: String) {
+        self.transId = transId
     }
     
 }
