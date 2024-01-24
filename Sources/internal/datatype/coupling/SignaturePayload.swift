@@ -41,10 +41,13 @@ public class SignaturePayload: Decodable {
     }
     
     public func toSignatureReq(key: MusapKey) -> SignatureReq? {
+        /*
         guard let format = self.format else {
             print("toSignatureReq: format was nil")
             return nil
         }
+         */
+        let format = self.format ?? "RAW"
         let signatureFormat = SignatureFormat.fromString(format: format)
         let keyAlgo = key.getAlgorithm()
         
