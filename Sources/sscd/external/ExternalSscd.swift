@@ -166,16 +166,21 @@ public class ExternalSscd: MusapSscdProtocol {
         let request = ExternalSignaturePayload(clientid: self.clientid)
         
         var theMsisdn: String? = nil // Eventually this gets set into the attributes
-        
         let msisdn = req.getAttribute(name: ExternalSscd.ATTRIBUTE_MSISDN)
+        
+        let semaphore = DispatchSemaphore(value: 0)
         if msisdn == nil {
             ExternalSscd.showEnterMsisdnDialog { msisdn in
                 print("Received MSISDN: \(msisdn)")
                 theMsisdn = msisdn
+                semaphore.signal()
             }
         } else {
             theMsisdn = msisdn
+            semaphore.signal()
         }
+        
+        semaphore.wait()
         
         let dataBase64 = req.getData().base64EncodedString(options: .lineLength64Characters)
         
