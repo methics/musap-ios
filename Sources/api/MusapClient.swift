@@ -246,10 +246,19 @@ public class MusapClient {
         //TODO: code this
     }
     
+    /**
+     List enrolled relying parties
+      - Returns: List of relying parties or nil
+     */
     public static func listRelyingParties() -> [RelyingParty]? {
         return MusapStorage().listRelyingParties()
     }
     
+    /**
+     Remove a previously linked Relying Party from this MUSAP app.
+     - Parameters:
+        - relyingParty: Relying party to remove
+     */
     public static func removeRelyingParty(relyingParty: RelyingParty) -> Bool {
         return MusapStorage().removeRelyingParty(rp: relyingParty)
     }
@@ -274,10 +283,19 @@ public class MusapClient {
         }
     }
     
+    /**
+     Disable the MUSAP Link connection
+     */
     public static func disableLink() -> Void {
         MusapStorage().removeLink()
     }
     
+    /**
+    Send SignatureCallback to MUSAP Link
+     - Parameters:
+        - signature: MusapSignature returned from MusapLink.sign()
+        - txnId:     Transaction ID
+     */
     public static func sendSignatureCallback(signature: MusapSignature, txnId: String) {
         guard let link = self.getMusapLink() else {
             print("sendSignatureCallback Error: Can't getMusapLink()")
@@ -299,6 +317,12 @@ public class MusapClient {
         
     }
     
+    /**
+     Send a GenerateKeyCallback to MUSAP Link
+        - Parameters:
+           - key: MusapKey
+           - txnId: Transaction ID
+     */
     public static func sendKeygenCallback(key: MusapKey, txnId: String) {
         guard let link = self.getMusapLink(),
               let musapId = self.getMusapId()
@@ -316,10 +340,21 @@ public class MusapClient {
         
     }
     
-    public static func updateApnsToken() {
-        //TODO: Do this
+    /**
+            Send an updated APNs token to the MUSAP Link. If MUSAP Link is not enabled, this does nothing.
+     */
+    public static func updateApnsToken(apnsToken: String) {
+        // Complete
     }
     
+    
+    /**
+      Poll MUSAP Link for an incoming signature request. This should be called periodically and/or
+      when a notification wakes up the application.
+      Calls the callback when when signature is received, or polling failed.
+      - parameters:
+        - completion: Callback to deliver the result
+     */
     public static func pollLink(completion: @escaping (Result<PollResponsePayload, MusapError>) -> Void) async {
         guard let link = self.getMusapLink() else {
             completion(.failure(MusapError.internalError))
@@ -345,19 +380,36 @@ public class MusapClient {
         
     }
     
+    /**
+    Check if MUSAP Link has been enabled.
+    - returns: Bool
+     */
     public static func isLinkEnabled() -> Bool {
         return self.getMusapId() != nil
     }
     
+    /**
+    Update previously saved key metadata
+     - Parameters:
+        - req: UpdateKeyReq
+     */
     public static func updateKey(req: UpdateKeyReq) -> Bool {
         let storage = MetadataStorage()
         return storage.updateKeyMetaData(req: req)
     }
     
+    /**
+    Get saved MUSAP ID.
+     - Returns: MUSAP ID as string or nil
+     */
     public static func getMusapId() -> String? {
         return MusapStorage().getMusapId()
     }
     
+    /**
+    Get MUSAP Link
+     - returns: MusapLink or nil
+     */
     public static func getMusapLink() -> MusapLink? {
         return MusapStorage().getMusaplink()
     }
