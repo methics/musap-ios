@@ -181,7 +181,105 @@ Task {
 }
 ```
 
-### Get enabled SSCDs
+### Binding keys
+
+
+```swift
+
+let dtbd = "data to display"
+
+guard let link = MusapClient.getMusapLink() else {
+    print("NO link")
+    return
+}
+
+let settings = ExternalSscdSettings(clientId: "1")
+let sscd = ExternalSscd(settings: settings, clientid: "1", musapLink: link)
+
+let keyBindReq = KeyBindReq(
+    keyAlias: "keyForMusap",
+    did: "did",
+    role: "role",
+    stepUpPolicy: StepUpPolicy(),
+    attributes: [KeyAttribute](),
+    generateNewKey: true,
+    displayText: dtbd
+)
+
+Task {
+    await MusapClient.bindKey(sscd: sscd, req: keyBindReq) { result in
+
+        switch result {
+        case .success(let musapKey):
+            // success, got MusapKey
+            print("musapKey: \(String(describing: musapKey.getKeyAlias()))")
+        case .failure(let error):
+            // Failure, handle it
+            print("BindKeyView: error in bindkey: \(error)")
+        }
+
+
+    }
+}
+```
+
+### Listing keys
+
+```swift
+
+let keys = MusapClient.listKeys()
+
+for key in keys {
+    // get your data
+}
+
+```
+
+### Get key by KeyURI
+```swift
+guard let key = MusapClient.getKeyByUri(keyUri: "yourKeyUri") else {
+    // Key not found
+    return
+}
+
+```
+
+### Exporting Data
+
+Exports MUSAP key data and SSCD details as a JSON string.
+
+```swift
+guard let exportData = MusapClient.exportData() else {
+    // got nil, cant export data
+    return
+}
+
+// success, we can import the data to another MUSAP
+```
+
+### Import Data
+
+```swift
+let dataToImport = "..."
+do {
+    MusapClient.importData(data: dataToImport) // void return
+} catch {
+    // handle error
+    print("error: \(error)")
+}
+```
+
+### Remove specific MusapKey
+
+```swift
+let keyToRemove: MusapKey(...)
+let keyWasRemoved = MusapClient.removeKey(musapKey: keyToRemove)
+
+print("Key removal success: \(keyWasRemoved)")
+```
+
+### Get enabled SSCDs`
+
 ```swift
 guard let enabledSscds = MusapClient.listEnabledSscds() else {
     print("No enabled SSCDs")
@@ -237,6 +335,28 @@ guard let musapLink = MusapClient.getMusapLink() else {
     return
 }
 
+```
+
+## Enable MUSAP Link
+
+```swift
+let musapUrl = "https://someurl.com"
+let musapId = MusapClient.getMusapId()
+let externalSettings = ExternalSscdSettings(clientId: "the_client_id")
+
+if musapId == nil {
+    if let link = await MusapClient.enableLink(url: musapUrl, apnsToken: "123abc") {
+        // we have enabled link, enable sscd if you haven't already
+        MusapClient.enableSscd(sscd: ExternalSscd(settings: externalSettings, clientid: "the_client_id", musapLink: link))
+    }
+}
+
+```
+
+## Disable MUSAP Link
+
+```swift
+MusapClient.disableLink()
 ```
 
 ## Coupling with Relying Party
@@ -325,14 +445,25 @@ if success {
 
 See [MusapClient.sign()](#signing).
 
+## Sending Signature Callback
+
+We need to send back the MusapSignature to Link.
+
+```swift
+let signature = MusapSignature(...)
+let transId   = "abc123" // this we get from PollResponsePayload
+MusapClient.sendSignatureCallback(signature: signature, txnId: transId) // void return
+```
+
 ## Architecture
 
 ### MUSAP Library
 
 ![Musap Library architecture image](docs/musap-lib-overview.png)
 
-### MUSAP Link
+### MUSAP Link flow
 
+![Musap Link flow](docs/musap-link-flow.png)
 
 ## License
 
