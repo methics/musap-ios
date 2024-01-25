@@ -36,7 +36,7 @@ When using Yubikey SSCD, we need to conform to yubikit requirements. [See requir
 
 Example info.plist from reference implementation app below.
 
-```
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -71,7 +71,7 @@ Example info.plist from reference implementation app below.
 
 Example .entitlements file below.
 
-```
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -92,6 +92,8 @@ Example .entitlements file below.
 ## Usage
 
 ### Enabling an SSCD
+
+Before we can use an SSCD to create keys or signing, we must enable it.
 
 Call `MusapClient.enableSscd()`
 
@@ -153,7 +155,8 @@ await MusapClient.generateKey(sscd: sscdImplementation, req: keyGenReq) {
 
 ### Signing
 
-Select a key, create a signature request and a `MusapSigner`. Finally call `MusapSigner.sign()`. The signature result is delivered asynchronously through the given callback.
+Select a key, create a signature request. Finally call `MusapClient.sign()`.
+
 
 ```swift
 let algo = SignatureAlgorithm(algorithm: .ecdsaSignatureMessageX962SHA256)
@@ -180,6 +183,7 @@ Task {
 
 ### Binding keys
 
+Operation to bind an existing SSCD and keys with MUSAP.
 
 ```swift
 
@@ -233,6 +237,7 @@ for key in keys {
 ```
 
 ### Get key by KeyURI
+
 ```swift
 guard let key = MusapClient.getKeyByUri(keyUri: "yourKeyUri") else {
     // Key not found
@@ -256,6 +261,8 @@ guard let exportData = MusapClient.exportData() else {
 
 ### Import Data
 
+Imports MUSAP key data and SSCD details from a JSON string.
+
 ```swift
 let dataToImport = "..."
 do {
@@ -275,7 +282,9 @@ let keyWasRemoved = MusapClient.removeKey(musapKey: keyToRemove)
 print("Key removal success: \(keyWasRemoved)")
 ```
 
-### Get enabled SSCDs`
+### Get enabled SSCDs
+
+Get list of SSCDs that have been enabled MusapClient.enableSscd().
 
 ```swift
 guard let enabledSscds = MusapClient.listEnabledSscds() else {
@@ -297,6 +306,8 @@ for sscd in enabledSscds {
 
 ### Get active SSCDs
 
+Get a list of SSCDs that has keys active.
+
 ```swift
 let activeSscds = MusapClient.listActiveSscds()
 
@@ -313,6 +324,19 @@ for sscd in activeSscds {
 ```
 
 ## Usage: MUSAP Link
+
+MUSAP has an optional server component called MUSAP Link Library. This server component is designed to provide the following functionalities:
+
+* Remote SSCD integration
+* MUSAP HTTP API
+* Push Notifications
+
+The link library does not store any critical user data.
+It only stores push notification tokens and transport security keys for each registered MUSAP client library.
+Registering a MUSAP library to the link library is always optional and a user choice.
+
+![Musap Link flow](docs/musap-link-flow.png)
+
 
 ## Get MUSAP ID
 
@@ -458,9 +482,11 @@ MusapClient.sendSignatureCallback(signature: signature, txnId: transId) // void 
 
 ![Musap Library architecture image](docs/musap-lib-overview.png)
 
-### MUSAP Link flow
 
-![Musap Link flow](docs/musap-link-flow.png)
+### MUSAP Link
+
+![Musap Link library architecture](docs/link-library-architecture.png)
+
 
 ## License
 
