@@ -12,7 +12,7 @@ It provides a set of tools and utilities to streamline the implementation of sec
 ### Reference implementation app
 
 We have a reference implementation app available that serves as an example on how to use the library.
-You can find the app project from https://github.com/methics/MUSAP-Demo-App-iOS
+You can find the app project from https://github.com/methics/musap-demo-ios
 
 ## Installing
 
