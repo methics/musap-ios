@@ -16,7 +16,8 @@ public class KeySearchReq {
     private let keyUri:       String?
     
     
-    public init(sscdType:     String?       = nil,
+    public init(
+         sscdType:     String?       = nil,
          country:      String?       = nil,
          provider:     String?       = nil,
          keyAlgorithm: KeyAlgorithm? = nil,
