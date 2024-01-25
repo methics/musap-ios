@@ -14,6 +14,8 @@ public class MusapLink: Encodable, Decodable {
     private static let POLL_MSG_TYPE         = "getdata"
     private static let SIG_CALLBACK_MSG_TYPE = "signaturecallback"
     private static let SIGN_MSG_TYPE         = "externalsignature"
+    private static let KEY_CALLBACK_MSG_TYPE = "generatekeycallback"
+    
     
     private static let POLL_AMOUNT = 20
     
@@ -280,6 +282,53 @@ public class MusapLink: Encodable, Decodable {
         
     }
     
+    public func sendKeygenCallback(key: MusapKey, txnId: String) throws {
+        
+        let payload = SignatureCallbackPayload(key: key)
+        
+        let msg = MusapMessage()
+        msg.type = MusapLink.KEY_CALLBACK_MSG_TYPE
+        msg.type = payload.getBase64Encoded()
+        msg.musapid = self.musapId
+        msg.transid = txnId
+        
+        guard let url = URL(string: self.url) else {
+            print("NO URL")
+            return
+        }
+        
+        var jsonData: Data?
+        let encoder = JSONEncoder()
+        
+        do {
+            jsonData = try encoder.encode(msg)
+        } catch {
+            print("Could not turn MusapMessage to JSON")
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.httpBody   = jsonData
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        
+            if let error = error {
+                return
+            }
+            
+            guard let data = data,
+                  let responseMsg = try? JSONDecoder().decode(MusapMessage.self, from: data)
+            else {
+                print("Null payload")
+                return
+            }
+            print("sendKeygenCallback response payload: \(String(describing: responseMsg.payload))")
+        }
+        
+        task.resume()
+    }
+    
     public func sendSignatureCallback(signature: MusapSignature, transId: String) throws {
         let payload = SignatureCallbackPayload(linkid: nil, signature: signature)
         
@@ -288,8 +337,6 @@ public class MusapLink: Encodable, Decodable {
         msg.payload = payload.getBase64Encoded()
         msg.musapid = self.musapId
         msg.transid = transId
-        
-        print("signatureCallback: MusapMEssage created. Payload: \(String(describing: payload.getBase64Encoded()))")
         
         guard let url = URL(string: self.url) else {
             print("NO URL")

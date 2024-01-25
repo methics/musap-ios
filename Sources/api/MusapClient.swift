@@ -299,8 +299,21 @@ public class MusapClient {
         
     }
     
-    public static func sendKeygenCallback() {
-        //TODO: Do this?
+    public static func sendKeygenCallback(key: MusapKey, txnId: String) {
+        guard let link = self.getMusapLink(),
+              let musapId = self.getMusapId()
+        else {
+            return
+        }
+        
+        link.setMusapId(musapId: musapId)
+        
+        do {
+            try KeygenCallbackTask().runTask(link: link, key: key, txnId: txnId)
+        } catch {
+            print("sendKeygenCallback Error: \(error)")
+        }
+        
     }
     
     public static func updateApnsToken() {
