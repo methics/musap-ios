@@ -114,9 +114,6 @@ struct MyApp: App {
     }
 }
 
-
-MusapClient.enableSscd(sscd: YubikeySscd())
-
 ```
 
 ### Generating a key
