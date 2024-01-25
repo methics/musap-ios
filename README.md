@@ -217,9 +217,122 @@ for sscd in activeSscds {
 
 ```
 
+## Usage: MUSAP Link
+
+## Get MUSAP ID
+
+```swift
+guard let musapId = MusapClient.getMusapId else {
+    // handle case
+    print("No musap ID found")
+    return
+}
+```
+
+## Get MUSAP Link
+
+```swift
+guard let musapLink = MusapClient.getMusapLink() else {
+    // No musap link
+    return
+}
+
+```
+
+## Coupling with Relying Party
+
+In order to sign from relying partys website, you need to be coupled with it.
+
+```swift
+let theCode = "ABC123" // get the code from the RP
+
+Task {
+    await MusapClient.coupleWithRelyingParty(couplingCode: theCode) { result in
+        DispatchQueue.main.async {
+            switch result {
+            case .success(let rp):
+                print("Coupling OK: RP name: \(rp.getName())  linkid: \(rp.getLinkId())")
+            case .failure(let error):
+                // Handle error
+                print("musap error: \(error)")
+            }
+        }
+    }
+}
+
+```
+
+## Polling MUSAP Link for signature requests
+
+Poll MUSAP Link for an incoming signature request. This should be called periodically and/or
+when a notification wakes up the application.
+
+```swift
+Task {
+    await MusapClient.pollLink() { result in
+        switch result {
+        case .success(let payload):
+            print("Successfully polled Link")
+            self.payload = payload
+            let mode = payload.getMode()
+
+            // You might want to handle different flows somehow.
+            switch mode {
+            case "sign":
+                print("Sign only")
+                self.showSignView = true
+            case "generate-sign":
+                print("Generate and sign")
+                self.showBindKeyView = true
+            case "generate-only":
+                print("Generate only")
+                self.showBindKeyView = true
+            default:
+                break
+            }
+
+        case .failure(let error):
+            print("Error in pollLink: \(error)")
+        }
+
+    }
+}
+```
+
+## List Relying Parties
+
+We can list enrolled relying parties with MusapClient.listRelyingParties().
+
+```swift
+
+guard let relyingParties = MusapClient.listRelyingParties() else {
+    // Handle nil
+    return
+}
+
+```
+
+## Removing a Relying Party
+
+```swift
+let success = MusapClient.removeRelyingParty(relyingParty: rpToRemove)
+if success {
+    // RP removed!
+}
+```
+
+## Signing with MUSAP Link
+
+See [MusapClient.sign()](#signing).
+
 ## Architecture
 
+### MUSAP Library
+
 ![Musap Library architecture image](docs/musap-lib-overview.png)
+
+### MUSAP Link
+
 
 ## License
 
