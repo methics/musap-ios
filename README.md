@@ -1,7 +1,7 @@
 # MUSAP iOS Library
 
 MUSAP (Multiple SSCDs with Unified Signature API) is an iOS library designed to simplify the integration of multiple Secure Signature Creation Devices (SSCD) with a unified signature API.
-It provides a set of tools and utilities to streamline the implementation of secure signature creation mechanisms in Android applications.
+It provides a set of tools and utilities to streamline the implementation of secure signature creation mechanisms in iOS applications.
 
 ## Features
 * **Multiple SSCD Integration**: MUSAP simplifies the integration of multiple Secure Signature Creation Devices into your iOS application.
