@@ -180,7 +180,7 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
         let musapSscd = MusapSscd(
             sscdName:        "SE",
             sscdType:        SecureEnclaveSscd.SSCD_TYPE,
-            sscdId:          "SE",//TODO: How is this done?
+            sscdId:          UUID().uuidString,
             country:         "FI",
             provider:        "Apple",
             keyGenSupported: true,
@@ -194,7 +194,7 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
     }
     
     public func generateSscdId(key: MusapKey) -> String {
-        return "SE" //TODO: How do we generate sscd id? UUID?
+        return UUID().uuidString
     }
     
     public func isKeygenSupported() -> Bool {
