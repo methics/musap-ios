@@ -205,7 +205,7 @@ public class MetadataStorage {
         guard let sscdId = sscd.sscdId else {
             fatalError("Cannot create a store name with no SSCD ID")
         }
-        return MetadataStorage.KEY_JSON_PREFIX + sscdId
+        return MetadataStorage.SSCD_JSON_PREFIX + sscdId
     }
     
     private func makeStoreName(keyId: String) -> String {
