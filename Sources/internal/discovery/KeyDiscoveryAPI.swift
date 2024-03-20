@@ -22,6 +22,7 @@ public class KeyDiscoveryAPI {
     }
     
     public func listMatchingSscds(req: SscdSearchReq) -> [any MusapSscdProtocol] {
+        //TODO: This should list only matching SSCDs
         return KeyDiscoveryAPI.enabledSscds
     }
     
@@ -42,7 +43,7 @@ public class KeyDiscoveryAPI {
         KeyDiscoveryAPI.enabledSscds.append(sscd)
     }
     
-    public func findKey(req: KeySearchReq) -> [MusapKey] {
+    public func listKeys(req: KeySearchReq) -> [MusapKey] {
         let keys = self.listKeys()
         
         var matchingKeys = [MusapKey]()
