@@ -22,6 +22,6 @@ let package = Package(
             dependencies: [
                 .product(name: "YubiKit", package: "yubikit-ios") // Explicitly declare the product and package name
             ],
-            path: "Sources")
+            path: "Sources"),
     ]
 )
