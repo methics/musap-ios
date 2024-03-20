@@ -195,6 +195,23 @@ public class MusapClient {
     }
     
     /**
+        Get a key by KeyID
+     */
+    public static func getKeyByKeyId(keyId: String) -> MusapKey? {
+        let keyList = MetadataStorage().listKeys()
+        
+        for key in keyList {
+            if let loopKeyId = key.getKeyId() {
+                if loopKeyId == keyId {
+                    return key
+                }
+            }
+        }
+        
+        return nil
+    }
+    
+    /**
      Imports MUSAP key data and SSCD details from JSON.
 
      - Parameters:
@@ -344,7 +361,7 @@ public class MusapClient {
             Send an updated APNs token to the MUSAP Link. If MUSAP Link is not enabled, this does nothing.
      */
     public static func updateApnsToken(apnsToken: String) {
-        // Complete
+        // TODO: Complete
     }
     
     
