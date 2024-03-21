@@ -7,16 +7,16 @@
 
 import Foundation
 
-public class SscdInfo {
+public class SscdInfo: Encodable, Decodable {
     
-    private let sscdName: String
-    private let sscdType: String
-    private let sscdId:   String
-    private let country:  String
-    private let provider: String
-    private let keygenSupported: Bool
-    private let algorithms: [KeyAlgorithm]
-    private let formats:    [SignatureFormat]
+    private var sscdName: String
+    private var sscdType: String
+    private var sscdId:   String
+    private var country:  String
+    private var provider: String
+    private var keygenSupported: Bool
+    private var algorithms: [KeyAlgorithm]
+    private var formats:    [SignatureFormat]
     
     public init(
         sscdName: String,
@@ -48,6 +48,10 @@ public class SscdInfo {
     
     public func getSscdId() -> String {
         return self.sscdId
+    }
+    
+    public func setSscdId(sscdId: String) -> Void {
+        self.sscdId = sscdId
     }
     
     public func getCountry() -> String {

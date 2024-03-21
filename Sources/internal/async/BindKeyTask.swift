@@ -21,10 +21,11 @@ public class BindKeyTask {
             let activeSscd = sscd.getSscdInfo()
             let sscdId = sscd.generateSscdId(key: key)
             
-            activeSscd.sscdId = sscdId
+            activeSscd.setSscdId(sscdId: sscdId)
             key.setSscdId(value: sscdId)
+    
             
-            try storage.storeKey(key: key, sscd: activeSscd)
+            try storage.addKey(key: key, sscd: activeSscd)
             return key
         } catch {
             throw MusapError.internalError

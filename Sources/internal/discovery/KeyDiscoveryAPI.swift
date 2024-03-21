@@ -22,18 +22,18 @@ public class KeyDiscoveryAPI {
     }
     
     public func listMatchingSscds(req: SscdSearchReq) -> [any MusapSscdProtocol] {
-        //TODO: This should list only matching SSCDs
+        
         return KeyDiscoveryAPI.enabledSscds
     }
     
-    public func listActiveSscds() -> [MusapSscd] {
+    public func listActiveSscds() -> [SscdInfo] {
         print("Listing active SSCDs")
         return storage.listActiveSscds()
     }
     
     public func enableSscd(_ sscd: any MusapSscdProtocol) -> Void {
         let isAlreadyEnabled = KeyDiscoveryAPI.enabledSscds.contains { existingSscd in
-            existingSscd.getSscdInfo().sscdName == sscd.getSscdInfo().sscdName
+            existingSscd.getSscdInfo().getSscdName() == sscd.getSscdInfo().getSscdName()
         }
         // Dont add duplicate
         if isAlreadyEnabled {

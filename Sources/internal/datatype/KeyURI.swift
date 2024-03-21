@@ -36,9 +36,9 @@ public class KeyURI: Codable, Equatable, Hashable {
         if key.getAttributeValue(attrName: "serial") != nil { keyUriMap["serial"] = key.getAttributeValue(attrName: "serial")}
         
         if key.getSscdInfo() != nil {
-            let sscdName = key.getSscdInfo()?.sscdName
-            let sscdCountry = key.getSscdInfo()?.country
-            let sscdProvider = key.getSscdInfo()?.provider
+            let sscdName = key.getSscdInfo()?.getSscdName()
+            let sscdCountry = key.getSscdInfo()?.getCountry()
+            let sscdProvider = key.getSscdInfo()?.getProvider()
             
             if sscdName     != nil  { keyUriMap["sscd"]     = sscdName     }
             if sscdCountry  != nil  { keyUriMap["country"]  = sscdCountry  }

@@ -19,11 +19,11 @@ public class GenerateKeyTask {
                     let activeSscd   = sscd.getSscdInfo()
                     let sscdId       = sscd.generateSscdId(key: generatedKey)
                     
-                    activeSscd.sscdId = sscdId
+                    activeSscd.setSscdId(sscdId: sscdId)
                     generatedKey.setSscdId(value: sscdId)
                     
                     let storage = MetadataStorage()
-                    try storage.storeKey(key: generatedKey, sscd: activeSscd)
+                    try storage.addKey(key: generatedKey, sscd: activeSscd)
 
                     continuation.resume(returning: generatedKey)
                 } catch {

@@ -84,7 +84,7 @@ public class YubikeySscd: MusapSscdProtocol {
                                     sscdType:  YubikeySscd.SSCD_TYPE,
                                     publicKey: publicKeyObj,
                                     algorithm: keyAlgorithm,
-                                    keyUri:    KeyURI(name: req.keyAlias, sscd: sscd.sscdType, loa: "loa2")
+                                    keyUri:    KeyURI(name: req.keyAlias, sscd: sscd.getSscdType(), loa: "loa2")
                 )
                 
                 break
@@ -161,13 +161,13 @@ public class YubikeySscd: MusapSscdProtocol {
         return signature
     }
     
-    public func getSscdInfo() -> MusapSscd {
-        let musapSscd = MusapSscd(sscdName:        "Yubikey",
+    public func getSscdInfo() -> SscdInfo {
+        let musapSscd = SscdInfo(sscdName:        "Yubikey",
                                   sscdType:        YubikeySscd.SSCD_TYPE,
                                   sscdId:          "Yubikey",
                                   country:         "FI",
                                   provider:        "Yubico",
-                                  keyGenSupported: true,
+                                  keygenSupported: true,
                                   algorithms:      [KeyAlgorithm.ECC_P256_K1, KeyAlgorithm.ECC_P384_K1],
                                   formats:         [SignatureFormat.RAW]
         )

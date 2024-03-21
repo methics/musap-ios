@@ -9,10 +9,10 @@ import Foundation
 
 public class MusapImportData: Codable {
     
-    public var sscds: [MusapSscd]?
+    public var sscds: [SscdInfo]?
     public var keys:  [MusapKey]?
     
-    public init(sscds: [MusapSscd], keys: [MusapKey]) {
+    public init(sscds: [SscdInfo], keys: [MusapKey]) {
         self.sscds = sscds
         self.keys = keys
     }

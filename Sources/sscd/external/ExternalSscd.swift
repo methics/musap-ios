@@ -213,13 +213,13 @@ public class ExternalSscd: MusapSscdProtocol {
         throw MusapError.internalError
     }
     
-    public func getSscdInfo() -> MusapSscd {
-        let sscd = MusapSscd(sscdName: self.settings.getSscdName(),
+    public func getSscdInfo() -> SscdInfo {
+        let sscd = SscdInfo(sscdName: self.settings.getSscdName(),
                              sscdType: ExternalSscd.SSCD_TYPE,
                              sscdId: "", //TODO: Fix
                              country: "FI",
                              provider: "MUSAP LINK",
-                             keyGenSupported: false,
+                             keygenSupported: false,
                              algorithms: [KeyAlgorithm.RSA_2K],
                              formats: [SignatureFormat.RAW, SignatureFormat.CMS]
         )

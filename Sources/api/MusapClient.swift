@@ -69,6 +69,7 @@ public class MusapClient {
         }
     }
     
+    /*
     /**
      Lists SSCDs enabled in the MUSAP library. Add an SSCD using `enableSscd` before listing.
 
@@ -80,7 +81,36 @@ public class MusapClient {
         print("enabledSscds in MusapClient: \(enabledSscds.count)")
         return enabledSscds
     }
+     */
     
+    //TODO: docs
+    public static func listEnabledSscds() -> [MusapSscd]? {
+        let enabledSscds = KeyDiscoveryAPI(storage: MetadataStorage()).listEnabledSscds()
+        var musapSscds = [MusapSscd]()
+        for sscd in enabledSscds {
+            musapSscds.append(MusapSscd(impl: sscd))
+        }
+        return musapSscds
+    }
+    
+    //TODO: docs
+    public static func listEnabledSscds(req: SscdSearchReq) -> [MusapSscd]? {
+        guard let enabledSscds = self.listEnabledSscds() else {
+            return [MusapSscd]()
+        }
+        var result = [MusapSscd]()
+        
+        for sscd in enabledSscds {
+            guard let s = sscd.getSscdInfo() else {
+                continue
+            }
+            if req.matches(sscd: s) {
+                result.append(sscd)
+            }
+        }
+        
+        return result
+    }
     /**
      Lists enabled SSCDs based on specified search criteria.
 
@@ -102,7 +132,21 @@ public class MusapClient {
      */
 
     public static func listActiveSscds() -> [MusapSscd] {
-        return KeyDiscoveryAPI(storage: MetadataStorage()).listActiveSscds()
+        guard let enabled = listEnabledSscds() else {
+            return [MusapSscd]()
+        }
+        var active  = MetadataStorage().listActiveSscds()
+        var result  = [MusapSscd]()
+        
+        for e in enabled {
+            let contains = enabled.contains { $0.getSscdInfo()?.getSscdId() == e.getSscdInfo()?.getSscdType() }
+            
+            if contains {
+                result.append(e)
+            }
+        }
+        
+        return result
     }
     
     /**
@@ -114,7 +158,19 @@ public class MusapClient {
      */
     public static func listActiveSscds(req: SscdSearchReq) -> [MusapSscd] {
         let keyDiscovery = KeyDiscoveryAPI(storage: MetadataStorage())
-        return keyDiscovery.listActiveSscds()
+        let activeSscds = self.listActiveSscds()
+        var result = [MusapSscd]()
+        
+        for sscd in activeSscds {
+            guard let sscdInfo = sscd.getSscdInfo() else {
+                continue
+            }
+            if req.matches(sscd: sscdInfo) {
+                result.append(sscd)
+            }
+        }
+        
+        return result
     }
     
     /**

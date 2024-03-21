@@ -144,32 +144,6 @@ public class MusapKey: Codable, Identifiable {
     public func getState() -> String? { state }
     public func setState(value: String?) { state = value }
     
-    public func getSscdImplementation() -> (any MusapSscdProtocol)? {
-        let sscdType = self.sscdType
-        print("Looking for SSCD with type: \(String(describing: sscdType))")
-        
-        let enabledSscds = MusapClient.listEnabledSscds()
-        
-        print("enabledSscds count: \(String(describing: enabledSscds?.count))")
-        
-        for sscd in enabledSscds! {
-            print("sscd found: \(sscd.getSscdInfo().sscdType ?? "sscdType = nil")")
-            //TODO: SSCD Type should never be nil
-            guard let sscdType = sscd.getSscdInfo().sscdType else {
-                print("SSCD type not set!")
-                return nil
-            }
-            
-            if (self.sscdType == sscdType) {
-                return sscd
-            } else {
-                print("SSCD " + sscdType + " does not match " + self.sscdType! + ". Continue loop..." )
-            }
-        }
-        
-        return nil
-    }
-    
     public func getAttribute(attrName: String) -> KeyAttribute? {
         return self.attributes?.first { $0.name == attrName } ?? nil
     }
@@ -200,20 +174,16 @@ public class MusapKey: Codable, Identifiable {
      */
     public func addAttribute(attr: KeyAttribute) {
         if var oldAttributes = self.attributes {
-            
             for var oldAttr in oldAttributes {
-                
                 if oldAttr.name.lowercased() == attr.name.lowercased() {
                     oldAttr.value = attr.value
                     self.attributes = oldAttributes
                     return
                 }
-                
             }
             
             self.attributes = oldAttributes
         }
-        
     }
     
     
@@ -228,16 +198,49 @@ public class MusapKey: Codable, Identifiable {
 
     }
     
-    public func getSscdInfo() -> MusapSscd? {
+    public func getSscdInfo() -> SscdInfo? {
         if (self.sscdId == nil) { return nil }
         
         for sscd in MusapClient.listActiveSscds() {
-            if (self.sscdId == sscd.sscdId) {
-                return sscd
+            if (self.sscdId == sscd.getSscdId()) {
+                return sscd.getSscdInfo()
             }
         }
         
         return nil
+    }
+    
+    public func getSscd() -> MusapSscd? {
+        guard let sscdType = self.sscdType else {
+            print("No SSCD Type found")
+            return nil
+        }
+        
+        print("Looking for an SSCD with type \(sscdType)")
+        
+        guard let enabledSscds = MusapClient.listEnabledSscds() else {
+            print("No enabled SSCD's")
+            return nil
+        }
+    
+        for sscd in enabledSscds {
+            let sscdInfo = sscd.getSscdInfo()
+            let sscdId   = sscd.getSettings().getSetting(forKey: "id")
+            
+            if sscdType == sscd.getSscdInfo()?.getSscdType() {
+                if self.sscdId == nil {
+                    print("Found SSCD with type: \(sscdType)")
+                } else if self.sscdId == sscdId {
+                    print("Found SSCD with type: \(sscdType) and id: \(sscdId)")
+                } else {
+                    print("SSCD type: \(sscd.getSscdInfo()?.getSscdType()) does not match our SSCD type: \(self.sscdId)")
+                }
+            }
+            
+        }
+        print("COuld not find SSCD implementation for key \(self.keyId)")
+        return nil
+        
     }
     
 }

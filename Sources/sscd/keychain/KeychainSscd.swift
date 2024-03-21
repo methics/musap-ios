@@ -93,7 +93,7 @@ public class KeychainSscd: MusapSscdProtocol {
                                     loa: [MusapLoa.EIDAS_HIGH, MusapLoa.ISO_LOA2],
                                     algorithm: keyAlgorithm,
                                     //certificate: MusapCertificate(),
-                                    keyUri: KeyURI(name: req.keyAlias, sscd: sscd.sscdType, loa: "loa2")
+                                    keyUri: KeyURI(name: req.keyAlias, sscd: sscd.getSscdType(), loa: "loa2")
         )
                 
                                     
@@ -147,14 +147,14 @@ public class KeychainSscd: MusapSscdProtocol {
         
     }
     
-    public func getSscdInfo() -> MusapSscd {
-        let musapSscd = MusapSscd(
+    public func getSscdInfo() -> SscdInfo {
+        let musapSscd = SscdInfo(
             sscdName: "Keychain",
             sscdType: KeychainSscd.SSCD_TYPE,
             sscdId:   "Keychain",
             country:  "FI",
             provider: "Apple",
-            keyGenSupported: true,
+            keygenSupported: true,
             algorithms: [KeyAlgorithm.RSA_2K,
                          KeyAlgorithm.ECC_P256_K1,
                          KeyAlgorithm.ECC_P256_R1,
@@ -170,7 +170,7 @@ public class KeychainSscd: MusapSscdProtocol {
     }
     
     public func isKeygenSupported() -> Bool {
-        return self.getSscdInfo().keyGenSupported
+        return self.getSscdInfo().isKeygenSupported()
     }
     
     public func getSettings() -> [String : String]? {

@@ -30,10 +30,8 @@ public class MetadataStorage {
     // Public initializer required or else iOS apps will think the class is internal
     public init() {}
     
-    //TODO: Android is using key ID's instead of key names, refactor
-    //TODO: storeKey is now called addKey in Android
     /// Store a MusapKey
-    public func storeKey(key: MusapKey, sscd: MusapSscd) throws {
+    public func addKey(key: MusapKey, sscd: SscdInfo) throws {
         guard let keyId = key.getKeyId() else {
             print("Key ID was nil, cant store key")
             throw MusapException.init(MusapError.missingParam)
@@ -83,7 +81,6 @@ public class MetadataStorage {
         return keyList
     }
     
-    //TODO: keyNames -> keyIds
     public func listKeys(req: KeySearchReq) -> [MusapKey] {
         let keyIds = self.getKeyIds()
         var keyList = [MusapKey]()
@@ -132,11 +129,8 @@ public class MetadataStorage {
     /**
      Store metadata of an active MUSAP SSCD
      */
-    public func addSscd(sscd: MusapSscd) {
-        guard let sscdId = sscd.sscdId else {
-            print("Cant addSscd: SSCD ID was nil")
-            return
-        }
+    public func addSscd(sscd: SscdInfo) {
+        let sscdId = sscd.getSscdId()
         
         // Update SSCD id list with new SSCD ID
         var sscdIds = getSscdIds()
@@ -156,15 +150,15 @@ public class MetadataStorage {
     /**
      List available active MUSAP SSCDs
      */
-    public func listActiveSscds() -> [MusapSscd] {
+    public func listActiveSscds() -> [SscdInfo] {
         let sscdIds = getSscdIds()
-        var sscdList: [MusapSscd] = []
+        var sscdList: [SscdInfo] = []
         
         for sscdId in sscdIds {
             print("Found sscdId: \(sscdId)")
             if let sscdData = self.getSscdJson(sscdId: sscdId) {
                 do {
-                    let sscd = try JSONDecoder().decode(MusapSscd.self, from: sscdData)
+                    let sscd = try JSONDecoder().decode(SscdInfo.self, from: sscdData)
                     sscdList.append(sscd)
                 } catch {
                     print("Error decoding sscd JSON: \(error)")
@@ -176,6 +170,7 @@ public class MetadataStorage {
 
         return sscdList
     }
+
     
     private func getKeyIds() -> Set<String> {
         // Retrieve the array from UserDefaults and convert it back to a set
@@ -201,10 +196,8 @@ public class MetadataStorage {
         return MetadataStorage.KEY_JSON_PREFIX + keyId
     }
     
-    private func makeStoreName(sscd: MusapSscd) -> String {
-        guard let sscdId = sscd.sscdId else {
-            fatalError("Cannot create a store name with no SSCD ID")
-        }
+    private func makeStoreName(sscd: SscdInfo) -> String {
+        let sscdId = sscd.getSscdId()
         return MetadataStorage.SSCD_JSON_PREFIX + sscdId
     }
     
@@ -252,12 +245,12 @@ public class MetadataStorage {
     
     public func addImportData(data: MusapImportData) throws {
         let activeSscds  = self.listActiveSscds()
-        let enabledSscds = MusapClient.listEnabledSscds() ?? []
+        let enabledSscds = MusapClient.listEnabledSscds() ?? [MusapSscd]()
         let activeKeys   = self.listKeys()
 
         for sscd in data.sscds ?? [] {
-            let alreadyExists = activeSscds.contains { $0.sscdId == sscd.sscdId }
-            let isSscdTypeEnabled = enabledSscds.contains { $0.getSscdInfo().sscdType == sscd.sscdType }
+            let alreadyExists = activeSscds.contains { $0.getSscdId() == sscd.getSscdId() }
+            let isSscdTypeEnabled = enabledSscds.contains { $0.getSscdInfo()?.getSscdType() == sscd.getSscdType() }
 
             if alreadyExists || !isSscdTypeEnabled {
                 continue
@@ -266,20 +259,28 @@ public class MetadataStorage {
         }
 
         let uniqueKeys = Set(activeKeys.map { $0.getKeyUri() })
+        
         for key in data.keys ?? [] {
             if uniqueKeys.contains(key.getKeyUri()) {
                 continue
             }
-
+            /*
             guard let sscd = key.getSscdImplementation()?.getSscdInfo() else {
                 throw MusapError.unknownKey
             }
-
+             */
+            guard let sscd = key.getSscd() else {
+                return
+            }
+            
             do {
-                print("Storing key to \(sscd.sscdName ?? "Unknown")")
-                try self.storeKey(key: key, sscd: sscd)
+                print("Storing key to \(String(describing: sscd.getSscdInfo()?.getSscdName()))")
+                guard let sscdInfo = sscd.getSscdInfo() else {
+                    throw MusapError.internalError
+                }
+                try self.addKey(key: key, sscd: sscdInfo)
             } catch {
-                print("Could not store key to \(sscd.sscdName ?? "Unknown")")
+                print("Could not store key to \(String(describing: sscd.getSscdInfo()?.getSscdName()))")
                 throw MusapError.internalError
             }
         }
@@ -341,13 +342,13 @@ public class MetadataStorage {
             }
         }
         
-        guard let sscd = oldKey.getSscdImplementation()?.getSscdInfo() else {
+        guard let sscd = oldKey.getSscdInfo() else {
             print("Can't update key, could nto find SSCD where it belongs")
             return false
         }
         
         do {
-            try self.storeKey(key: oldKey, sscd: sscd)
+            try self.addKey(key: oldKey, sscd: sscd)
         } catch {
             return false
         }

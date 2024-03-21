@@ -17,7 +17,7 @@ public protocol MusapSscdProtocol: SscdSettings {
     
     func sign(req: SignatureReq) throws -> MusapSignature
     
-    func getSscdInfo() -> MusapSscd
+    func getSscdInfo() -> SscdInfo
     
     func generateSscdId(key: MusapKey) -> String
     
@@ -29,6 +29,6 @@ public protocol MusapSscdProtocol: SscdSettings {
 
 extension MusapSscdProtocol {
     func isKeyGenSupported() -> Bool {
-        return self.getSscdInfo().keyGenSupported
+        return self.getSscdInfo().isKeygenSupported()
     }
 }
