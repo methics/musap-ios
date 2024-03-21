@@ -202,7 +202,9 @@ public class MusapClient {
      - Parameters:
        - sscd: The SSCD to be enabled.
      */
-    public static func enableSscd(sscd: any MusapSscdProtocol) {
+    public static func enableSscd(sscd: any MusapSscdProtocol, sscdId: String) {
+        sscd.getSettings().setSetting(key: "id", value: sscdId)
+        
         let keyDiscovery = KeyDiscoveryAPI(storage: MetadataStorage())
         keyDiscovery.enableSscd(sscd)
     }
