@@ -7,12 +7,15 @@
 
 import Foundation
 
-//TODO: Better naming?
 public class SecureEnclaveSettings: SscdSettings {
     
+    private var settings: [String: String] = [:]
+    
+    public init() {
+    }
+    
     public func getSettings() -> [String : String]? {
-        //TODO: ?
-        return ["": ""]
+        return self.settings
     }
     
 }

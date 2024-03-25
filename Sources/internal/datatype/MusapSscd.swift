@@ -45,7 +45,7 @@ public class MusapSscd: Identifiable {
     public func listKeys() -> [MusapKey]{
         var keys = [MusapKey]()
         for key in MusapClient.listKeys() {
-            if key.getSscdId() != nil { continue }
+            if key.getSscdId() == nil { continue }
             if key.getSscdId() == self.getSscdId() {
                 keys.append(key)
             }

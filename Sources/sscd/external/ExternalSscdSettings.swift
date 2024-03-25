@@ -45,7 +45,7 @@ public class ExternalSscdSettings: SscdSettings {
     }
     
     public func getSettings() -> [String : String]? {
-        return ["": ""]
+        return self.settings
     }
     
     public func getMusapLink() -> MusapLink? {
