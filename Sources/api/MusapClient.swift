@@ -86,6 +86,8 @@ public class MusapClient {
     //TODO: docs
     public static func listEnabledSscds() -> [MusapSscd]? {
         let enabledSscds = KeyDiscoveryAPI(storage: MetadataStorage()).listEnabledSscds()
+        
+        print("found \(enabledSscds.count) SSCD's")
         var musapSscds = [MusapSscd]()
         for sscd in enabledSscds {
             musapSscds.append(MusapSscd(impl: sscd))
@@ -133,13 +135,19 @@ public class MusapClient {
 
     public static func listActiveSscds() -> [MusapSscd] {
         guard let enabled = listEnabledSscds() else {
-            return [MusapSscd]()
+            print("No enabled sscds, returning empty list of MusapSscds")
+            return []
         }
         var active  = MetadataStorage().listActiveSscds()
+        print("Got \(active.count) active SSCD's")
         var result  = [MusapSscd]()
         
         for e in enabled {
-            let contains = enabled.contains { $0.getSscdInfo()?.getSscdId() == e.getSscdInfo()?.getSscdType() }
+            print(print("Enabled sscd: \(String(describing: e.getSscdInfo()?.getSscdType()))"))
+            
+            let contains = enabled.contains { $0.getSscdInfo()?.getSscdId() == e.getSscdInfo()?.getSscdId()
+            }
+            
             
             if contains {
                 result.append(e)

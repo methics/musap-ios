@@ -159,6 +159,9 @@ public class MetadataStorage {
             if let sscdData = self.getSscdJson(sscdId: sscdId) {
                 do {
                     let sscd = try JSONDecoder().decode(SscdInfo.self, from: sscdData)
+                    
+                    print("Appending new SSCD to SSCD list: \(sscd.getSscdName())")
+                    
                     sscdList.append(sscd)
                 } catch {
                     print("Error decoding sscd JSON: \(error)")
