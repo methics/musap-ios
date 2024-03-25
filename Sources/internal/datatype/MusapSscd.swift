@@ -49,6 +49,10 @@ public class MusapSscd: Identifiable {
             
             if key.getSscdId() == nil {
                 print("key sscd id was nil")
+            } else {
+                print("Key sscd Id was not nil: \(String(describing: key.getSscdId()))")
+                
+                print(" self.getSscdId: \(String(describing: self.getSscdId()))")
             }
             
             if key.getSscdId() == nil { continue }
