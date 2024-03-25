@@ -187,6 +187,7 @@ public class MetadataStorage {
         print("Getting SSCD IDs")
         if let sscdIdsArray = userDefaults.stringArray(forKey: MetadataStorage.SSCD_ID_SET) {
             print("Found \(sscdIdsArray.count) sscd ids")
+            print("SSCD ID(1): \(sscdIdsArray.first)")
             return Set(sscdIdsArray)
         } else {
             print("found 0 sscd IDs, returning empty Set")

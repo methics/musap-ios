@@ -27,6 +27,8 @@ public class MusapSscd: Identifiable {
     }
     
     public func getSscdId() -> String? {
+        print("getting SSCD ID: \(String(describing: self.impl.getSetting(forKey: MusapSscd.SETTING_SSCDID)))")
+        
         return self.impl.getSetting(forKey: MusapSscd.SETTING_SSCDID)
     }
     
