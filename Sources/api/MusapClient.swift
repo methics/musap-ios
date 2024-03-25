@@ -85,6 +85,7 @@ public class MusapClient {
     
     //TODO: docs
     public static func listEnabledSscds() -> [MusapSscd]? {
+        
         let enabledSscds = KeyDiscoveryAPI(storage: MetadataStorage()).listEnabledSscds()
         
         print("found \(enabledSscds.count) SSCD's")
