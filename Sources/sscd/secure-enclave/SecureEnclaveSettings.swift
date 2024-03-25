@@ -8,6 +8,7 @@
 import Foundation
 
 public class SecureEnclaveSettings: SscdSettings {
+
     
     private var settings: [String: String] = [:]
     
@@ -16,6 +17,9 @@ public class SecureEnclaveSettings: SscdSettings {
     
     public func getSettings() -> [String : String]? {
         return self.settings
+    }
+    public func setSetting(key: String, value: String) {
+        self.settings[key] = value
     }
     
 }
