@@ -130,7 +130,9 @@ public class MetadataStorage {
      Store metadata of an active MUSAP SSCD
      */
     public func addSscd(sscd: SscdInfo) {
-        let sscdId = sscd.getSscdId()
+        guard let sscdId = sscd.getSscdId() else {
+            return
+        }
         
         // Update SSCD id list with new SSCD ID
         var sscdIds = getSscdIds()
@@ -141,7 +143,7 @@ public class MetadataStorage {
 
         if let sscdJson = try? JSONEncoder().encode(sscd) {
             userDefaults.set(Array(sscdIds), forKey: MetadataStorage.SSCD_ID_SET)
-            userDefaults.set(sscdJson, forKey: makeStoreName(sscd: sscd))
+            userDefaults.set(sscdJson, forKey: makeStoreName(sscd: sscd)!)
         } else {
             print("Adding SSCD failed")
         }
@@ -199,8 +201,11 @@ public class MetadataStorage {
         return MetadataStorage.KEY_JSON_PREFIX + keyId
     }
     
-    private func makeStoreName(sscd: SscdInfo) -> String {
-        let sscdId = sscd.getSscdId()
+    private func makeStoreName(sscd: SscdInfo) -> String? {
+        guard let sscdId = sscd.getSscdId() else {
+            print("makeStoreName: no sscd id")
+            return nil
+        }
         return MetadataStorage.SSCD_JSON_PREFIX + sscdId
     }
     

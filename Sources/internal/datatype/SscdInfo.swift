@@ -11,7 +11,7 @@ public class SscdInfo: Encodable, Decodable {
     
     private var sscdName: String
     private var sscdType: String
-    private var sscdId:   String
+    private var sscdId:   String?
     private var country:  String
     private var provider: String
     private var keygenSupported: Bool
@@ -21,7 +21,7 @@ public class SscdInfo: Encodable, Decodable {
     public init(
         sscdName: String,
         sscdType: String,
-        sscdId: String,
+        sscdId: String? = nil,
         country: String,
         provider: String,
         keygenSupported: Bool,
@@ -46,7 +46,7 @@ public class SscdInfo: Encodable, Decodable {
         return self.sscdType
     }
     
-    public func getSscdId() -> String {
+    public func getSscdId() -> String? {
         return self.sscdId
     }
     

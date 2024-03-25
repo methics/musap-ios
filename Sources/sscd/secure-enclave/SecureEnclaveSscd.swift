@@ -181,7 +181,6 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
         let musapSscd = SscdInfo(
             sscdName:        "SE",
             sscdType:        SecureEnclaveSscd.SSCD_TYPE,
-            sscdId:          UUID().uuidString,
             country:         "FI",
             provider:        "Apple",
             keygenSupported: true,
