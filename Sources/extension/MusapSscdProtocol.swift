@@ -19,8 +19,6 @@ public protocol MusapSscdProtocol: SscdSettings {
     
     func getSscdInfo() -> SscdInfo
     
-    func generateSscdId(key: MusapKey) -> String
-    
     func isKeygenSupported() -> Bool
     
     func getSettings() -> CustomSscdSettings

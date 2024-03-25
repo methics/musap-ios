@@ -181,6 +181,7 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
         let musapSscd = SscdInfo(
             sscdName:        "SE",
             sscdType:        SecureEnclaveSscd.SSCD_TYPE,
+            sscdId:          self.getSetting(forKey: "id"),
             country:         "FI",
             provider:        "Apple",
             keygenSupported: true,
@@ -191,10 +192,6 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
                              KeyAlgorithm.ECC_P256_R1],
             formats:         [SignatureFormat.RAW])
         return musapSscd
-    }
-    
-    public func generateSscdId(key: MusapKey) -> String {
-        return UUID().uuidString
     }
     
     public func isKeygenSupported() -> Bool {

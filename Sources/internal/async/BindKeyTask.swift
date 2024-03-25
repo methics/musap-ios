@@ -19,7 +19,10 @@ public class BindKeyTask {
             
             let storage = MetadataStorage()
             let activeSscd = sscd.getSscdInfo()
-            let sscdId = sscd.generateSscdId(key: key)
+            guard let sscdId = sscd.getSscdInfo().getSscdId()
+            else {
+                throw MusapError.internalError
+            }
             
             activeSscd.setSscdId(sscdId: sscdId)
             key.setSscdId(value: sscdId)
