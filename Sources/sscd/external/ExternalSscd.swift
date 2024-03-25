@@ -216,7 +216,7 @@ public class ExternalSscd: MusapSscdProtocol {
     public func getSscdInfo() -> SscdInfo {
         let sscd = SscdInfo(sscdName: self.settings.getSscdName(),
                              sscdType: ExternalSscd.SSCD_TYPE,
-                             sscdId: "", //TODO: Fix
+                             sscdId: self.getSetting(forKey: "id"),
                              country: "FI",
                              provider: "MUSAP LINK",
                              keygenSupported: false,

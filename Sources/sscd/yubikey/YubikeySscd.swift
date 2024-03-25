@@ -164,7 +164,7 @@ public class YubikeySscd: MusapSscdProtocol {
     public func getSscdInfo() -> SscdInfo {
         let musapSscd = SscdInfo(sscdName:        "Yubikey",
                                   sscdType:        YubikeySscd.SSCD_TYPE,
-                                  sscdId:          "Yubikey",
+                                  sscdId:          self.getSetting(forKey: "id"),
                                   country:         "FI",
                                   provider:        "Yubico",
                                   keygenSupported: true,

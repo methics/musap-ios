@@ -151,7 +151,7 @@ public class KeychainSscd: MusapSscdProtocol {
         let musapSscd = SscdInfo(
             sscdName: "Keychain",
             sscdType: KeychainSscd.SSCD_TYPE,
-            sscdId:   "Keychain",
+            sscdId:   self.getSetting(forKey: "id"),
             country:  "FI",
             provider: "Apple",
             keygenSupported: true,
