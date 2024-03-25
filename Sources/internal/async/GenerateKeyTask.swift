@@ -18,6 +18,7 @@ public class GenerateKeyTask {
                     let generatedKey = try sscd.generateKey(req: req)
                     let activeSscd   = sscd.getSscdInfo()
                     guard let sscdId = sscd.getSscdInfo().getSscdId() else {
+                        print("Could not get SSCD id")
                         throw MusapError.internalError
                     }
                     
