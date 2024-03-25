@@ -13,7 +13,7 @@ import Security
  * SSCD that uses MUSAP Link to request signatures with the "externalsign" Coupling API call
  */
 public class ExternalSscd: MusapSscdProtocol {
-
+    
     public typealias CustomSscdSettings = ExternalSscdSettings
     
     static let SSCD_TYPE           = "External Signature"
@@ -268,5 +268,13 @@ public class ExternalSscd: MusapSscdProtocol {
                 rootViewController.present(hostingController, animated: true, completion: nil)
             }
         }
+    }
+    
+    public func getSetting(forKey key: String) -> String? {
+        self.settings.getSetting(forKey: key)
+    }
+    
+    public func setSetting(key: String, value: String) {
+        self.settings.setSetting(key: key, value: value)
     }
 }

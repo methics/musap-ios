@@ -205,6 +205,15 @@ public class KeychainSscd: MusapSscdProtocol {
         return false
     }
     
+    public func getSetting(forKey key: String) -> String? {
+        return self.settings.getSetting(forKey: key)
+    }
+    
+    public func setSetting(key: String, value: String) {
+        self.settings.setSetting(key: key, value: value)
+    }
+    
+    
     
     
 }

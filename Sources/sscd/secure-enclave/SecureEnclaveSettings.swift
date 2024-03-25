@@ -18,6 +18,7 @@ public class SecureEnclaveSettings: SscdSettings {
     public func getSettings() -> [String : String]? {
         return self.settings
     }
+    
     public func setSetting(key: String, value: String) {
         print("SecureEnclaveSettings.setSetting: \(key) value: \(value)")
         self.settings[key] = value
@@ -25,6 +26,10 @@ public class SecureEnclaveSettings: SscdSettings {
         if self.settings[key] != value {
             print("Settings were saved incorrectly.")
         }
+    }
+    
+    public func getSetting(forKey key: String) -> String? {
+        return settings[key]
     }
     
 }

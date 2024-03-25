@@ -279,6 +279,14 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
         }
         return Data(hash)
     }
+    
+    public func getSetting(forKey key: String) -> String? {
+        self.settings.getSetting(forKey: key)
+    }
+    
+    public func setSetting(key: String, value: String) {
+        self.settings.setSetting(key: key, value: value)
+    }
 
 
 
