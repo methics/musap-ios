@@ -221,7 +221,7 @@ public class YubikeySscd: MusapSscdProtocol {
                         let keyType     = self.selectKeyType(req: req)
                         
                         session.generateKey(in: slot, type: keyType, pinPolicy: pinPolicy, touchPolicy: touchPolicy) { publicKey, error in
-                            
+                        
                             // verify user PIN
                             session.verifyPin(pin, completion: { retries, error in
                 

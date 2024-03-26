@@ -140,6 +140,8 @@ public class MetadataStorage {
         if !sscdIds.contains(sscdId) {
             print("adding sscdid \(sscdId) to set")
             sscdIds.insert(sscdId)
+        } else {
+            // Dont add SSCD with same ID
         }
 
         if let sscdJson = try? JSONEncoder().encode(sscd) {
@@ -148,6 +150,15 @@ public class MetadataStorage {
         } else {
             print("Adding SSCD failed")
         }
+    }
+    
+    public func removeSscd(sscd: SscdInfo) {
+        guard let sscdId = sscd.getSscdId() else {
+            return
+        }
+        
+        //TODO: finish
+        
     }
 
     /**
@@ -307,7 +318,6 @@ public class MetadataStorage {
             return false
         }
         
-        //TODO: keyname: keyId?
         let keyJson = self.getKeyJson(keyId: keyId)
         guard let keyJsonData = keyJson.data(using: .utf8) else {
             print("Error decoding JSON to MusapKey, can't update metadata")

@@ -12,7 +12,7 @@ public class MusapClient {
     /**
      Generate a keypair and store the key metadata to MUSAP.
      - Parameters:
-       - sscd: An instance conforming to `MusapSscdProtocol`, providing security services for key generation.
+       - sscd: An instance conforming to `MusapSscd`, providing security services for key generation.
        - req: A `KeyGenReq` instance specifying key generation parameters like key alias, role, policy, attributes, and algorithm.
        - completion: A completion handler called with a `Result` type containing `MusapKey` on success or `MusapError` on failure.
 
@@ -311,8 +311,8 @@ public class MusapClient {
      - Parameters:
         - musapSscd: SSCD to remove
      */
-    public static func removeSscd(musapSscd: String) {
-        //TODO: code this
+    public static func removeSscd(musapSscd: SscdInfo) {
+        
     }
     
     /**
