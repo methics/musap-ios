@@ -231,7 +231,8 @@ public class MusapKey: Codable, Identifiable {
                 if self.sscdId == nil {
                     print("Found SSCD with type: \(sscdType)")
                 } else if self.sscdId == sscdId {
-                    print("Found SSCD with type: \(sscdType) and id: \(sscdId)")
+                    print("Found SSCD with type: \(sscdType) and id: \(String(describing: sscdId))")
+                    return sscd
                 } else {
                     print("SSCD type: \(sscd.getSscdInfo()?.getSscdType()) does not match our SSCD type: \(self.sscdId)")
                 }
