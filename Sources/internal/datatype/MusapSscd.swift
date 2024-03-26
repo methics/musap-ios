@@ -27,8 +27,6 @@ public class MusapSscd: Identifiable {
     }
     
     public func getSscdId() -> String? {
-        print("getting SSCD ID: \(String(describing: self.impl.getSetting(forKey: MusapSscd.SETTING_SSCDID)))")
-        
         return self.impl.getSetting(forKey: MusapSscd.SETTING_SSCDID)
     }
     
@@ -86,11 +84,11 @@ public class MusapSscd: Identifiable {
     }
     
     public func removeKeys() -> Bool {
-        var keys = [MusapKey]()
+        var _ = [MusapKey]()
         var removed = false
         
         for key in self.listKeys() {
-            MusapClient.removeKey(musapKey: key)
+            let _ = MusapClient.removeKey(musapKey: key)
             removed = true
         }
         

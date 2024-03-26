@@ -18,7 +18,7 @@ public class MusapClient {
 
      - Note: The method handles the asynchronous task internally and uses the `GenerateKeyTask` for the key generation process.
      */
-    public static func generateKey(sscd: any MusapSscdProtocol, req: KeyGenReq, completion: @escaping (Result<MusapKey, MusapError>) -> Void) async {
+    public static func generateKey(sscd: MusapSscd, req: KeyGenReq, completion: @escaping (Result<MusapKey, MusapError>) -> Void) async {
         do {
             let generateKeyTask = GenerateKeyTask()
             let key = try await generateKeyTask.generateKeyAsync(sscd: sscd, req: req, completion: completion)
