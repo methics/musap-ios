@@ -19,7 +19,8 @@ public class MusapSscd: Identifiable {
     
     public func getSscdInfo() -> SscdInfo? {
         guard let sscdId = self.getSscdId() else {
-            return nil
+            print("Could not get Sscd ID")
+            return self.impl.getSscdInfo()
         }
         let info = self.impl.getSscdInfo()
         info.setSscdId(sscdId: sscdId)
