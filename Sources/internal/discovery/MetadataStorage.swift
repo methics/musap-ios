@@ -162,9 +162,6 @@ public class MetadataStorage {
             if let sscdData = self.getSscdJson(sscdId: sscdId) {
                 do {
                     let sscd = try JSONDecoder().decode(SscdInfo.self, from: sscdData)
-                    
-                    print("Appending new SSCD to SSCD list: \(sscd.getSscdName())")
-                    
                     sscdList.append(sscd)
                 } catch {
                     print("Error decoding sscd JSON: \(error)")
@@ -173,7 +170,7 @@ public class MetadataStorage {
                 print("Missing SSCD metadata JSON for SSCD ID: \(sscdId)")
             }
         }
-
+        print("Returning \(sscdList.count) active SSCD's")
         return sscdList
     }
 
@@ -188,10 +185,8 @@ public class MetadataStorage {
         print("Getting SSCD IDs")
         if let sscdIdsArray = userDefaults.stringArray(forKey: MetadataStorage.SSCD_ID_SET) {
             print("Found \(sscdIdsArray.count) sscd ids")
-            print("SSCD ID(1): \(sscdIdsArray.first)")
             return Set(sscdIdsArray)
         } else {
-            print("found 0 sscd IDs, returning empty Set")
             return Set()
         }
     }

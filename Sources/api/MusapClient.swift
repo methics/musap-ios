@@ -82,7 +82,7 @@ public class MusapClient {
         return musapSscds
     }
     
-    //TODO: docs
+    //TODO: docs, TEST
     public static func listEnabledSscds(req: SscdSearchReq) -> [MusapSscd]? {
         guard let enabledSscds = self.listEnabledSscds() else {
             return [MusapSscd]()
@@ -121,23 +121,23 @@ public class MusapClient {
      */
 
     public static func listActiveSscds() -> [MusapSscd] {
-        guard let enabled = listEnabledSscds() else {
+        guard let enabledSscds: [MusapSscd] = listEnabledSscds() else {
             print("No enabled sscds, returning empty list of MusapSscds")
             return []
         }
-        var active  = MetadataStorage().listActiveSscds()
-        print("Got \(active.count) active SSCD's")
-        var result  = [MusapSscd]()
+        var activeSscds: [SscdInfo]  = MetadataStorage().listActiveSscds()
+        var result = [MusapSscd]()
         
-        for e in enabled {
-            print(print("Enabled sscd: \(String(describing: e.getSscdInfo()?.getSscdType()))"))
-            
-            let contains = enabled.contains { $0.getSscdInfo()?.getSscdId() == e.getSscdInfo()?.getSscdId()
+        print("Got \(activeSscds.count) active SSCD's")
+        
+        for sscd in enabledSscds {
+            guard let sscdId = sscd.getSscdId() else {
+                print("No SSCD ID for enabled SSCD, continue")
+                continue
             }
             
-            
-            if contains {
-                result.append(e)
+            if activeSscds.contains(where: { $0.getSscdId() == sscdId}) {
+                result.append(sscd)
             }
         }
         
