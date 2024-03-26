@@ -11,22 +11,26 @@ public class BindKeyTask {
     
     typealias CompletionHandler = (Result<MusapKey, MusapError>) -> Void
     
-    func bindKey(req: KeyBindReq, sscd: any MusapSscdProtocol) async throws -> MusapKey {
+    //TODO: Test this thorougly
+    func bindKey(req: KeyBindReq, sscd: MusapSscd) async throws -> MusapKey {
         do {
-            print("BindKeyTask.bindKey() - Trying to sscd.bindKey()")
             let key = try sscd.bindKey(req: req)
             print("BindKeyTask got MUSAP key")
             
             let storage = MetadataStorage()
-            let activeSscd = sscd.getSscdInfo()
-            guard let sscdId = sscd.getSscdInfo().getSscdId()
-            else {
+            
+            guard let activeSscd = sscd.getSscdInfo() else {
+                print("BindKeyTask: Could not get SSCD ID")
+                throw MusapError.internalError
+            }
+            
+            guard let sscdId = sscd.getSscdId() else {
+                print("BindKeyTask: Could not get SSCD ID")
                 throw MusapError.internalError
             }
             
             activeSscd.setSscdId(sscdId: sscdId)
             key.setSscdId(value: sscdId)
-    
             
             try storage.addKey(key: key, sscd: activeSscd)
             return key
