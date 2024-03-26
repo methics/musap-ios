@@ -21,10 +21,17 @@ public class KeyDiscoveryAPI {
         return KeyDiscoveryAPI.enabledSscds
     }
     
-    //TODO: This is not fully functional
     public func listMatchingSscds(req: SscdSearchReq) -> [any MusapSscdProtocol] {
+        let enabledSscds = KeyDiscoveryAPI.enabledSscds
+        var result = [any MusapSscdProtocol]()
         
-        return KeyDiscoveryAPI.enabledSscds
+        for sscd in enabledSscds {
+            if req.matches(sscd: sscd.getSscdInfo()) {
+                result.append(sscd)
+            }
+        }
+        
+        return result
     }
     
     public func listActiveSscds() -> [SscdInfo] {

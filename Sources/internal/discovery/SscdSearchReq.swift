@@ -45,7 +45,6 @@ public class SscdSearchReq {
             if provider != sscd.getProvider() { return false }
             if sscdType != sscd.getSscdType() { return false }
         } else {
-            //TODO: Is this supposed to be 1:1 match or is partial match accepted?
             return false
         }
         

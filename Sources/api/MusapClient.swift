@@ -110,7 +110,6 @@ public class MusapClient {
     public static func listEnabledSscds(req: SscdSearchReq) -> [any MusapSscdProtocol] {
         let keyDiscovery = KeyDiscoveryAPI(storage: MetadataStorage())
         
-        //TODO: Will this work? What is the issue?
         return keyDiscovery.listMatchingSscds(req: req)
     }
     
