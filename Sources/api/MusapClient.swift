@@ -38,7 +38,7 @@ public class MusapClient {
 
      - Note: Asynchronous execution, leveraging `BindKeyTask` for the key binding operation.
      */
-    public static func bindKey(sscd: any MusapSscdProtocol, req: KeyBindReq, completion: @escaping (Result<MusapKey, MusapError>) -> Void) async {
+    public static func bindKey(sscd: MusapSscd, req: KeyBindReq, completion: @escaping (Result<MusapKey, MusapError>) -> Void) async {
         let bindKeyTask = BindKeyTask()
         do {
             let musapKey = try await bindKeyTask.bindKey(req: req, sscd: sscd)
@@ -68,20 +68,6 @@ public class MusapClient {
             completion(.failure(MusapError.internalError))
         }
     }
-    
-    /*
-    /**
-     Lists SSCDs enabled in the MUSAP library. Add an SSCD using `enableSscd` before listing.
-
-     - Returns: An array of enabled SSCDs conforming to `MusapSscdProtocol`, or nil if no SSCDs are enabled.
-     */
-    public static func listEnabledSscds() -> [any MusapSscdProtocol]? {
-        let keyDiscovery = KeyDiscoveryAPI(storage: MetadataStorage())
-        let enabledSscds = keyDiscovery.listEnabledSscds()
-        print("enabledSscds in MusapClient: \(enabledSscds.count)")
-        return enabledSscds
-    }
-     */
     
     //TODO: docs
     public static func listEnabledSscds() -> [MusapSscd]? {
