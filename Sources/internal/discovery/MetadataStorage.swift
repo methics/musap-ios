@@ -131,6 +131,7 @@ public class MetadataStorage {
      */
     public func addSscd(sscd: SscdInfo) {
         guard let sscdId = sscd.getSscdId() else {
+            print("Cannot store MUSAP SSCD without an SSCD ID ")
             return
         }
         
