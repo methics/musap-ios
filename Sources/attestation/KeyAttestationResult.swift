@@ -46,6 +46,7 @@ public class KeyAttestationResult {
         self.attestationStatus = attestationStatus
     }
     
+    
     public func getAttestationStatus() -> AttestationStatus? {
         return self.attestationStatus
     }

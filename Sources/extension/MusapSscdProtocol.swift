@@ -19,13 +19,13 @@ public protocol MusapSscdProtocol: SscdSettings {
     
     func getSscdInfo() -> SscdInfo
     
-    func getKeyAttestation() -> KeyAttestationProtocol
-    
-    func attestKey() -> KeyAttestationResult
-    
     func isKeygenSupported() -> Bool
     
     func getSettings() -> CustomSscdSettings
+    
+    func getKeyAttestation() -> KeyAttestationProtocol
+    
+    func attestKey(key: MusapKey) -> KeyAttestationResult
     
 }
 
@@ -33,4 +33,14 @@ extension MusapSscdProtocol {
     func isKeyGenSupported() -> Bool {
         return self.getSscdInfo().isKeygenSupported()
     }
+    
+    func getKeyAttestation() -> KeyAttestationProtocol {
+        return NoKeyAttestation()
+    }
+    
+    func attestKey(key: MusapKey) -> KeyAttestationResult {
+        return self.getKeyAttestation().getAttestationData(key: key)
+    }
+    
+    
 }

@@ -22,6 +22,9 @@ public class YubikeySscd: MusapSscdProtocol {
     
     private let type: YKFPIVManagementKeyType
     private let yubiKitManager: YubiKitManager
+    private var attestationCertificate: [String: Data]?
+    private var generatedKeyId: String?
+    
     
     var onRequirePinEntry: ((_ completion: @escaping (String) -> Void) -> Void)?
     
@@ -81,7 +84,7 @@ public class YubikeySscd: MusapSscdProtocol {
                 }
                 
                 musapKey = MusapKey(keyAlias:  req.keyAlias,
-                                    keyId: UUID().uuidString,
+                                    keyId:     self.generatedKeyId,
                                     sscdType:  YubikeySscd.SSCD_TYPE,
                                     publicKey: publicKeyObj,
                                     algorithm: keyAlgorithm,
@@ -240,6 +243,19 @@ public class YubikeySscd: MusapSscdProtocol {
                                 YubiKitManager.shared.stopNFCConnection(withMessage: "KeyPair generated")
                                                                 
                                 if let pubKey = publicKey {
+                                    session.attestKey(in: slot) { cert, error in
+                                        if let cert = cert {
+                                            if let certData = SecCertificateCopyData(cert) as Data? {
+                                                let keyId = UUID().uuidString
+                                                self.generatedKeyId = keyId
+                                                self.attestationCertificate = [keyId: certData]
+                                            }
+                                        } else {
+                                            // failed attestation
+                                        }
+                                    }
+                                    
+                                    
                                     completion(.success(pubKey))
                                 } else {
                                     completion(.failure(MusapError.keygenUnsupported))
@@ -423,6 +439,14 @@ public class YubikeySscd: MusapSscdProtocol {
     
     public func setSetting(key: String, value: String) {
         self.settings.setSetting(key: key, value: value)
+    }
+    
+    public func getKeyAttestation() -> any KeyAttestationProtocol {
+        return YubiKeyAttestation(keyAttestationType: KeyAttestationType.YUBIKEY, certificates: self.attestationCertificate)
+    }
+    
+    public func attestKey(key: MusapKey) -> KeyAttestationResult {
+        return self.getKeyAttestation().getAttestationData(key: key)
     }
     
 }
