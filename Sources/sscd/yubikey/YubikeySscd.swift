@@ -81,6 +81,7 @@ public class YubikeySscd: MusapSscdProtocol {
                 }
                 
                 musapKey = MusapKey(keyAlias:  req.keyAlias,
+                                    keyId: UUID().uuidString,
                                     sscdType:  YubikeySscd.SSCD_TYPE,
                                     publicKey: publicKeyObj,
                                     algorithm: keyAlgorithm,
