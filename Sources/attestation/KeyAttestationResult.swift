@@ -9,11 +9,11 @@ import Foundation
 
 public class KeyAttestationResult {
     
-    private let attestationType: String
-    private let attestationSignature: Data?
-    private let certificate: MusapCertificate?
-    private let certificateChain: [MusapCertificate]?
-    private let attestationStatus: AttestationStatus?
+    private var attestationType: String?
+    private var attestationSignature: Data?
+    private var certificate: MusapCertificate?
+    private var certificateChain: [MusapCertificate]?
+    private var attestationStatus: AttestationStatus?
     
     public init(
         attestationType: String,
@@ -38,11 +38,35 @@ public class KeyAttestationResult {
         self.attestationStatus = nil
     }
     
+    public init(attestationStatus: AttestationStatus) {
+        self.attestationType = nil
+        self.attestationSignature = nil
+        self.certificate = nil
+        self.certificateChain = nil
+        self.attestationStatus = attestationStatus
+    }
+    
     public func getAttestationStatus() -> AttestationStatus? {
         return self.attestationStatus
     }
     
-    public func getAttestationType() -> String {
+    public func setAttestationStatus(attestationStatus: AttestationStatus) -> Void {
+        self.attestationStatus = attestationStatus
+    }
+    
+    public func setCertificate(certificate: MusapCertificate) -> Void {
+        self.certificate = certificate
+    }
+    
+    public func getCertificate() -> MusapCertificate? {
+        return self.certificate
+    }
+    
+    public func setCertificateChain(certificateChain: [MusapCertificate]) -> Void {
+        self.certificateChain = certificateChain
+    }
+    
+    public func getAttestationType() -> String? {
         return self.attestationType
     }
     
