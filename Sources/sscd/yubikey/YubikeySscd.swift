@@ -14,7 +14,7 @@ public class YubikeySscd: MusapSscdProtocol {
     public typealias CustomSscdSettings = YubikeySscdSettings
     private let settings = YubikeySscdSettings()
     
-    private static let ATTRIBUTE_ATTEST = "YubikeyAtteestationCert"
+    private static let ATTRIBUTE_ATTEST = "YubikeyAttestationCert"
     private static let ATTRIBUTE_SERIAL = "serial"
     private static let MANAGEMENT_KEY_TYPE: YKFPIVManagementKeyType = YKFPIVManagementKeyType.tripleDES()
     private static let MANAGEMENT_KEY = Data([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08])
