@@ -19,6 +19,10 @@ public protocol MusapSscdProtocol: SscdSettings {
     
     func getSscdInfo() -> SscdInfo
     
+    func getKeyAttestation() -> KeyAttestationProtocol
+    
+    func attestKey() -> KeyAttestationResult
+    
     func isKeygenSupported() -> Bool
     
     func getSettings() -> CustomSscdSettings

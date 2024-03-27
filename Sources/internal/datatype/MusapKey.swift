@@ -24,7 +24,6 @@ public class MusapKey: Codable, Identifiable {
     private var loa: [MusapLoa]?
     private var algorithm: KeyAlgorithm?
     private var keyUri: KeyURI?
-    private var attestation: KeyAttestation?
     private var isBiometricRequired: Bool
     private var did: String?
     private var state: String?
@@ -44,7 +43,6 @@ public class MusapKey: Codable, Identifiable {
         loa:              [MusapLoa]? = nil,
         algorithm:        KeyAlgorithm? = nil,
         keyUri:           KeyURI,
-        attestation:      KeyAttestation? = nil,
         isBiometricRequired: Bool = false,
         did:                 String? = nil,
         state:               String? = nil
@@ -65,7 +63,6 @@ public class MusapKey: Codable, Identifiable {
         self.loa              = loa
         self.algorithm        = algorithm
         self.keyUri           = keyUri
-        self.attestation      = attestation
         self.isBiometricRequired = isBiometricRequired
         self.did              = did
         self.state            = state
@@ -127,10 +124,6 @@ public class MusapKey: Codable, Identifiable {
     // KeyUri
     public func getKeyUri() -> KeyURI? { keyUri }
     public func setKeyUri(value: KeyURI?) { keyUri = value }
-
-    // Attestation
-    public func getAttestation() -> KeyAttestation? { attestation }
-    public func setAttestation(value: KeyAttestation?) { attestation = value }
 
     // IsBiometricRequired
     public func getIsBiometricRequired() -> Bool { isBiometricRequired }

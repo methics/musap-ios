@@ -15,7 +15,7 @@ public protocol KeyAttestationProtocol {
     func isAttetationSupported() -> Bool
 }
 
-extension KeyAttestation {
+extension KeyAttestationProtocol {
     func isAttestationSupported() -> Bool {
         return true
     }
