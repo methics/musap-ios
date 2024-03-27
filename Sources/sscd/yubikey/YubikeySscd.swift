@@ -211,7 +211,6 @@ public class YubikeySscd: MusapSscdProtocol {
     
     private func yubiKeyGen(pin: String, req: KeyGenReq, completion: @escaping (Result<SecKey, Error>) -> Void ) {
         let yubiKeyconnection = YubiKeyConnection()
-        
         yubiKeyconnection.connection { connection in
             
             if let nfcConnection = yubiKeyconnection.nfcConnection {
@@ -227,9 +226,8 @@ public class YubikeySscd: MusapSscdProtocol {
                             print("error in yubikey authentication: \(String(describing: error))")
                             return
                         }
-                        
                         // Authentication OK with management key
-                        //TODO: Will these come from user app in the future? (slot, pin & touch policy)
+                        
                         let slot        = YKFPIVSlot.signature
                         let pinPolicy   = YKFPIVPinPolicy.default
                         let touchPolicy = YKFPIVTouchPolicy.default
@@ -262,10 +260,13 @@ public class YubikeySscd: MusapSscdProtocol {
                 
                                 if let error = error {
                                     var errorMsg = error.localizedDescription
+                                    
+                                    // Yubikey by defaults has 3 tries
                                     if retries > 0 {
                                         errorMsg = error.localizedDescription + " Retries left: \(retries)"
                                     }
                                     
+                                    // Failed too many times, YubiKey is now blocked
                                     YubiKitManager.shared.stopNFCConnection(withErrorMessage: errorMsg)
                                     completion(.failure(error))
                                     return
@@ -274,9 +275,6 @@ public class YubikeySscd: MusapSscdProtocol {
                                 YubiKitManager.shared.stopNFCConnection(withMessage: "KeyPair generated")
                                                                 
                                 if let pubKey = publicKey {
-
-                                    
-                                    
                                     completion(.success(pubKey))
                                 } else {
                                     completion(.failure(MusapError.keygenUnsupported))
@@ -285,7 +283,7 @@ public class YubikeySscd: MusapSscdProtocol {
                             })
                         
                             // Generate Key error
-                            if let error = error {
+                            if error != nil {
                                 print("Key generation failed")
                                 completion(.failure(MusapError.internalError))
                                 return
