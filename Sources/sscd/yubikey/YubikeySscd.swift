@@ -254,6 +254,10 @@ public class YubikeySscd: MusapSscdProtocol {
                                                                 
                                 if let pubKey = publicKey {
                                     session.attestKey(in: slot) { cert, error in
+                                        
+                                        if error != nil {
+                                            print("Error while key attesting: \(String(describing: error))")
+                                        }
                                         if let cert = cert {
                                             if let certData = SecCertificateCopyData(cert) as Data? {
                                                 let keyId = UUID().uuidString
@@ -263,6 +267,7 @@ public class YubikeySscd: MusapSscdProtocol {
                                             }
                                         } else {
                                             // failed attestation
+                                            print("Failed YubikeyAttestation")
                                         }
                                     }
                                     
