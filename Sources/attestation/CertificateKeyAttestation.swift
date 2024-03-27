@@ -20,7 +20,7 @@ public class CertificateKeyAttestation: KeyAttestationProtocol {
             return KeyAttestationResult(attestationStatus: KeyAttestationResult.AttestationStatus.INVALID)
         }
         
-        var result = KeyAttestationResult(attestationType: self.getAttestationType())
+        let result = KeyAttestationResult(attestationType: self.getAttestationType())
         result.setCertificateChain(certificateChain: chain)
         
         guard let certificate = key.getCertificate() else {

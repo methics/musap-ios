@@ -98,6 +98,8 @@ public class ExternalSscd: MusapSscdProtocol {
                         return
                     }
                     
+                    let musapSignature = MusapSignature(rawSignature: signatureData)
+                    
                     theKey =  MusapKey(
                         keyAlias:  req.getKeyAlias(),
                         sscdType:  ExternalSscd.SSCD_TYPE,
@@ -279,7 +281,7 @@ public class ExternalSscd: MusapSscdProtocol {
     }
     
     public func getKeyAttestation() -> any KeyAttestationProtocol {
-        return NoKeyAttestation()
+        return UiccKeyAttestation(keyAttestationType: KeyAttestationType.UICC)
     }
     
     public func attestKey(key: MusapKey) -> KeyAttestationResult {

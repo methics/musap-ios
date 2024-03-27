@@ -104,4 +104,8 @@ public class MusapSscd: Identifiable {
         return self.getSettings().getSetting(forKey: name)
     }
     
+    public func getKeyAttestation() -> KeyAttestationProtocol {
+        return self.impl.getKeyAttestation()
+    }
+    
 }
