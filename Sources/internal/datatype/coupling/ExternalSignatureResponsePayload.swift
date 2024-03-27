@@ -37,7 +37,8 @@ public class ExternalSignatureResponsePayload: ResponsePayload {
         // Call the superclass initializer
         let status = try container.decode(String.self, forKey: .status)
         let errorCode = try container.decodeIfPresent(String.self, forKey: .errorCode)
-        super.init(status: status, errorCode: errorCode)    }
+        super.init(status: status, errorCode: errorCode)
+    }
     
     public func isSuccess() -> Bool {
         return self.status.lowercased() == "success"
@@ -50,6 +51,10 @@ public class ExternalSignatureResponsePayload: ResponsePayload {
     
     public func getPublicKey() -> String? {
         return self.publickey
+    }
+    
+    public func getCertificate() -> String? {
+        return self.certificate
     }
     
     private enum CodingKeys: String, CodingKey {

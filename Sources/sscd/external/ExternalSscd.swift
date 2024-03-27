@@ -32,7 +32,8 @@ public class ExternalSscd: MusapSscdProtocol {
     }
     
     public func bindKey(req: KeyBindReq) throws -> MusapKey {
-        print("ExternalSscd.bindKey() started")
+        print("Binding ExternalSscd")
+        
         let request: ExternalSignaturePayload = ExternalSignaturePayload(clientid: self.clientid)
         
         var theMsisdn: String? = nil
@@ -41,7 +42,6 @@ public class ExternalSscd: MusapSscdProtocol {
         let semaphore = DispatchSemaphore(value: 0)
         if msisdn == nil {
             ExternalSscd.showEnterMsisdnDialog { msisdn in
-                print("Received MSISDN: \(msisdn)")
                 theMsisdn = msisdn
                 semaphore.signal()
             }
@@ -61,12 +61,6 @@ public class ExternalSscd: MusapSscdProtocol {
         request.clientid = self.clientid
         request.display  = req.getDisplayText()
         request.format   = "RAW"
-        
-        
-        if request.attributes == nil {
-            request.attributes = [String: String]()
-        }
-        
         request.attributes?[ExternalSscd.ATTRIBUTE_MSISDN] = theMsisdn
         
         do {
@@ -92,18 +86,27 @@ public class ExternalSscd: MusapSscdProtocol {
                         print("ExternalSscd.bindKey(): No Public Key")
                         return
                     }
+                    
+                    guard let certStr = response.certificate,
+                          let certData = Data(base64Encoded: certStr),
+                          let secCertificate = SecCertificateCreateWithData(nil, data! as CFData)
+                    else
+                    {
+                        print("No certificate in result")
+                        return
+                    }
             
                     guard let publicKeyData = publickey.data(using: .utf8) else {
-                        print("could not turn publick ey string to data")
+                        print("could not turn publickey string to data")
                         return
                     }
                     
-                    let musapSignature = MusapSignature(rawSignature: signatureData)
-                    
                     theKey =  MusapKey(
                         keyAlias:  req.getKeyAlias(),
+                        keyId:     UUID().uuidString,
                         sscdType:  ExternalSscd.SSCD_TYPE,
                         publicKey: PublicKey(publicKey: publicKeyData),
+                        certificate: MusapCertificate(cert: secCertificate),
                         algorithm: KeyAlgorithm.RSA_2K,  //TODO: resolve this
                         keyUri:    KeyURI(name: req.getKeyAlias(),
                                           sscd: ExternalSscd.SSCD_TYPE,
