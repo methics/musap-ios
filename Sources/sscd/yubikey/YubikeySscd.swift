@@ -14,6 +14,7 @@ public class YubikeySscd: MusapSscdProtocol {
     public typealias CustomSscdSettings = YubikeySscdSettings
     private let settings = YubikeySscdSettings()
     
+    private static let ATTRIBUTE_ATTEST = "YubikeyAtteestationCert"
     private static let ATTRIBUTE_SERIAL = "serial"
     private static let MANAGEMENT_KEY_TYPE: YKFPIVManagementKeyType = YKFPIVManagementKeyType.tripleDES()
     private static let MANAGEMENT_KEY = Data([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08])
@@ -23,6 +24,7 @@ public class YubikeySscd: MusapSscdProtocol {
     private let type: YKFPIVManagementKeyType
     private let yubiKitManager: YubiKitManager
     private var attestationCertificate: [String: Data]?
+    private var attestationSecCertificate: SecCertificate?
     private var generatedKeyId: String?
     
     
@@ -83,10 +85,18 @@ public class YubikeySscd: MusapSscdProtocol {
                     return
                 }
                 
+                guard let attestationSecCert = self.attestationSecCertificate else {
+                    print("No key attestation certificate found")
+                    return
+                }
+                
+                let keyAttribute = KeyAttribute(name: YubikeySscd.ATTRIBUTE_ATTEST, cert: attestationSecCert)
+                
                 musapKey = MusapKey(keyAlias:  req.keyAlias,
                                     keyId:     self.generatedKeyId,
                                     sscdType:  YubikeySscd.SSCD_TYPE,
                                     publicKey: publicKeyObj,
+                                    attributes: [keyAttribute],
                                     algorithm: keyAlgorithm,
                                     keyUri:    KeyURI(name: req.keyAlias, sscd: sscd.getSscdType(), loa: "loa2")
                 )
@@ -249,6 +259,7 @@ public class YubikeySscd: MusapSscdProtocol {
                                                 let keyId = UUID().uuidString
                                                 self.generatedKeyId = keyId
                                                 self.attestationCertificate = [keyId: certData]
+                                                self.attestationSecCertificate = cert
                                             }
                                         } else {
                                             // failed attestation

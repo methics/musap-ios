@@ -213,6 +213,14 @@ public class KeychainSscd: MusapSscdProtocol {
         self.settings.setSetting(key: key, value: value)
     }
     
+    public func getKeyAttestation() -> any KeyAttestationProtocol {
+        return NoKeyAttestation()
+    }
+    
+    public func attestKey(key: MusapKey) -> KeyAttestationResult {
+        return KeyAttestationResult(attestationStatus: .INVALID)
+    }
+    
     
     
     

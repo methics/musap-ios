@@ -287,6 +287,14 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
     public func setSetting(key: String, value: String) {
         self.settings.setSetting(key: key, value: value)
     }
+    
+    public func getKeyAttestation() -> any KeyAttestationProtocol {
+        return NoKeyAttestation()
+    }
+    
+    public func attestKey(key: MusapKey) -> KeyAttestationResult {
+        return KeyAttestationResult(attestationStatus: .INVALID)
+    }
 
 
 
