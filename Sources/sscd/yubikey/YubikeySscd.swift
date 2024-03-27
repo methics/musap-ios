@@ -235,6 +235,26 @@ public class YubikeySscd: MusapSscdProtocol {
                         let keyType     = self.selectKeyType(req: req)
                         
                         session.generateKey(in: slot, type: keyType, pinPolicy: pinPolicy, touchPolicy: touchPolicy) { publicKey, error in
+                            
+                            session.attestKey(in: slot) { cert, error in
+                                
+                                if error != nil {
+                                    print("Error while key attesting: \(String(describing: error))")
+                                }
+                                if let cert = cert {
+                                    if let certData = SecCertificateCopyData(cert) as Data? {
+                                        let keyId = UUID().uuidString
+                                        self.generatedKeyId = keyId
+                                        self.attestationCertificate = [keyId: certData]
+                                        self.attestationSecCertificate = cert
+                                    } else {
+                                        print("failed to SecCertificateCopyData")
+                                    }
+                                } else {
+                                    // failed attestation
+                                    print("Failed YubikeyAttestation")
+                                }
+                            }
                         
                             // verify user PIN
                             session.verifyPin(pin, completion: { retries, error in
@@ -253,23 +273,7 @@ public class YubikeySscd: MusapSscdProtocol {
                                 YubiKitManager.shared.stopNFCConnection(withMessage: "KeyPair generated")
                                                                 
                                 if let pubKey = publicKey {
-                                    session.attestKey(in: slot) { cert, error in
-                                        
-                                        if error != nil {
-                                            print("Error while key attesting: \(String(describing: error))")
-                                        }
-                                        if let cert = cert {
-                                            if let certData = SecCertificateCopyData(cert) as Data? {
-                                                let keyId = UUID().uuidString
-                                                self.generatedKeyId = keyId
-                                                self.attestationCertificate = [keyId: certData]
-                                                self.attestationSecCertificate = cert
-                                            }
-                                        } else {
-                                            // failed attestation
-                                            print("Failed YubikeyAttestation")
-                                        }
-                                    }
+
                                     
                                     
                                     completion(.success(pubKey))
