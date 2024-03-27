@@ -97,6 +97,7 @@ public class YubikeySscd: MusapSscdProtocol {
                                     sscdType:  YubikeySscd.SSCD_TYPE,
                                     publicKey: publicKeyObj,
                                     attributes: [keyAttribute],
+                                    loa: [MusapLoa.EIDAS_SUBSTANTIAL, MusapLoa.ISO_LOA3],
                                     algorithm: keyAlgorithm,
                                     keyUri:    KeyURI(name: req.keyAlias, sscd: sscd.getSscdType(), loa: "loa2")
                 )
