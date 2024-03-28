@@ -333,8 +333,6 @@ public class MusapLink: Encodable, Decodable {
         let payload = SignatureCallbackPayload(linkid: nil, signature: signature)
         payload.attestationResult = signature.getKeyAttestationResult()
         
-        print("signature attestation status:  \(signature.getKeyAttestationResult()?.getAttestationStatus())")
-        
         let msg = MusapMessage()
         msg.type = MusapLink.SIG_CALLBACK_MSG_TYPE
         msg.payload = payload.getBase64Encoded()
