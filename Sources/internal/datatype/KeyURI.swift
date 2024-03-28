@@ -144,7 +144,7 @@ public class KeyURI: Codable, Equatable, Hashable {
      Get a String representation of this KeyURI
      - returns: KeyURI as String
      */
-    func getUri() -> String {
+    public func getUri() -> String {
         var components = [String]()
         var isFirst = true
 
