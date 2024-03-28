@@ -333,6 +333,8 @@ public class MusapLink: Encodable, Decodable {
         let payload = SignatureCallbackPayload(linkid: nil, signature: signature)
         payload.attestationResult = signature.getKeyAttestationResult()
         
+        print("signature attestation status:  \(signature.getKeyAttestationResult()?.getAttestationStatus())")
+        
         let msg = MusapMessage()
         msg.type = MusapLink.SIG_CALLBACK_MSG_TYPE
         msg.payload = payload.getBase64Encoded()
@@ -507,19 +509,6 @@ public class MusapLink: Encodable, Decodable {
                 completion(nil, error)
                 return
             }
-
-            /*
-            if let data = data {
-                if let jsonString = String(data: data, encoding: .utf8) {
-                    print("sendRequest jsonString from retrieved http data: \(jsonString)")
-                    if jsonString == "null" {
-                        print("jsonString was null, trying to send completion(nil, nil)")
-                        completion(nil, nil)
-                        return
-                    }
-                }
-            }
-             */
             
             guard let data = data,
                   !data.isEmpty
@@ -530,10 +519,10 @@ public class MusapLink: Encodable, Decodable {
             }
             
             print("sendRequest Data: \(data.base64EncodedString())")
-
+            
             guard let responseMsg = try? JSONDecoder().decode(MusapMessage.self, from: data)
             else {
-                print("Failed to parse json to MusapMEssage")
+                print("Failed to parse json to MusapMessage")
                 completion(nil, NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to decode response"]))
                 return
             }
