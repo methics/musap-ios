@@ -13,8 +13,7 @@ public class MusapSignature {
     private let key:          MusapKey?
     private let algorithm:    SignatureAlgorithm?
     private let format:       SignatureFormat?
-    private let attestationData: KeyAttestationResult?
-    
+    private var attestationData: KeyAttestationResult?
 
     /// Create a new MUSAP signture object
     public init(rawSignature: Data, key: MusapKey, algorithm: SignatureAlgorithm, format: SignatureFormat) {
@@ -80,6 +79,14 @@ public class MusapSignature {
             return nil
         }
         return key.getPublicKey()
+    }
+    
+    public func setKeyAttestationResult(attestationData: KeyAttestationResult) -> Void {
+        self.attestationData = attestationData
+    }
+    
+    public func getKeyAttestationResult() -> KeyAttestationResult? {
+        return self.attestationData
     }
     
     
