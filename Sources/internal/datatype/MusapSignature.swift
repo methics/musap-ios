@@ -16,11 +16,12 @@ public class MusapSignature {
     private var attestationData: KeyAttestationResult?
 
     /// Create a new MUSAP signture object
-    public init(rawSignature: Data, key: MusapKey, algorithm: SignatureAlgorithm, format: SignatureFormat) {
+    public init(rawSignature: Data, key: MusapKey, algorithm: SignatureAlgorithm, format: SignatureFormat, attestationData: KeyAttestationResult? = nil) {
         self.rawSignature = rawSignature
         self.key          = key
         self.algorithm    = algorithm
         self.format       = format
+        self.attestationData = attestationData
         
         if let key = self.key {
             let sscd = self.key?.getSscd()
