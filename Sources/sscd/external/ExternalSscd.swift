@@ -94,7 +94,7 @@ public class ExternalSscd: MusapSscdProtocol {
                     
                     guard let certStr = response.certificate,
                           let certData = Data(base64Encoded: certStr),
-                          let secCertificate = SecCertificateCreateWithData(nil, data! as CFData)
+                          let secCertificate = SecCertificateCreateWithData(nil, certData as CFData)
                     else
                     {
                         print("No certificate in result")
