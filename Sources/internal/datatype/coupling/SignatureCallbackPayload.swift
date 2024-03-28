@@ -14,6 +14,7 @@ public class SignatureCallbackPayload: Encodable {
     public let signature: String?
     public let keyuri:    String?
     public let keyid:     String?
+    public var attestationResult: KeyAttestationResult?
     
     public init(linkid: String?, signature: MusapSignature?) {
         self.linkid = linkid

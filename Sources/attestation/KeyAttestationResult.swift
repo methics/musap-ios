@@ -7,7 +7,7 @@
 
 import Foundation
 
-public class KeyAttestationResult {
+public class KeyAttestationResult: Encodable {
     
     private var attestationType: String?
     private var attestationSignature: Data?
@@ -79,7 +79,7 @@ public class KeyAttestationResult {
         //TODO:
     }
     
-    public enum AttestationStatus {
+    public enum AttestationStatus: Encodable {
         case INVALID
         case UNDETERMINED
     }

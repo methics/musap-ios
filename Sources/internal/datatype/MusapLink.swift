@@ -331,6 +331,7 @@ public class MusapLink: Encodable, Decodable {
     
     public func sendSignatureCallback(signature: MusapSignature, transId: String) throws {
         let payload = SignatureCallbackPayload(linkid: nil, signature: signature)
+        payload.attestationResult = signature.getKeyAttestationResult()
         
         let msg = MusapMessage()
         msg.type = MusapLink.SIG_CALLBACK_MSG_TYPE
