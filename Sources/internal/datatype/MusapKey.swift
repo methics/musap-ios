@@ -42,7 +42,7 @@ public class MusapKey: Codable, Identifiable {
         keyUsages:        [String]? = nil,
         loa:              [MusapLoa]? = nil,
         algorithm:        KeyAlgorithm? = nil,
-        keyUri:           KeyURI,
+        keyUri:           KeyURI?,
         isBiometricRequired: Bool = false,
         did:                 String? = nil,
         state:               String? = nil

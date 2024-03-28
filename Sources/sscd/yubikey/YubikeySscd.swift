@@ -99,7 +99,7 @@ public class YubikeySscd: MusapSscdProtocol {
                                     attributes: [keyAttribute],
                                     loa: [MusapLoa.EIDAS_SUBSTANTIAL, MusapLoa.ISO_LOA3],
                                     algorithm: keyAlgorithm,
-                                    keyUri:    KeyURI(name: req.keyAlias, sscd: sscd.getSscdType(), loa: "loa2")
+                                    keyUri:    nil
                 )
                 
                 break
@@ -121,6 +121,9 @@ public class YubikeySscd: MusapSscdProtocol {
         guard let generatedKey = musapKey else {
             throw MusapError.internalError
         }
+        
+        let keyUri = KeyURI(key: generatedKey)
+        generatedKey.setKeyUri(value: keyUri)
         
         return generatedKey
     }
