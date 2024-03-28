@@ -115,9 +115,6 @@ public class ExternalSscd: MusapSscdProtocol {
                         algorithm: KeyAlgorithm.RSA_2K,  //TODO: resolve this
                         keyUri: nil
                     )
-                    theKey?.addAttribute(attr: KeyAttribute(name: ExternalSscd.ATTRIBUTE_MSISDN, value: theMsisdn))
-                    
-                    
                     
                 case .failure(let error):
                     print("bindKey()->musapLink->sign() error while binding key: \(error)")
@@ -134,6 +131,7 @@ public class ExternalSscd: MusapSscdProtocol {
             
             let keyUri = KeyURI(key: musapKey)
             musapKey.setKeyUri(value: keyUri)
+            musapKey.addAttribute(attr: KeyAttribute(name: ExternalSscd.ATTRIBUTE_MSISDN, value: theMsisdn))
             return musapKey
 
         } catch {
