@@ -9,10 +9,25 @@ import Foundation
 
 public class KeyURI: Codable, Equatable, Hashable {
     
-    public static let NAME    = "name"
-    public static let LOA     = "loa"
+
+    public static let SSCD = "sscd" // SSCD type e.g. "sim"
+    public static let PROVIDER = "provider" // Key provider. For example MNO brand name "DNA"
     public static let COUNTRY = "country"
-    public static let SSCD    = "sscd"
+    public static let IDENTITY_SCHEME = "identity-scheme" // E.g. NIST or eIDAS
+    public static let SERIAL = "serial"
+    public static let MSISDN = "msisdn"
+    public static let LOA = "loa" // e.g. "eidas-high"
+    
+    public static let KEY_USAGE = "key-usage" // "authn" or "signing"
+    public static let KEY_NAME = "key-name"
+    public static let KEY_ALGORITHM = "key-algorithm"
+    public static let KEY_LENGTH = "key-length"
+    public static let KEY_PREGEN = "key-pregenerated"
+    
+    public static let RSA_EXPONENT = "rsa-public-exponent"
+    public static let ECC_CURVE = "ecc-curve"
+    public static let CREATED_DATE = "created-date"
+    
     
     private var keyUriMap: [String: String] = [:]
     
@@ -28,21 +43,45 @@ public class KeyURI: Codable, Equatable, Hashable {
     }
     
     public init(key: MusapKey) {
-        if key.getKeyAlias()    != nil { keyUriMap["alias"]      = key.getKeyAlias()                            }
-        if key.getAlgorithm()   != nil { keyUriMap["algorithm"]  = (key.getAlgorithm()?.isEc())! ? "EC" : "RSA" }
-        if key.getCreatedDate() != nil { keyUriMap["created_dt"] = key.getCreatedDate()?.ISO8601Format()        }
+        if key.getKeyAlias()    != nil { keyUriMap[KeyURI.KEY_NAME]      = key.getKeyAlias() }
         
-        if key.getAttributeValue(attrName: "msisdn") != nil { keyUriMap["msisdn"] = key.getAttributeValue(attrName: "msisdn") }
-        if key.getAttributeValue(attrName: "serial") != nil { keyUriMap["serial"] = key.getAttributeValue(attrName: "serial")}
-        
-        if key.getSscdInfo() != nil {
-            let sscdName = key.getSscdInfo()?.getSscdName()
-            let sscdCountry = key.getSscdInfo()?.getCountry()
-            let sscdProvider = key.getSscdInfo()?.getProvider()
+        if let keyAlgorithm = key.getAlgorithm() {
+            keyUriMap[KeyURI.KEY_ALGORITHM] = (keyAlgorithm.isEc() ? "EC" : "RSA")
+            keyUriMap[KeyURI.KEY_LENGTH]    = String(keyAlgorithm.bits)
             
-            if sscdName     != nil  { keyUriMap["sscd"]     = sscdName     }
-            if sscdCountry  != nil  { keyUriMap["country"]  = sscdCountry  }
-            if sscdProvider != nil  { keyUriMap["provider"] = sscdProvider }
+            if keyAlgorithm.isEc() {
+                keyUriMap[KeyURI.ECC_CURVE] = keyAlgorithm.curve
+            } else {
+                //TODO: RSA Exponent
+            }
+        }
+        
+        if let createdDate = key.getCreatedDate() {
+            keyUriMap[KeyURI.CREATED_DATE] = ISO8601DateFormatter().string(from: createdDate)
+        }
+        
+        if let keyUsage = key.getKeyUsages() {
+            keyUriMap[KeyURI.KEY_USAGE] = keyUsage.joined(separator: ",")
+        }
+        
+        if let loa = key.getLoa() {
+            let loaStringArray = loa.map { $0.toString() }
+            let loaString = loaStringArray.joined(separator: ",")
+            keyUriMap[KeyURI.LOA] = loaString
+        }
+        
+        if let msisdn = key.getAttributeValue(attrName: KeyURI.MSISDN) {
+            keyUriMap[KeyURI.MSISDN] = msisdn
+        }
+        
+        if let serial = key.getAttributeValue(attrName: KeyURI.SERIAL) {
+            keyUriMap[KeyURI.SERIAL] = serial
+        }
+        
+        if let sscdInfo = key.getSscdInfo() {
+            keyUriMap[KeyURI.SSCD] = sscdInfo.getSscdName()
+            keyUriMap[KeyURI.COUNTRY] = sscdInfo.getCountry()
+            keyUriMap[KeyURI.PROVIDER] = sscdInfo.getProvider()
         }
     }
     
