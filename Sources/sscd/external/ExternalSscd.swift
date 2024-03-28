@@ -137,6 +137,7 @@ public class ExternalSscd: MusapSscdProtocol {
             musapKey.setKeyUri(value: keyUri)
             musapKey.addAttribute(attr: KeyAttribute(name: ExternalSscd.ATTRIBUTE_MSISDN, value: theMsisdn))
             
+            
             guard let attestationCert = self.attestationSecCertificate else {
                 print("no attestation cert")
                 throw MusapError.internalError
@@ -179,7 +180,9 @@ public class ExternalSscd: MusapSscdProtocol {
         semaphore.wait()
         
         let dataBase64 = req.getData().base64EncodedString(options: .lineLength64Characters)
-        
+        if request.attributes == nil {
+            request.attributes = [String: String]()
+        }
         request.attributes?[ExternalSscd.ATTRIBUTE_MSISDN] = theMsisdn
         request.clientid = self.clientid
         request.display  = req.getDisplayText()

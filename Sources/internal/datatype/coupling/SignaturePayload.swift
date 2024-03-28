@@ -20,7 +20,7 @@ public class SignaturePayload: Decodable {
     public var mode: String? = nil
     
     
-    init(data:  String,
+    init(data: String,
          format: String? = "RAW",
          scheme: String?,
          linkid: String,
