@@ -11,9 +11,9 @@ import Security
 public class YubiKeyAttestation: KeyAttestationProtocol {
     
     public var keyAttestationType: String
-    public var certificates: [String: Data]?
+    public var certificates: [String: Data] = [:]
     
-    public init(keyAttestationType: String, certificates: [String : Data]?) {
+    public init(keyAttestationType: String, certificates: [String: Data]) {
         self.keyAttestationType = keyAttestationType
         self.certificates = certificates
     }
@@ -42,9 +42,24 @@ public class YubiKeyAttestation: KeyAttestationProtocol {
     }
     
     public func getCertificate(keyId: String) -> MusapCertificate? {
-        guard let certificates = self.certificates else {
+        guard let key = MusapClient.getKeyByKeyId(keyId: keyId) else {
+            print("Could not get MusapKey by KeyID")
             return nil
         }
+        
+        guard let cert = key.getAttributeValue(attrName: "YubikeyAttestationCert") else {
+            return nil
+        }
+        
+        guard let certAsData = cert.data(using: .utf8) else {
+            return nil
+        }
+        
+        if certificates == nil {
+            self.certificates = [String: Data]()
+        }
+        
+        self.certificates[keyId] = certAsData
         
         if let certificateData = certificates[keyId] {
             if let cfData = CFDataCreate(nil, [UInt8](certificateData), certificateData.count) {

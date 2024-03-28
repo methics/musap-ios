@@ -464,7 +464,7 @@ public class YubikeySscd: MusapSscdProtocol {
     }
     
     public func getKeyAttestation() -> any KeyAttestationProtocol {
-        return YubiKeyAttestation(keyAttestationType: KeyAttestationType.YUBIKEY, certificates: self.attestationCertificate)
+        return YubiKeyAttestation(keyAttestationType: KeyAttestationType.YUBIKEY, certificates: self.attestationCertificate ?? [:])
     }
     
     public func attestKey(key: MusapKey) -> KeyAttestationResult {

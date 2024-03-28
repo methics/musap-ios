@@ -25,6 +25,8 @@ public class ExternalSscd: MusapSscdProtocol {
     private let settings:  ExternalSscdSettings
     private let musapLink: MusapLink
     
+    private var attestationSecCertificate: SecCertificate?
+    
     public init(settings: ExternalSscdSettings, clientid: String, musapLink: MusapLink) {
         self.settings = settings
         self.clientid = settings.getClientId() ?? "LOCAL"
@@ -100,6 +102,8 @@ public class ExternalSscd: MusapSscdProtocol {
                         print("No certificate in result")
                         return
                     }
+                    
+                    self.attestationSecCertificate = secCertificate
             
                     guard let publicKeyData = publickey.data(using: .utf8) else {
                         print("could not turn publickey string to data")
@@ -132,6 +136,14 @@ public class ExternalSscd: MusapSscdProtocol {
             let keyUri = KeyURI(key: musapKey)
             musapKey.setKeyUri(value: keyUri)
             musapKey.addAttribute(attr: KeyAttribute(name: ExternalSscd.ATTRIBUTE_MSISDN, value: theMsisdn))
+            
+            guard let attestationCert = self.attestationSecCertificate else {
+                print("no attestation cert")
+                throw MusapError.internalError
+            }
+            
+            let attestAttr = KeyAttribute(name: "ATTEST", cert: attestationCert)
+            musapKey.addAttribute(attr: attestAttr)
             return musapKey
 
         } catch {
@@ -286,7 +298,7 @@ public class ExternalSscd: MusapSscdProtocol {
     }
     
     public func attestKey(key: MusapKey) -> KeyAttestationResult {
-        return KeyAttestationResult(attestationStatus: .INVALID)
+        return self.getKeyAttestation().getAttestationData(key: key)
     }
     
 }
