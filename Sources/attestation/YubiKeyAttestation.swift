@@ -25,6 +25,11 @@ public class YubiKeyAttestation: KeyAttestationProtocol {
         guard let keyId = key.getKeyId(),
               let cert  = self.getCertificate(keyId: keyId)
         else {
+            print("keyid is: \(key.getKeyId() ?? "NO KEYID")")
+            
+            if self.getCertificate(keyId: key.getKeyId() ?? "BAD KEYID") == nil {
+                print("cert was nil")
+            }
             // Invalid attestation
             result.setAttestationStatus(attestationStatus: KeyAttestationResult.AttestationStatus.INVALID)
             return result
@@ -50,6 +55,7 @@ public class YubiKeyAttestation: KeyAttestationProtocol {
             }
             
             guard let cert = key.getAttributeValue(attrName: "YubikeyAttestationCert") else {
+                print("Could not find YubikeyAttestationCert")
                 return nil
             }
             
