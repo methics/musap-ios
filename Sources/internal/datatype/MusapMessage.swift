@@ -44,3 +44,19 @@ public class MusapMessage: Codable {
 
     
 }
+
+extension MusapMessage: CustomStringConvertible {
+    public var description: String {
+        return """
+        MusapMessage:
+        - payload: \(payload ?? "nil")
+        - musapid: \(musapid ?? "nil")
+        - type: \(type ?? "nil")
+        - uuid: \(uuid ?? "nil")
+        - transid: \(transid ?? "nil")
+        - requestid: \(requestid ?? "nil")
+        - mac: \(mac ?? "nil")
+        - iv: \(iv ?? "nil")
+        """
+    }
+}
