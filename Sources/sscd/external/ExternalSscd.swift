@@ -113,10 +113,7 @@ public class ExternalSscd: MusapSscdProtocol {
                         publicKey: PublicKey(publicKey: publicKeyData),
                         certificate: MusapCertificate(cert: secCertificate),
                         algorithm: KeyAlgorithm.RSA_2K,  //TODO: resolve this
-                        keyUri:    KeyURI(name: req.getKeyAlias(),
-                                          sscd: ExternalSscd.SSCD_TYPE,
-                                          loa: "loa2"
-                                         ) //TODO: What LoA?
+                        keyUri: nil
                     )
                     theKey?.addAttribute(attr: KeyAttribute(name: ExternalSscd.ATTRIBUTE_MSISDN, value: theMsisdn))
                     
@@ -135,6 +132,8 @@ public class ExternalSscd: MusapSscdProtocol {
                 throw MusapError.internalError
             }
             
+            let keyUri = KeyURI(key: musapKey)
+            musapKey.setKeyUri(value: keyUri)
             return musapKey
 
         } catch {

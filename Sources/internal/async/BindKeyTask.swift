@@ -20,9 +20,11 @@ public class BindKeyTask {
             let storage = MetadataStorage()
             
             guard let activeSscd = sscd.getSscdInfo() else {
-                print("BindKeyTask: Could not get SSCD ID")
+                print("BindKeyTask: Could not get SSCD Info")
                 throw MusapError.internalError
             }
+            
+            print("sscd id: \(String(describing: activeSscd.getSscdId()))")
             
             guard let sscdId = sscd.getSscdId() else {
                 print("BindKeyTask: Could not get SSCD ID")
