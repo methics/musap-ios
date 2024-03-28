@@ -21,15 +21,9 @@ public class YubiKeyAttestation: KeyAttestationProtocol {
     public func getAttestationData(key: MusapKey) -> KeyAttestationResult {
         var result = KeyAttestationResult(attestationStatus: KeyAttestationResult.AttestationStatus.UNDETERMINED)
         
-        
         guard let keyId = key.getKeyId(),
               let cert  = self.getCertificate(keyId: keyId)
         else {
-            print("keyid is: \(key.getKeyId() ?? "NO KEYID")")
-            
-            if self.getCertificate(keyId: key.getKeyId() ?? "BAD KEYID") == nil {
-                print("cert was nil")
-            }
             // Invalid attestation
             result.setAttestationStatus(attestationStatus: KeyAttestationResult.AttestationStatus.INVALID)
             return result
@@ -59,12 +53,26 @@ public class YubiKeyAttestation: KeyAttestationProtocol {
                 return nil
             }
             
+            print("YubikeyAttestation() Cert: \(cert)")
+            
+            /*
             guard let certAsData = cert.data(using: .utf8) else {
                 return nil
             }
+             */
             
-            self.certificates = [String: Data]()
+            guard let certAsData = Data(base64Encoded: cert) else {
+                print("failed to create data")
+                return nil
+            }
+            
+            
+            if self.certificates == nil {
+                self.certificates = [String: Data]()
+            }
             self.certificates?[keyId] = certAsData
+            
+            print(print("TYPE OF: \(type(of: self.certificates?[keyId]))"))
                         
         }
         
