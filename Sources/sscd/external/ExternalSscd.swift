@@ -61,6 +61,11 @@ public class ExternalSscd: MusapSscdProtocol {
         request.clientid = self.clientid
         request.display  = req.getDisplayText()
         request.format   = "RAW"
+
+        if request.attributes == nil {
+            request.attributes = [String: String]()
+        }
+        
         request.attributes?[ExternalSscd.ATTRIBUTE_MSISDN] = theMsisdn
         
         do {
