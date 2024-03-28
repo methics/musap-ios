@@ -235,10 +235,6 @@ public class ExternalSscd: MusapSscdProtocol {
         return sscd
     }
     
-    public func generateSscdId(key: MusapKey) -> String {
-        return ExternalSscd.SSCD_TYPE + "/" + (key.getAttributeValue(attrName: ExternalSscd.ATTRIBUTE_MSISDN) ?? "")
-    }
-    
     public func isKeygenSupported() -> Bool {
         return false
     }
