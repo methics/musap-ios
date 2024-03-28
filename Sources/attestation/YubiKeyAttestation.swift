@@ -44,25 +44,14 @@ public class YubiKeyAttestation: KeyAttestationProtocol {
     public func getCertificate(keyId: String) -> MusapCertificate? {
         if self.certificates == nil {
             guard let key = MusapClient.getKeyByKeyId(keyId: keyId) else {
-                print("Could not get MusapKey by KeyID")
                 return nil
             }
             
             guard let cert = key.getAttributeValue(attrName: "YubikeyAttestationCert") else {
-                print("Could not find YubikeyAttestationCert")
                 return nil
             }
-            
-            print("YubikeyAttestation() Cert: \(cert)")
-            
-            /*
-            guard let certAsData = cert.data(using: .utf8) else {
-                return nil
-            }
-             */
             
             guard let certAsData = Data(base64Encoded: cert) else {
-                print("failed to create data")
                 return nil
             }
             
@@ -72,8 +61,6 @@ public class YubiKeyAttestation: KeyAttestationProtocol {
             }
             self.certificates?[keyId] = certAsData
             
-            print(print("TYPE OF: \(type(of: self.certificates?[keyId]))"))
-                        
         }
         
         guard let certificates = self.certificates else {
@@ -84,7 +71,6 @@ public class YubiKeyAttestation: KeyAttestationProtocol {
             if let cfData = CFDataCreate(nil, [UInt8](certificateData), certificateData.count) {
                 guard let certificate = SecCertificateCreateWithData(nil, cfData) else {
                     // Failed to create SecCertificate
-                    print("Failed to create SecCertificate")
                     return nil
                 }
                 return MusapCertificate(cert: certificate)
