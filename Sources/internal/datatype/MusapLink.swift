@@ -406,6 +406,8 @@ public class MusapLink: Encodable, Decodable {
                 return
             }
             
+            print("RESP: \(resp)")
+            
             // TODO: We have a problem: No payload
             guard let payload = resp.payload else {
                 print("No payload in resp")
