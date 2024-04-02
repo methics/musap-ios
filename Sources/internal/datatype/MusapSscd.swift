@@ -11,7 +11,7 @@ public class MusapSscd: Identifiable {
     
     public static let SETTING_SSCDID = "id"
     
-    private var impl: any MusapSscdProtocol
+    public var impl: any MusapSscdProtocol
     
     public init(impl: any MusapSscdProtocol) {
         self.impl = impl
