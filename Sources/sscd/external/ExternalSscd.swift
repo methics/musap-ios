@@ -233,8 +233,6 @@ public class ExternalSscd: MusapSscdProtocol {
                     guard let rawSignature = response.getRawSignature() else {
                         return
                     }
-                    
-                    
 
                     theSignature = MusapSignature(rawSignature: rawSignature, key: req.getKey(), algorithm: req.algorithm, format: req.format)
                     

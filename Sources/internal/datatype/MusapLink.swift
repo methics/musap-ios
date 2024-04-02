@@ -441,6 +441,7 @@ public class MusapLink: Encodable, Decodable {
                                 
                             switch result {
                             case .success(let payload):
+                                print("Debugging ExternalSignatureResponsePayload: \(payload.description)")
                                 print("got payload of MusapLink.pollForSignature: \(payload.isSuccess())")
                                 guard let signature = payload.signature,
                                       let signatureData = signature.data(using: .utf8)
