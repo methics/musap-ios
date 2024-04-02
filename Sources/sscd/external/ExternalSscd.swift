@@ -102,7 +102,7 @@ public class ExternalSscd: MusapSscdProtocol {
                         print("No certificate in result")
                         return
                     }
-                    
+                    /*
                     guard let certificateChain = response.certificateChain else {
                         print("No certificate chain in result")
                         return
@@ -111,7 +111,7 @@ public class ExternalSscd: MusapSscdProtocol {
                     var musapCertChain: [MusapCertificate] = [MusapCertificate]()
                     
                     for cert in certificateChain {
-                        
+
                         guard let certData = Data(base64Encoded: cert),
                               let secCert = SecCertificateCreateWithData(nil, certData as CFData)
                         else 
@@ -121,9 +121,10 @@ public class ExternalSscd: MusapSscdProtocol {
                         }
                         
                         let newMusapCert = MusapCertificate(cert: secCert)
-                        musapCertChain.append(contentsOf: musapCertChain)
+                        musapCertChain.append(contentsOf: newMusapCert)
                     }
                     
+                     */
                     
                     self.attestationSecCertificate = secCertificate
             
@@ -138,7 +139,7 @@ public class ExternalSscd: MusapSscdProtocol {
                         sscdType:  ExternalSscd.SSCD_TYPE,
                         publicKey: PublicKey(publicKey: publicKeyData),
                         certificate: MusapCertificate(cert: secCertificate),
-                        certificateChain: musapCertChain,
+                        //certificateChain: musapCertChain,
                         algorithm: KeyAlgorithm.RSA_2K,  //TODO: resolve this
                         keyUri: nil
                     )
