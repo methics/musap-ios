@@ -69,9 +69,11 @@ public class MusapClient {
         }
     }
     
-    //TODO: docs
+    /**
+     List SSCDs supported by this MUSAP library. To add an SSCD to this list, MusapClient.enableSscd() first.
+     - Returns: An array of enabled MusapSscd
+     */
     public static func listEnabledSscds() -> [MusapSscd]? {
-        
         let enabledSscds = KeyDiscoveryAPI(storage: MetadataStorage()).listEnabledSscds()
         
         print("found \(enabledSscds.count) SSCD's")
@@ -82,7 +84,12 @@ public class MusapClient {
         return musapSscds
     }
     
-    //TODO: docs, TEST
+    /**
+     List SSCDs supported by this MUSAP library. To add an SSCD to this list, MusapClient.enableSscd() first.
+     - Parameters:
+        - req: SscdSearchReq that filters the output
+     - Returns: An array of MusapSscd or nil if no matches
+     */
     public static func listEnabledSscds(req: SscdSearchReq) -> [MusapSscd]? {
         guard let enabledSscds = self.listEnabledSscds() else {
             return [MusapSscd]()
@@ -100,6 +107,7 @@ public class MusapClient {
         
         return result
     }
+    
     /**
      Lists enabled SSCDs based on specified search criteria.
 
@@ -115,10 +123,9 @@ public class MusapClient {
     
     /**
      Lists active SSCDs with user-generated or bound keys.
-
+     
      - Returns: An array of active SSCDs that can generate or bind keys.
      */
-
     public static func listActiveSscds() -> [MusapSscd] {
         guard let enabledSscds: [MusapSscd] = listEnabledSscds() else {
             print("No enabled sscds, returning empty list of MusapSscds")
@@ -247,7 +254,11 @@ public class MusapClient {
     }
     
     /**
-        Get a key by KeyID
+    Get a key by KeyID
+    - Parameters:
+       - keyId: Key ID as string
+     - Returns: MusapKey or nil
+     
      */
     public static func getKeyByKeyId(keyId: String) -> MusapKey? {
         let keyList = MetadataStorage().listKeys()
