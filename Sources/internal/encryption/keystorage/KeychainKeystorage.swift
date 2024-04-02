@@ -24,11 +24,32 @@ public class KeychainKeystorage: KeyStorage {
     }
     
     public func loadKey(keyName: String) -> Data? {
-        
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassKey,
+            kSecAttrApplicationTag as String: keyName.data(using: .utf8)!,
+            kSecReturnData as String: true,
+        ]
+
+        var item: CFTypeRef?
+        let status = SecItemCopyMatching(query as CFDictionary, &item)
+        if status == errSecSuccess {
+            return (item as? Data)
+        } else {
+            return nil
+        }
     }
     
     public func keyExists(keyName: String) -> Bool {
-        <#code#>
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassKey,
+            kSecAttrApplicationTag as String: keyName.data(using: .utf8),
+            kSecReturnRef as String: true
+        ]
+        
+        var item: CFTypeRef?
+        let status = SecItemCopyMatching(query as CFDictionary, &item)
+        
+        return status == errSecSuccess
     }
     
     
