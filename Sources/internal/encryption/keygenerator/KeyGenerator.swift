@@ -7,6 +7,7 @@
 
 import Foundation
 
-public class EncryptedPayload {
+public protocol KeyGenerator {
     
+    func hkdf() throws -> String
 }

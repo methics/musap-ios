@@ -6,3 +6,20 @@
 //
 
 import Foundation
+
+public class AesTransportEncryption: TransportEncryption {
+        
+    public func encrypt(message: String) -> PayloadHolder {
+        <#code#>
+    }
+    
+    public func encrypt(message: String, iv: String) -> PayloadHolder {
+        <#code#>
+    }
+    
+    public func decrypt(message: Data, iv: String) -> String {
+        <#code#>
+    }
+    
+    
+}
