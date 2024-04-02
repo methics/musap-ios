@@ -30,7 +30,7 @@ public class ExternalSscd: MusapSscdProtocol {
     public init(settings: ExternalSscdSettings, clientid: String, musapLink: MusapLink) {
         self.settings = settings
         self.clientid = settings.getClientId() ?? "LOCAL"
-        self.musapLink = settings.getMusapLink()! //TODO: Dont use !
+        self.musapLink = settings.getMusapLink()!
     }
     
     public func bindKey(req: KeyBindReq) throws -> MusapKey {
@@ -88,7 +88,7 @@ public class ExternalSscd: MusapSscdProtocol {
                         print("Can't turn string to data")
                         return
                     }
-                     
+                                         
                     guard let publickey = response.publickey else {
                         print("ExternalSscd.bindKey(): No Public Key")
                         return
@@ -103,6 +103,28 @@ public class ExternalSscd: MusapSscdProtocol {
                         return
                     }
                     
+                    guard let certificateChain = response.certificateChain else {
+                        print("No certificate chain in result")
+                        return
+                    }
+                    
+                    var musapCertChain: [MusapCertificate] = [MusapCertificate]()
+                    
+                    for cert in certificateChain {
+                        
+                        guard let certData = Data(base64Encoded: cert),
+                              let secCert = SecCertificateCreateWithData(nil, certData as CFData)
+                        else 
+                        {
+                            print("Could not create SecCertificate from certificateB64")
+                            return
+                        }
+                        
+                        let newMusapCert = MusapCertificate(cert: secCert)
+                        musapCertChain.append(contentsOf: musapCertChain)
+                    }
+                    
+                    
                     self.attestationSecCertificate = secCertificate
             
                     guard let publicKeyData = publickey.data(using: .utf8) else {
@@ -116,6 +138,7 @@ public class ExternalSscd: MusapSscdProtocol {
                         sscdType:  ExternalSscd.SSCD_TYPE,
                         publicKey: PublicKey(publicKey: publicKeyData),
                         certificate: MusapCertificate(cert: secCertificate),
+                        certificateChain: musapCertChain,
                         algorithm: KeyAlgorithm.RSA_2K,  //TODO: resolve this
                         keyUri: nil
                     )

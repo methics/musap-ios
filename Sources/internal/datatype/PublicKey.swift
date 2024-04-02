@@ -39,7 +39,6 @@ public class PublicKey: Codable {
         return pem
     }
     
-    //TODO: Do we even need this?
     public func toSecKey(keyType: String) -> SecKey? {
         let keyData = publickeyDer
         

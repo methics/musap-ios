@@ -11,14 +11,24 @@ public class ExternalSignatureResponsePayload: ResponsePayload {
     let signature: String?
     let publickey: String?
     let certificate: String?
+    let certificateChain: [String]?
     
     let transid: String
     let attributes: [String: String]?
     
-    init(signature: String?, publickey: String, certificate: String, transid: String, attributes: [String : String], status: String, errorCode: String?) {
+    init(signature: String?,
+         publickey: String,
+         certificate: String,
+         certificateChain: [String],
+         transid: String,
+         attributes: [String : String],
+         status: String,
+         errorCode: String?
+    ) {
         self.signature = signature
         self.publickey = publickey
         self.certificate = certificate
+        self.certificateChain = certificateChain
         self.transid = transid
         self.attributes = attributes
         super.init(status: status, errorCode: errorCode)
@@ -31,6 +41,7 @@ public class ExternalSignatureResponsePayload: ResponsePayload {
         signature = try container.decodeIfPresent(String.self, forKey: .signature)
         publickey = try container.decodeIfPresent(String.self, forKey: .publicKey)
         certificate = try container.decodeIfPresent(String.self, forKey: .certificate)
+        certificateChain = try container.decodeIfPresent([String].self, forKey: .certificateChain)
         transid = try container.decode(String.self, forKey: .transid)
         attributes = try container.decodeIfPresent([String: String].self, forKey: .attributes)
         
@@ -58,6 +69,6 @@ public class ExternalSignatureResponsePayload: ResponsePayload {
     }
     
     private enum CodingKeys: String, CodingKey {
-        case signature, publicKey = "publickey", certificate, transid = "transid", attributes, status, errorCode = "errorcode"
+        case signature, publicKey = "publickey", certificate, certificateChain = "certificate_chain", transid = "transid", attributes, status, errorCode = "errorcode"
     }
 }
