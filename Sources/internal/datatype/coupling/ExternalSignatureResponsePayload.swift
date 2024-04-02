@@ -72,3 +72,17 @@ public class ExternalSignatureResponsePayload: ResponsePayload {
         case signature, publicKey = "publickey", certificate, certificateChain = "certificate_chain", transid = "transid", attributes, status, errorCode = "errorcode"
     }
 }
+
+extension ExternalSignatureResponsePayload: CustomStringConvertible {
+    public var description: String {
+        return """
+            - signature: \(signature ?? "nil")
+            - publickey: \(publickey ?? "nil")
+            - certificate \(certificate ?? "nil")
+            - certificateChain \(certificateChain ?? ["empty"])
+            - transid \(transid)
+            - attributes \(String(describing: attributes))
+            - status \(status)
+        """
+    }
+}
