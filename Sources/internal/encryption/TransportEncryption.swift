@@ -9,8 +9,8 @@ import Foundation
 
 public protocol TransportEncryption {
     
-    func encrypt(message: String)  -> PayloadHolder
-    func encrypt(message: String, iv: String) -> PayloadHolder
-    func decrypt(message: Data, iv: String) -> String
+    func encrypt(message: String)  -> PayloadHolder?
+    func encrypt(message: String, iv: String?) -> PayloadHolder?
+    func decrypt(message: Data, iv: String) -> String?
     
 }
