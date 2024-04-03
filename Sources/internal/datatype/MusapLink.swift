@@ -524,12 +524,17 @@ public class MusapLink: Encodable, Decodable {
             }
             
             msg.payload = payloadHolder.getPayload()
+            
+            guard msg.payload != nil else {
+                print("Could not get payload")
+                throw MusapError.internalError
+            }
             msg.iv = payloadHolder.getIv()
             
             print("sendRequest IV: \(String(describing: msg.iv))")
             
             do {
-                msg.mac = try MusapLink.mac.generate(message: payload, iv: msg.iv ?? "", transId: msg.getIdentifier(), type: msgType)
+                msg.mac = try MusapLink.mac.generate(message: msg.payload ?? "", iv: msg.iv ?? "", transId: msg.getIdentifier(), type: msgType)
 
             } catch {
                 print("Failed to generate mac")
