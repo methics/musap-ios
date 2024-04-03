@@ -111,6 +111,8 @@ public class MusapLink: Encodable, Decodable {
             throw MusapError.internalError
         }
         
+        
+        print("payload as B64: \(payloadB64)")
         let msg = MusapMessage()
         msg.type = MusapLink.COUPLE_MSG_TYPE
         msg.payload = payloadB64
