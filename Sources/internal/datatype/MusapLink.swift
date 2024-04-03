@@ -116,6 +116,7 @@ public class MusapLink: Encodable, Decodable {
         let msg = MusapMessage()
         msg.type = MusapLink.COUPLE_MSG_TYPE
         msg.payload = payloadB64
+        msg.musapid = musapId
         
         do {
             print("Trying to sendRequest...")
