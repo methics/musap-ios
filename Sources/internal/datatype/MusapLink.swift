@@ -749,14 +749,22 @@ public class MusapLink: Encodable, Decodable {
     public func parsePayload(respMsg: MusapMessage, isEncrypted: Bool) -> String? {
         
         if isEncrypted {
-            guard let payload = respMsg.payload,
-                  let decodedPayload = Data(base64Encoded: payload),
-                  let iv = respMsg.iv
-            else {
-                print("Either no payload, Data() failed, or no iv in respMsg")
-                // Either: No payload, payload wasnt base64encoded, MusapMessage had no iv
+            
+            guard let payload = respMsg.payload else {
+                print("No payload, cant parse")
                 return nil
             }
+            
+            guard let decodedPayload = Data(base64Encoded: payload) else {
+                print("Cant turn payload to Data from base64encoded string")
+                return nil
+            }
+            
+            guard let iv = respMsg.iv else {
+                print("No IV in parsePayload")
+                return nil
+            }
+            
             let decrypted = MusapLink.encryption.decrypt(message: decodedPayload, iv: iv)
             print("Decrypted payload: \(String(describing: decrypted))")
             return decrypted
