@@ -532,6 +532,7 @@ public class MusapLink: Encodable, Decodable {
                 msg.mac = try MusapLink.mac.generate(message: payload, iv: msg.iv ?? "", transId: msg.transid, type: msgType)
 
             } catch {
+                print("Failed to generate mac")
                 throw MusapError.internalError
             }
         }
@@ -745,6 +746,7 @@ public class MusapLink: Encodable, Decodable {
     private func getPayload(payloadBase64: String, shouldEncrypt: Bool) -> PayloadHolder? {
         if shouldEncrypt {
             guard let payloadHolder = MusapLink.encryption.encrypt(message: payloadBase64) else {
+                print("COuld not encrypt payloadBase64")
                 return nil
             }
             return payloadHolder
