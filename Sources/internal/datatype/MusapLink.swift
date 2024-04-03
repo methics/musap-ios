@@ -647,4 +647,25 @@ public class MusapLink: Encodable, Decodable {
         return decodedString
     }
     
+    private func isMacValid(msg: MusapMessage) -> Bool {
+        print("Validating MAC")
+        
+        guard let payload = msg.payload,
+              let iv = msg.iv,
+              let transid = msg.transid,
+              let type = msg.type,
+              let mac = msg.mac 
+        else {
+            print("One of missing: Payload, iv, transid, type, mac")
+            return false
+        }
+        
+        do {
+            return try MusapLink.mac.validate(message: payload, iv: iv, transId: transid, type: type, mac: mac)
+        } catch {
+            return false
+        }
+        
+    }
+    
 }
