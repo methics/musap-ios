@@ -788,6 +788,7 @@ public class MusapLink: Encodable, Decodable {
                   let decodedPayload = Data(base64Encoded: payload),
                   let iv = respMsg.iv
             else {
+                print("Either no payload, Data() failed, or no iv in respMsg")
                 // Either: No payload, payload wasnt base64encoded, MusapMessage had no iv
                 return nil
             }
