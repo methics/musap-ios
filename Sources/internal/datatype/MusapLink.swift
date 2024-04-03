@@ -109,14 +109,21 @@ public class MusapLink: Encodable, Decodable {
         msg.payload = payload.getBase64Encoded()
         
         do {
+            print("Trying to sendRequest...")
             let respMsg = try await self.sendRequest(msg, shouldEncrypt: true)
             
-            guard let payload = respMsg.payload,
-                  let payloadData = payload.data(using: .utf8)
-            else {
+            guard let payload = respMsg.payload else {
+                print("Could not get paylaod from respMsg")
                 throw MusapError.internalError
             }
             
+            guard let payloadData = payload.data(using: .utf8)
+            else {
+                print("Could not turn payload to Data()")
+                throw MusapError.internalError
+            }
+            
+            print("Making linkAccountResponsePayload from payloadData")
             let linkAccountResponsePayload = try JSONDecoder().decode(LinkAccountResponsePayload.self, from: payloadData)
             
             let linkId = linkAccountResponsePayload.linkid
