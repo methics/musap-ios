@@ -56,7 +56,7 @@ public class MusapLink: Encodable, Decodable {
             throw MusapError.internalError
         }
         
-        let payload = EnrollDataPayload(apnsToken: apnsToken, secret: secret)
+        let payload = EnrollDataPayload(apnstoken: apnsToken, secret: secret)
         guard let payload = payload.getBase64Encoded() else {
             throw MusapError.internalError
         }
