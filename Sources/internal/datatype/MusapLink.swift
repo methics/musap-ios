@@ -21,8 +21,9 @@ public class MusapLink: Encodable, Decodable {
     
     private let url:     String
     private var musapId: String?
-    private var aesKey:  String?
-    private var macKey:  String?
+
+    private static let encryption = AesTransportEncryption(keyStorage: KeychainKeystorage())
+    private static let mac = HmacGenerator(keyStorage: KeychainKeystorage())
     
     public init(url: String, musapId: String?) {
         self.url = url
@@ -31,22 +32,6 @@ public class MusapLink: Encodable, Decodable {
     
     public func setMusapId(musapId: String) {
         self.musapId = musapId
-    }
-    
-    public func setAesKey(aesKey: String) {
-        self.aesKey = aesKey
-    }
-    
-    public func setMacKey(macKey: String) {
-        self.macKey = macKey
-    }
-    
-    public func encrypt(msg: MusapMessage) {
-        //TODO:
-    }
-    
-    public func decrypt(msg: MusapMessage) {
-        //TODO:
     }
     
     /**
@@ -623,6 +608,43 @@ public class MusapLink: Encodable, Decodable {
             
         }
         
+    }
+    
+    private func getPayload(payloadBase64: String, shouldEncrypt: Bool) -> PayloadHolder? {
+        if shouldEncrypt {
+            guard let payloadHolder = MusapLink.encryption.encrypt(message: payloadBase64) else {
+                return nil
+            }
+            return payloadHolder
+        }
+
+        return PayloadHolder(payload: payloadBase64, iv: nil)
+    }
+    
+    public func parsePayload(respMsg: MusapMessage, isEncrypted: Bool) -> String? {
+        
+        if isEncrypted {
+            guard let payload = respMsg.payload,
+                  let decodedPayload = Data(base64Encoded: payload),
+                  let iv = respMsg.iv
+            else {
+                // Either: No payload, payload wasnt base64encoded, MusapMessage had no iv
+                return nil
+            }
+            
+            return MusapLink.encryption.decrypt(message: decodedPayload, iv: iv)
+        }
+        
+        guard let message = respMsg.payload,
+              let data = Data(base64Encoded: message)
+        else {
+            return nil
+        }
+        
+        let decodedString = String(data: data, encoding: .utf8)
+        print("Decoded: \(String(describing: decodedString))")
+        
+        return decodedString
     }
     
 }

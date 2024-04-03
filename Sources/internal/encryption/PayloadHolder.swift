@@ -10,14 +10,14 @@ import Foundation
 public class PayloadHolder {
     
     public let payload: String
-    public let iv: String
+    public let iv: String?
     
-    public init(payload: String, iv: String) {
+    public init(payload: String, iv: String?) {
         self.payload = payload
         self.iv = iv
     }
     
-    public func getIv() -> String {
+    public func getIv() -> String? {
         return self.iv
     }
     
