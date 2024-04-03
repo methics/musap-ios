@@ -526,6 +526,8 @@ public class MusapLink: Encodable, Decodable {
             msg.payload = payloadHolder.getPayload()
             msg.iv = payloadHolder.getIv()
             
+            print("sendRequest IV: \(String(describing: msg.iv))")
+            
             do {
                 msg.mac = try MusapLink.mac.generate(message: payload, iv: msg.iv ?? "", transId: msg.transid, type: msgType)
 
