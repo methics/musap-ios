@@ -26,7 +26,7 @@ public class MusapMessage: Codable {
          transid:   String,
          requestid: String,
          mac:       String,
-         iv:        String
+         iv:        String?
     ) {
         self.payload = payload
         self.musapid = musapid

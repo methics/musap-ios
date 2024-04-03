@@ -500,18 +500,19 @@ public class MusapLink: Encodable, Decodable {
     //TODO: Every throw needs to be inspected for better options
     public func sendRequest(_ msg: MusapMessage, shouldEncrypt: Bool) async throws -> MusapMessage {
         guard let url = URL(string: self.url) else {
+            print("Could not get URL")
             throw MusapError.internalError
         }
         
         guard let msgType = msg.type,
               let payload = msg.payload
         else {
+            print("Msgtype or payload was nil")
             throw MusapError.internalError
         }
         
         if shouldEncrypt && msgType != MusapLink.ENROLL_MSG_TYPE {
-            guard let payloadHolder = self.getPayload(payloadBase64: payload, shouldEncrypt: shouldEncrypt),
-                  let iv = msg.iv
+            guard let payloadHolder = self.getPayload(payloadBase64: payload, shouldEncrypt: shouldEncrypt)
             else
             {
                 throw MusapError.internalError
@@ -521,7 +522,7 @@ public class MusapLink: Encodable, Decodable {
             msg.iv = payloadHolder.getIv()
             
             do {
-                msg.mac = try MusapLink.mac.generate(message: payload, iv: iv, transId: msg.transid, type: msgType)
+                msg.mac = try MusapLink.mac.generate(message: payload, iv: msg.iv ?? "", transId: msg.transid, type: msgType)
 
             } catch {
                 throw MusapError.internalError
