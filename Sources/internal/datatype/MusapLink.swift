@@ -75,15 +75,15 @@ public class MusapLink: Encodable, Decodable {
                 throw MusapError.internalError
             }
             
-            
-            
+            print("trying to decode EnrollDataResponsePayload")
             let enrollDataResponsePayload = try JSONDecoder().decode(EnrollDataResponsePayload.self, from: payloadData)
             
             guard let musapId = enrollDataResponsePayload.musapid else {
-                // Couldnt get musap ID
+                print("Could not get Musap ID")
                 throw MusapError.internalError
             }
             
+            print("Musap ID: \(musapId)")
             self.musapId = musapId
             return self
             
