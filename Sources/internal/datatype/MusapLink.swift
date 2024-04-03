@@ -79,8 +79,8 @@ public class MusapLink: Encodable, Decodable {
             }
             
             print("payload: \(String(describing: musapMsg.payload))")
-            guard let payloadB64 = musapMsg.payload,
-                  let payloadData = Data(base64Encoded: payloadB64)
+            guard let payload = musapMsg.payload,
+                  let payloadData = payload.data(using: .utf8)
             else {
                 // Payload was empty or couldnt turn string to Data()
                 throw MusapError.internalError
