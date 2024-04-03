@@ -23,6 +23,7 @@ public class MusapKeyGenerator: KeyGenerator {
         let result = key.withUnsafeMutableBytes {
             SecRandomCopyBytes(kSecRandomDefault, 16, $0.baseAddress!)
         }
+        
         guard result == errSecSuccess else {
             throw NSError(domain: NSOSStatusErrorDomain, code: Int(result))
         }
@@ -31,7 +32,9 @@ public class MusapKeyGenerator: KeyGenerator {
         let salt = Data()
         let info = Data()
         let hkdfKey = SymmetricKey(data: key)
-        let derivedKeyData = HKDF<SHA256>.deriveKey(inputKeyMaterial: hkdfKey, salt: salt, info: info, outputByteCount: useAes256 ? 64 : 48).withUnsafeBytes {
+        let outputByteCount = 32 + (useAes256 ? 32 : 16)
+        
+        let derivedKeyData = HKDF<SHA256>.deriveKey(inputKeyMaterial: hkdfKey, salt: salt, info: info, outputByteCount: outputByteCount).withUnsafeBytes {
             Data($0)
         }
         
