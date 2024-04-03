@@ -41,6 +41,12 @@ public class AesTransportEncryption: TransportEncryption {
             return nil
         }
         
+        if let iv = iv {
+            print("IV: \(iv)")
+        } else {
+            print("NO IV")
+        }
+        
         let iv = iv != nil ? Data(base64Encoded: iv!)! : randomIV()
         var numBytesEncrypted = 0
         let bufferSize = messageData.count + kCCBlockSizeAES128
