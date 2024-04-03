@@ -34,6 +34,80 @@ public class MusapLink: Encodable, Decodable {
         self.musapId = musapId
     }
     
+    
+    
+    public func enroll(apnsToken: String?) async throws -> MusapLink {
+        var secret: String?
+        
+        do {
+            secret = try MusapKeyGenerator.hkdfStatic()
+            print("Secret: \(String(describing: secret))")
+        } catch {
+            print("Error creating secret: \(error)")
+        }
+        
+        guard let secret = secret else {
+            print("No secret")
+            throw MusapError.internalError
+        }
+        
+        let payload = EnrollDataPayload(apnsToken: apnsToken, secret: secret)
+        guard let payload = payload.getBase64Encoded() else {
+            throw MusapError.internalError
+        }
+        
+        let msg = MusapMessage()
+        msg.payload = payload
+        msg.type = MusapLink.ENROLL_MSG_TYPE
+        
+        self.sendRequest(msg, shouldEncrypt: true) { respMsg, error in
+            if let error = error {
+                return
+            }
+            
+            guard let resp = respMsg else {
+                return
+            }
+            
+            guard let payload = resp.payload else {
+                return
+            }
+            
+            guard let respMsg = respMsg,
+                  let payloadString = respMsg.payload,
+                  let payloadData = Data(base64Encoded: payloadString)
+            else {
+                return
+            }
+            
+            do {
+                let decodedMessage = try JSONDecoder().decode(MusapMessage.self, from: payloadData)
+                
+                guard let payloadBase64 = decodedMessage.payload,
+                      let payloadData = Data(base64Encoded: payloadBase64)
+                else {
+                    return
+                }
+                
+                let enrollDataResponsePayload = try JSONDecoder().decode(EnrollDataResponsePayload.self, from: payloadData)
+                
+                guard let musapId = enrollDataResponsePayload.musapid else {
+                    return
+                }
+                
+                self.musapId = musapId
+                
+            } catch {
+                print("error: \(error)")
+            }
+            
+            
+        }
+        
+        return self
+    }
+    
+    /*
     /**
     Enroll this MUSAP instance with MUSAP Link
      - returns: MusapLink
@@ -121,6 +195,7 @@ public class MusapLink: Encodable, Decodable {
         throw MusapError.internalError
     }
     
+     */
     
     /**
       Couple this MUSAP with a MUSAP Link.
