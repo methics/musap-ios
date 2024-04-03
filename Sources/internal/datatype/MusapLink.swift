@@ -76,11 +76,9 @@ public class MusapLink: Encodable, Decodable {
                 throw MusapError.internalError
             }
             
-            print("trying to decode EnrollDataResponsePayload")
             let enrollDataResponsePayload = try JSONDecoder().decode(EnrollDataResponsePayload.self, from: payloadData)
             
             guard let musapId = enrollDataResponsePayload.musapid else {
-                print("Could not get Musap ID")
                 throw MusapError.internalError
             }
             
@@ -95,95 +93,42 @@ public class MusapLink: Encodable, Decodable {
   
     }
     
-    /*
     /**
-    Enroll this MUSAP instance with MUSAP Link
-     - returns: MusapLink
-     - throws:  MusapError
+     Couple this MUSAP with a MUSAP Link.
+     This performs networking operations.
      */
-    public func enroll(apnsToken: String?) async throws -> MusapLink {
-        var secret: String?
-        
-        do {
-            secret = try MusapKeyGenerator.hkdfStatic()
-            print("Secret: \(String(describing: secret))")
-        } catch {
-            print("Error creating secret: \(error)")
-        }
-        
-        guard let secret = secret else {
-            print("No secret")
-            throw MusapError.internalError
-        }
-        
-        let payload = EnrollDataPayload(apnsToken: apnsToken, secret: secret)
-        guard let payload = payload.getBase64Encoded() else {
-            print("MusapLink.enroll(): no payload")
-            throw MusapError.internalError
-        }
+    public func couple(couplingCode: String, musapId: String) async throws -> RelyingParty {
+        let payload = LinkAccountPayload(couplingcode: couplingCode, musapid: musapId)
         
         let msg = MusapMessage()
-        msg.payload = payload
-        msg.type    = MusapLink.ENROLL_MSG_TYPE
-        
-        guard let url = URL(string: self.url) else {
-            print("Could not create URL object")
-            throw MusapError.internalError
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        let encoder = JSONEncoder()
-        do {
-            let jsonData = try encoder.encode(msg)
-            request.httpBody = jsonData
-        } catch {
-            print("Failed to encode to JSON")
-            throw MusapError.internalError
-        }
-        
-        let (data, response) = try await URLSession.shared.data(for: request)
-        
-        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-            print("Bad http response or statuscode: \(response)")
-            throw MusapError.internalError
-        }
+        msg.type = MusapLink.COUPLE_MSG_TYPE
+        msg.payload = payload.getBase64Encoded()
         
         do {
-            // Get the MusapMessage from json
-            let decodedMessage = try JSONDecoder().decode(MusapMessage.self, from: data)
+            let respMsg = try await self.sendRequest(msg, shouldEncrypt: true)
             
-            // Make sure payload is there, and turn it into data from base64encoded str
-            guard let payloadBase64 = decodedMessage.payload,
-                  let payloadData = Data(base64Encoded: payloadBase64)
+            guard let payload = respMsg.payload,
+                  let payloadData = payload.data(using: .utf8)
             else {
-                print("Failed to turn payload to data")
                 throw MusapError.internalError
             }
             
-            // Turn the data to EnrollDataResponsePayload
-            let enrollDataResponsePayload = try JSONDecoder().decode(EnrollDataResponsePayload.self, from: payloadData)
+            let linkAccountResponsePayload = try JSONDecoder().decode(LinkAccountResponsePayload.self, from: payloadData)
             
-            // Make sure the musap ID is there since it is required
-            guard let musapId = enrollDataResponsePayload.musapid else {
-                print("enroll: Could not get Musap ID ")
-                throw MusapError.internalError
-            }
+            let linkId = linkAccountResponsePayload.linkid
+            let rpName = linkAccountResponsePayload.name
             
-            // Return MusapLink
-            self.musapId = musapId
-            return self
+            let relyingParty = RelyingParty(name: rpName, linkId: linkId)
+            return relyingParty
+            
         } catch {
-            print("error in enroll with json: \(error)")
+            print("error in MusapLink.couple(): \(error)")
         }
-
-        // if we got to here, there was some error
-        throw MusapError.internalError
+        
+        throw MusapError.internalError //TODO: MusapLink.couplingError or something
     }
     
-     */
+    
     
     /**
       Couple this MUSAP with a MUSAP Link.
