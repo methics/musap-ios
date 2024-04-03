@@ -96,6 +96,10 @@ public class MusapLink: Encodable, Decodable {
     /**
      Couple this MUSAP with a MUSAP Link.
      This performs networking operations.
+        - Parameters:
+           - couplingCode: The coupling code
+           - musapId: Musap ID
+        - Returns: RelyingParty
      */
     public func couple(couplingCode: String, musapId: String) async throws -> RelyingParty {
         let payload = LinkAccountPayload(couplingcode: couplingCode, musapid: musapId)
@@ -130,6 +134,7 @@ public class MusapLink: Encodable, Decodable {
     
     
     
+    /*
     /**
       Couple this MUSAP with a MUSAP Link.
       This performs networking operations.
@@ -212,6 +217,7 @@ public class MusapLink: Encodable, Decodable {
         
         throw MusapError.internalError
     }
+     */
     
     public func poll() async throws -> PollResponsePayload? {
         let msg = MusapMessage()

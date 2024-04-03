@@ -11,7 +11,7 @@ public class CoupleTask {
     
     func couple(link: MusapLink, couplingCode: String, appId: String) async throws -> RelyingParty {
         do {
-            let rp = try await link.couple(couplingCode: couplingCode, musapid: appId)
+            let rp = try await link.couple(couplingCode: couplingCode, musapId: appId)
 
             let musapStorage = MusapStorage()
             musapStorage.storeRelyingParty(rp: rp)
