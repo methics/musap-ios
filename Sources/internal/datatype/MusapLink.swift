@@ -68,6 +68,17 @@ public class MusapLink: Encodable, Decodable {
         do {
             let musapMsg = try await self.sendRequest(msg, shouldEncrypt: true)
             
+            guard let payloadB64 = musapMsg.payload else {
+                print("No payload in MusapMsg")
+                throw MusapError.internalError
+            }
+            
+            guard let payloadData = Data(base64Encoded: payloadB64) else {
+                print("cant turn PayloadB64 to Data()")
+                throw MusapError.internalError
+            }
+            
+            print("payload: \(String(describing: musapMsg.payload))")
             guard let payloadB64 = musapMsg.payload,
                   let payloadData = Data(base64Encoded: payloadB64)
             else {
