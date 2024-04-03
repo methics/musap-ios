@@ -529,7 +529,7 @@ public class MusapLink: Encodable, Decodable {
             print("sendRequest IV: \(String(describing: msg.iv))")
             
             do {
-                msg.mac = try MusapLink.mac.generate(message: payload, iv: msg.iv ?? "", transId: msg.transid, type: msgType)
+                msg.mac = try MusapLink.mac.generate(message: payload, iv: msg.iv ?? "", transId: msg.getIdentifier(), type: msgType)
 
             } catch {
                 print("Failed to generate mac")

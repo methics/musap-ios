@@ -41,6 +41,14 @@ public class MusapMessage: Codable {
     init() {
         
     }
+    
+    public func getIdentifier() -> String? {
+        if (self.transid != nil) {
+            return self.transid
+        } else {
+            return self.musapid
+        }
+    }
 
     
 }

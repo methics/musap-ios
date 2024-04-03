@@ -62,6 +62,8 @@ public class HmacGenerator: MacGenerator {
         print("Message= \(message) iv= \(iv) transId= \(transId ?? "") type=\(type)")
         
         let input = transId ?? "" + type + iv + message
+        
+        print("INPUT: \(input)")
         guard let macKey = self.keyStorage.loadKey(keyName: MusapKeyGenerator.MAC_KEY_ALIAS) else {
             throw MusapError.unknownKey
         }
