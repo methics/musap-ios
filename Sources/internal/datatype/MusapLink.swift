@@ -35,8 +35,13 @@ public class MusapLink: Encodable, Decodable {
     }
     
     
-    
+    /**
+     Enroll this MUSAP instance with MUSAP Link
+        - Returns: MusapLink
+        - Throws: MusapError
+     */
     public func enroll(apnsToken: String?) async throws -> MusapLink {
+        //TODO: These throws need to be made better
         var secret: String?
         
         do {
@@ -60,51 +65,31 @@ public class MusapLink: Encodable, Decodable {
         msg.payload = payload
         msg.type = MusapLink.ENROLL_MSG_TYPE
         
-        self.sendRequest(msg, shouldEncrypt: true) { respMsg, error in
-            if let error = error {
-                return
-            }
+        do {
+            let musapMsg = try await self.sendRequest(msg, shouldEncrypt: true)
             
-            guard let resp = respMsg else {
-                return
-            }
-            
-            guard let payload = resp.payload else {
-                return
-            }
-            
-            guard let respMsg = respMsg,
-                  let payloadString = respMsg.payload,
-                  let payloadData = Data(base64Encoded: payloadString)
+            guard let payloadB64 = musapMsg.payload,
+                  let payloadData = Data(base64Encoded: payloadB64)
             else {
-                return
+                // Payload was empty or couldnt turn string to Data()
+                throw MusapError.internalError
             }
             
-            do {
-                let decodedMessage = try JSONDecoder().decode(MusapMessage.self, from: payloadData)
-                
-                guard let payloadBase64 = decodedMessage.payload,
-                      let payloadData = Data(base64Encoded: payloadBase64)
-                else {
-                    return
-                }
-                
-                let enrollDataResponsePayload = try JSONDecoder().decode(EnrollDataResponsePayload.self, from: payloadData)
-                
-                guard let musapId = enrollDataResponsePayload.musapid else {
-                    return
-                }
-                
-                self.musapId = musapId
-                
-            } catch {
-                print("error: \(error)")
+            let enrollDataResponsePayload = try JSONDecoder().decode(EnrollDataResponsePayload.self, from: payloadData)
+            
+            guard let musapId = enrollDataResponsePayload.musapid else {
+                // Couldnt get musap ID
+                throw MusapError.internalError
             }
             
+            self.musapId = musapId
+            return self
             
+        } catch {
+            print("Error in enroll(): \(error)")
+            return self
         }
-        
-        return self
+  
     }
     
     /*
@@ -545,6 +530,59 @@ public class MusapLink: Encodable, Decodable {
             }
         }
     }
+    
+    //TODO: Every throw needs to be inspected for better options
+    public func sendRequest(_ msg: MusapMessage, shouldEncrypt: Bool) async throws -> MusapMessage {
+        guard let url = URL(string: self.url) else {
+            throw MusapError.internalError
+        }
+        
+        guard let msgType = msg.type,
+              let payload = msg.payload
+        else {
+            throw MusapError.internalError
+        }
+        
+        if shouldEncrypt && msgType != MusapLink.ENROLL_MSG_TYPE {
+            guard let payloadHolder = self.getPayload(payloadBase64: payload, shouldEncrypt: shouldEncrypt),
+                  let iv = msg.iv
+            else
+            {
+                throw MusapError.internalError
+            }
+            
+            msg.payload = payloadHolder.getPayload()
+            msg.iv = payloadHolder.getIv()
+            
+            do {
+                msg.mac = try MusapLink.mac.generate(message: payload, iv: iv, transId: msg.transid, type: msgType)
+
+            } catch {
+                throw MusapError.internalError
+            }
+        }
+        
+        guard let jsonData = try? JSONEncoder().encode(msg) else {
+            print("Could not turn MusapMessage to JSON")
+            throw MusapError.internalError
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = jsonData
+        let (data, _) = try await URLSession.shared.data(for: request)
+
+        guard !data.isEmpty else {
+            throw MusapError.internalError
+        }
+
+        let responseMsg = try JSONDecoder().decode(MusapMessage.self, from: data)
+        responseMsg.payload = self.parsePayload(respMsg: responseMsg, isEncrypted: shouldEncrypt)
+
+        return responseMsg
+    }
+
     
     public func sendRequest(_ msg: MusapMessage, shouldEncrypt: Bool, completion: @escaping (MusapMessage?, Error?) -> Void) {
 
