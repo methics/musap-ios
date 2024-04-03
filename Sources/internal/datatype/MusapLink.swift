@@ -40,8 +40,20 @@ public class MusapLink: Encodable, Decodable {
      - throws:  MusapError
      */
     public func enroll(apnsToken: String?) async throws -> MusapLink {
-        let payload = EnrollDataPayload(apnsToken: apnsToken)
+        var secret: String?
         
+        do {
+            secret = try MusapKeyGenerator.hkdfStatic()
+        } catch {
+            print("Error creating secret: \(error)")
+        }
+        
+        guard let secret = secret else {
+            print("No secret")
+            throw MusapError.internalError
+        }
+        
+        let payload = EnrollDataPayload(apnsToken: apnsToken, secret: secret)
         guard let payload = payload.getBase64Encoded() else {
             print("MusapLink.enroll(): no payload")
             throw MusapError.internalError
@@ -377,7 +389,7 @@ public class MusapLink: Encodable, Decodable {
         msg.type = MusapLink.SIGN_MSG_TYPE
         msg.musapid = self.getMusapId()
 
-        self.sendRequest(msg) { respMsg, error in
+        self.sendRequest(msg, shouldEncrypt: true) { respMsg, error in
             if let error = error {
                 print("sendRequest had an error: \(error)")
                 DispatchQueue.main.async {
@@ -458,16 +470,39 @@ public class MusapLink: Encodable, Decodable {
         }
     }
     
-    public func sendRequest(_ msg: MusapMessage, completion: @escaping (MusapMessage?, Error?) -> Void) {
-        print("start of sendRequest")
-        
-        print("")
-        
-        debugPrint(msg)
-        
+    public func sendRequest(_ msg: MusapMessage, shouldEncrypt: Bool, completion: @escaping (MusapMessage?, Error?) -> Void) {
+
+        print("ShouldEncrypt: \(shouldEncrypt)")
         debugPrint("msg payload: \(String(describing: msg.payload))")
         
-        print("")
+        guard let msgType = msg.type,
+              let payload = msg.payload
+        else {
+            print("No msg type or payload defined")
+            completion(nil, MusapError.internalError)
+            return
+        }
+        
+        if shouldEncrypt && msgType != MusapLink.ENROLL_MSG_TYPE {
+            
+            guard let holder = self.getPayload(payloadBase64: payload, shouldEncrypt: shouldEncrypt),
+                  let iv = msg.iv
+            else {
+                completion(nil, MusapError.internalError)
+                return
+            }
+            
+            msg.payload = holder.getPayload()
+            msg.iv = holder.getIv()
+        
+            do {
+                msg.mac = try MusapLink.mac.generate(message: payload, iv: iv, transId: msg.transid, type: msgType)
+
+            } catch {
+                print("error: \(error)")
+            }
+        }
+        
         guard let jsonData = try? JSONEncoder().encode(msg) else {
             print("MusapLink.sendRequest(): Could not turn MusapMessage to JsonData")
             completion(nil, NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to encode message"]))
@@ -496,7 +531,8 @@ public class MusapLink: Encodable, Decodable {
             
             guard let data = data,
                   !data.isEmpty
-            else {
+            else 
+            {
                 print("sendRequest: No data")
                 completion(nil, nil)
                 return
@@ -510,6 +546,8 @@ public class MusapLink: Encodable, Decodable {
                 completion(nil, NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to decode response"]))
                 return
             }
+            
+            responseMsg.payload = self.parsePayload(respMsg: responseMsg, isEncrypted: shouldEncrypt)
             print("We completed sendRequest()")
             completion(responseMsg, nil)
         }
@@ -572,7 +610,7 @@ public class MusapLink: Encodable, Decodable {
         musapMsg.type    = MusapLink.SIGN_MSG_TYPE
         musapMsg.musapid = self.getMusapId()
         
-        self.sendRequest(musapMsg) { respMsg, error in
+        self.sendRequest(musapMsg, shouldEncrypt: true) { respMsg, error in
             if let error = error {
                 print("MusapLink.pollForSignature: Error in the link response - \(error.localizedDescription)")
                 completion(.failure)
@@ -666,6 +704,11 @@ public class MusapLink: Encodable, Decodable {
             return false
         }
         
+    }
+    
+    public func updateApnsToken(apnsToken: String) -> Bool {
+        //TODO: Implement this
+        return false
     }
     
 }
