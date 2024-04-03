@@ -75,6 +75,8 @@ public class MusapLink: Encodable, Decodable {
                 throw MusapError.internalError
             }
             
+            
+            
             let enrollDataResponsePayload = try JSONDecoder().decode(EnrollDataResponsePayload.self, from: payloadData)
             
             guard let musapId = enrollDataResponsePayload.musapid else {
@@ -571,13 +573,19 @@ public class MusapLink: Encodable, Decodable {
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = jsonData
+        print("Sending request...")
+        
         let (data, _) = try await URLSession.shared.data(for: request)
 
         guard !data.isEmpty else {
+            print("Data was empty")
             throw MusapError.internalError
         }
-
+        
+        print("trying to decode json from data")
         let responseMsg = try JSONDecoder().decode(MusapMessage.self, from: data)
+        
+        print("Parsing payload")
         responseMsg.payload = self.parsePayload(respMsg: responseMsg, isEncrypted: shouldEncrypt)
 
         return responseMsg
