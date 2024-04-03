@@ -104,6 +104,8 @@ public class MusapLink: Encodable, Decodable {
     public func couple(couplingCode: String, musapId: String) async throws -> RelyingParty {
         let payload = LinkAccountPayload(couplingcode: couplingCode, musapid: musapId)
         
+        print("Payload MUSAP ID: \(payload.musapid)")
+        
         guard let payloadB64 = payload.getBase64Encoded() else {
             print("Cant turn payload to Base64")
             throw MusapError.internalError
