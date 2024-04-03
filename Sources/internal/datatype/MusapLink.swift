@@ -792,8 +792,9 @@ public class MusapLink: Encodable, Decodable {
                 // Either: No payload, payload wasnt base64encoded, MusapMessage had no iv
                 return nil
             }
-            
-            return MusapLink.encryption.decrypt(message: decodedPayload, iv: iv)
+            let decrypted = MusapLink.encryption.decrypt(message: decodedPayload, iv: iv)
+            print("Decrypted payload: \(String(describing: decrypted))")
+            return decrypted
         }
         
         guard let message = respMsg.payload,
