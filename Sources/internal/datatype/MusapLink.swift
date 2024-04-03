@@ -44,6 +44,7 @@ public class MusapLink: Encodable, Decodable {
         
         do {
             secret = try MusapKeyGenerator.hkdfStatic()
+            print("Secret: \(String(describing: secret))")
         } catch {
             print("Error creating secret: \(error)")
         }
