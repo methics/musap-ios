@@ -639,7 +639,7 @@ public class MusapLink: Encodable, Decodable {
         musapMsg.type    = MusapLink.SIGN_MSG_TYPE
         musapMsg.musapid = self.getMusapId()
         
-        self.sendRequest(musapMsg, shouldEncrypt: true) { respMsg, error in
+        self.sendRequest(musapMsg, shouldEncrypt: false) { respMsg, error in
             if let error = error {
                 print("MusapLink.pollForSignature: Error in the link response - \(error.localizedDescription)")
                 completion(.failure)
