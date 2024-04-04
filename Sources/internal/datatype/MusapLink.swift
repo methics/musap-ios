@@ -358,14 +358,14 @@ public class MusapLink: Encodable, Decodable {
             
             print("payload: \(payload)")
             
-            guard let payloadAsData = Data(base64Encoded: payload) else {
+            guard let payloadAsData = payload.data(using: .utf8) else {
                 print("Could not turn payload to Data")
                 return
             }
             
             guard let respMsg = respMsg,
                   let payloadString = respMsg.payload,
-                  let payloadData = Data(base64Encoded: payloadString) else {
+                  let payloadData = payloadString.data(using: .utf8) else {
                 DispatchQueue.main.async {
                     print("no payload or cant turn payload to Data()")
                     completion(.failure(MusapError.internalError))
