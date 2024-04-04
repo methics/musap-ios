@@ -105,14 +105,15 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
         let publicKeyObj = PublicKey(publicKey: Data(bytes: publicKeyBytes, count: publicKeyData.count))
         let generatedKey = MusapKey(keyAlias:     req.keyAlias,
                                     keyId:       UUID().uuidString,
-                                    sscdId:      sscd.sscdId,
+                                    sscdId:      sscd.getSscdId(),
                                     sscdType:    MusapConstants.IOS_KS_TYPE,
                                     publicKey:   publicKeyObj,
                                     //certificate: MusapCertificate(),
                                     attributes:  req.attributes,
                                     loa:         [MusapLoa.EIDAS_SUBSTANTIAL, MusapLoa.ISO_LOA3],
                                     algorithm:   keyAlgorithm,
-                                    keyUri:      KeyURI(name: req.keyAlias, sscd: sscd.sscdType, loa: "loa3")
+                                    keyUri:      KeyURI(name: req.keyAlias, sscd: sscd.getSscdType(), loa: "loa3")
+
         )
         print("MusapKey generated!")
         return generatedKey
@@ -176,14 +177,14 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
         return MusapSignature(rawSignature: signatureData, key: req.getKey(), algorithm: SignatureAlgorithm.init(algorithm: .ecdsaSignatureMessageX962SHA256), format: SignatureFormat.RAW)
     }
     
-    public func getSscdInfo() -> MusapSscd {
-        let musapSscd = MusapSscd(
+    public func getSscdInfo() -> SscdInfo {
+        let musapSscd = SscdInfo(
             sscdName:        "SE",
             sscdType:        SecureEnclaveSscd.SSCD_TYPE,
-            sscdId:          "SE",//TODO: How is this done?
+            sscdId:          self.getSetting(forKey: "id"),
             country:         "FI",
             provider:        "Apple",
-            keyGenSupported: true,
+            keygenSupported: true,
             algorithms:      [KeyAlgorithm.RSA_2K,
                              KeyAlgorithm.ECC_P256_K1,
                              KeyAlgorithm.ECC_P256_R1,
@@ -193,12 +194,8 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
         return musapSscd
     }
     
-    public func generateSscdId(key: MusapKey) -> String {
-        return "SE" //TODO: How do we generate sscd id? UUID?
-    }
-    
     public func isKeygenSupported() -> Bool {
-        return self.getSscdInfo().keyGenSupported
+        return self.getSscdInfo().isKeygenSupported()
     }
     
     public func getSettings() -> SecureEnclaveSettings {
@@ -281,6 +278,22 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
             _ = CC_SHA512($0.baseAddress, CC_LONG(data.count), &hash)
         }
         return Data(hash)
+    }
+    
+    public func getSetting(forKey key: String) -> String? {
+        self.settings.getSetting(forKey: key)
+    }
+    
+    public func setSetting(key: String, value: String) {
+        self.settings.setSetting(key: key, value: value)
+    }
+    
+    public func getKeyAttestation() -> any KeyAttestationProtocol {
+        return NoKeyAttestation()
+    }
+    
+    public func attestKey(key: MusapKey) -> KeyAttestationResult {
+        return KeyAttestationResult(attestationStatus: .INVALID)
     }
 
 

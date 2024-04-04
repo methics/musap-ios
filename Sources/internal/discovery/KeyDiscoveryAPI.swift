@@ -22,17 +22,26 @@ public class KeyDiscoveryAPI {
     }
     
     public func listMatchingSscds(req: SscdSearchReq) -> [any MusapSscdProtocol] {
-        return KeyDiscoveryAPI.enabledSscds
+        let enabledSscds = KeyDiscoveryAPI.enabledSscds
+        var result = [any MusapSscdProtocol]()
+        
+        for sscd in enabledSscds {
+            if req.matches(sscd: sscd.getSscdInfo()) {
+                result.append(sscd)
+            }
+        }
+        
+        return result
     }
     
-    public func listActiveSscds() -> [MusapSscd] {
+    public func listActiveSscds() -> [SscdInfo] {
         print("Listing active SSCDs")
         return storage.listActiveSscds()
     }
     
     public func enableSscd(_ sscd: any MusapSscdProtocol) -> Void {
         let isAlreadyEnabled = KeyDiscoveryAPI.enabledSscds.contains { existingSscd in
-            existingSscd.getSscdInfo().sscdName == sscd.getSscdInfo().sscdName
+            existingSscd.getSscdInfo().getSscdName() == sscd.getSscdInfo().getSscdName()
         }
         // Dont add duplicate
         if isAlreadyEnabled {
@@ -42,7 +51,7 @@ public class KeyDiscoveryAPI {
         KeyDiscoveryAPI.enabledSscds.append(sscd)
     }
     
-    public func findKey(req: KeySearchReq) -> [MusapKey] {
+    public func listKeys(req: KeySearchReq) -> [MusapKey] {
         let keys = self.listKeys()
         
         var matchingKeys = [MusapKey]()

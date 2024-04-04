@@ -9,10 +9,28 @@ import Foundation
 
 class EnrollDataPayload: Codable {
     
-    private let apnsToken: String?
+    private let apnstoken: String?
+    private let tokendata: String?
     
-    public init(apnsToken: String?) {
-        self.apnsToken = apnsToken
+    
+    public class TokenData: Codable {
+        private let secret: String
+        
+        public init(secret: String) {
+            self.secret = secret
+        }
+        
+        public func getBase64Encoded() -> String? {
+            guard let jsonData = try? JSONEncoder().encode(self) else {
+                return nil
+            }
+            return jsonData.base64EncodedString()
+        }
+    }
+    
+    public init(apnstoken: String?, secret: String) {
+        self.apnstoken = apnstoken
+        self.tokendata = TokenData(secret: secret).getBase64Encoded()
     }
     
     public func getBase64Encoded() -> String? {

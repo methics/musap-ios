@@ -14,6 +14,7 @@ public class YubikeySscd: MusapSscdProtocol {
     public typealias CustomSscdSettings = YubikeySscdSettings
     private let settings = YubikeySscdSettings()
     
+    private static let ATTRIBUTE_ATTEST = "YubikeyAttestationCert"
     private static let ATTRIBUTE_SERIAL = "serial"
     private static let MANAGEMENT_KEY_TYPE: YKFPIVManagementKeyType = YKFPIVManagementKeyType.tripleDES()
     private static let MANAGEMENT_KEY = Data([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08])
@@ -22,6 +23,10 @@ public class YubikeySscd: MusapSscdProtocol {
     
     private let type: YKFPIVManagementKeyType
     private let yubiKitManager: YubiKitManager
+    private var attestationCertificate: [String: Data]?
+    private var attestationSecCertificate: SecCertificate?
+    private var generatedKeyId: String?
+    
     
     var onRequirePinEntry: ((_ completion: @escaping (String) -> Void) -> Void)?
     
@@ -80,11 +85,21 @@ public class YubikeySscd: MusapSscdProtocol {
                     return
                 }
                 
+                guard let attestationSecCert = self.attestationSecCertificate else {
+                    print("No key attestation certificate found")
+                    return
+                }
+                
+                let keyAttribute = KeyAttribute(name: YubikeySscd.ATTRIBUTE_ATTEST, cert: attestationSecCert)
+                
                 musapKey = MusapKey(keyAlias:  req.keyAlias,
+                                    keyId:     self.generatedKeyId,
                                     sscdType:  YubikeySscd.SSCD_TYPE,
                                     publicKey: publicKeyObj,
+                                    attributes: [keyAttribute],
+                                    loa: [MusapLoa.EIDAS_SUBSTANTIAL, MusapLoa.ISO_LOA3],
                                     algorithm: keyAlgorithm,
-                                    keyUri:    KeyURI(name: req.keyAlias, sscd: sscd.sscdType, loa: "loa2")
+                                    keyUri:    nil
                 )
                 
                 break
@@ -106,6 +121,9 @@ public class YubikeySscd: MusapSscdProtocol {
         guard let generatedKey = musapKey else {
             throw MusapError.internalError
         }
+        
+        let keyUri = KeyURI(key: generatedKey)
+        generatedKey.setKeyUri(value: keyUri)
         
         return generatedKey
     }
@@ -161,13 +179,13 @@ public class YubikeySscd: MusapSscdProtocol {
         return signature
     }
     
-    public func getSscdInfo() -> MusapSscd {
-        let musapSscd = MusapSscd(sscdName:        "Yubikey",
+    public func getSscdInfo() -> SscdInfo {
+        let musapSscd = SscdInfo(sscdName:        "Yubikey",
                                   sscdType:        YubikeySscd.SSCD_TYPE,
-                                  sscdId:          "Yubikey",
+                                  sscdId:          self.getSetting(forKey: "id"),
                                   country:         "FI",
                                   provider:        "Yubico",
-                                  keyGenSupported: true,
+                                  keygenSupported: true,
                                   algorithms:      [KeyAlgorithm.ECC_P256_K1, KeyAlgorithm.ECC_P384_K1],
                                   formats:         [SignatureFormat.RAW]
         )
@@ -196,7 +214,6 @@ public class YubikeySscd: MusapSscdProtocol {
     
     private func yubiKeyGen(pin: String, req: KeyGenReq, completion: @escaping (Result<SecKey, Error>) -> Void ) {
         let yubiKeyconnection = YubiKeyConnection()
-        
         yubiKeyconnection.connection { connection in
             
             if let nfcConnection = yubiKeyconnection.nfcConnection {
@@ -212,9 +229,8 @@ public class YubikeySscd: MusapSscdProtocol {
                             print("error in yubikey authentication: \(String(describing: error))")
                             return
                         }
-                        
                         // Authentication OK with management key
-                        //TODO: Will these come from user app in the future? (slot, pin & touch policy)
+                        
                         let slot        = YKFPIVSlot.signature
                         let pinPolicy   = YKFPIVPinPolicy.default
                         let touchPolicy = YKFPIVTouchPolicy.default
@@ -222,15 +238,38 @@ public class YubikeySscd: MusapSscdProtocol {
                         
                         session.generateKey(in: slot, type: keyType, pinPolicy: pinPolicy, touchPolicy: touchPolicy) { publicKey, error in
                             
+                            session.attestKey(in: slot) { cert, error in
+                                
+                                if error != nil {
+                                    print("Error while key attesting: \(String(describing: error))")
+                                }
+                                if let cert = cert {
+                                    if let certData = SecCertificateCopyData(cert) as Data? {
+                                        let keyId = UUID().uuidString
+                                        self.generatedKeyId = keyId
+                                        self.attestationCertificate = [keyId: certData]
+                                        self.attestationSecCertificate = cert
+                                    } else {
+                                        print("failed to SecCertificateCopyData")
+                                    }
+                                } else {
+                                    // failed attestation
+                                    print("Failed YubikeyAttestation")
+                                }
+                            }
+                        
                             // verify user PIN
                             session.verifyPin(pin, completion: { retries, error in
                 
                                 if let error = error {
                                     var errorMsg = error.localizedDescription
+                                    
+                                    // Yubikey by defaults has 3 tries
                                     if retries > 0 {
                                         errorMsg = error.localizedDescription + " Retries left: \(retries)"
                                     }
                                     
+                                    // Failed too many times, YubiKey is now blocked
                                     YubiKitManager.shared.stopNFCConnection(withErrorMessage: errorMsg)
                                     completion(.failure(error))
                                     return
@@ -247,7 +286,7 @@ public class YubikeySscd: MusapSscdProtocol {
                             })
                         
                             // Generate Key error
-                            if let error = error {
+                            if error != nil {
                                 print("Key generation failed")
                                 completion(.failure(MusapError.internalError))
                                 return
@@ -414,6 +453,22 @@ public class YubikeySscd: MusapSscdProtocol {
                 rootViewController.present(hostingController, animated: true, completion: nil)
             }
         }
+    }
+    
+    public func getSetting(forKey key: String) -> String? {
+        self.settings.getSetting(forKey: key)
+    }
+    
+    public func setSetting(key: String, value: String) {
+        self.settings.setSetting(key: key, value: value)
+    }
+    
+    public func getKeyAttestation() -> any KeyAttestationProtocol {
+        return YubiKeyAttestation(keyAttestationType: KeyAttestationType.YUBIKEY, certificates: self.attestationCertificate)
+    }
+    
+    public func attestKey(key: MusapKey) -> KeyAttestationResult {
+        return self.getKeyAttestation().getAttestationData(key: key)
     }
     
 }

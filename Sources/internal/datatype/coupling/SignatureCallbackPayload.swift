@@ -14,13 +14,15 @@ public class SignatureCallbackPayload: Encodable {
     public let signature: String?
     public let keyuri:    String?
     public let keyid:     String?
+    public var attestationResult: KeyAttestationResult?
     
-    public init(linkid: String?, signature: MusapSignature?) {
+    public init(linkid: String?, signature: MusapSignature?, attestationResult: KeyAttestationResult? = nil) {
         self.linkid = linkid
         self.signature = (signature != nil) ? signature?.getB64Signature() : nil
         self.publickey = signature?.getKey()?.getPublicKey()?.getPEM()
         self.keyuri = nil
         self.keyid  = nil
+        self.attestationResult = attestationResult
     }
     
     public init(key: MusapKey) {

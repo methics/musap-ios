@@ -25,14 +25,17 @@ public class ExternalSscd: MusapSscdProtocol {
     private let settings:  ExternalSscdSettings
     private let musapLink: MusapLink
     
+    private var attestationSecCertificate: SecCertificate?
+    
     public init(settings: ExternalSscdSettings, clientid: String, musapLink: MusapLink) {
         self.settings = settings
         self.clientid = settings.getClientId() ?? "LOCAL"
-        self.musapLink = settings.getMusapLink()! //TODO: Dont use !
+        self.musapLink = settings.getMusapLink()!
     }
     
     public func bindKey(req: KeyBindReq) throws -> MusapKey {
-        print("ExternalSscd.bindKey() started")
+        print("Binding ExternalSscd")
+        
         let request: ExternalSignaturePayload = ExternalSignaturePayload(clientid: self.clientid)
         
         var theMsisdn: String? = nil
@@ -41,7 +44,6 @@ public class ExternalSscd: MusapSscdProtocol {
         let semaphore = DispatchSemaphore(value: 0)
         if msisdn == nil {
             ExternalSscd.showEnterMsisdnDialog { msisdn in
-                print("Received MSISDN: \(msisdn)")
                 theMsisdn = msisdn
                 semaphore.signal()
             }
@@ -61,8 +63,7 @@ public class ExternalSscd: MusapSscdProtocol {
         request.clientid = self.clientid
         request.display  = req.getDisplayText()
         request.format   = "RAW"
-        
-        
+
         if request.attributes == nil {
             request.attributes = [String: String]()
         }
@@ -87,30 +88,63 @@ public class ExternalSscd: MusapSscdProtocol {
                         print("Can't turn string to data")
                         return
                     }
-                     
+                                         
                     guard let publickey = response.publickey else {
                         print("ExternalSscd.bindKey(): No Public Key")
                         return
                     }
+                    
+                    guard let certStr = response.certificate,
+                          let certData = Data(base64Encoded: certStr),
+                          let secCertificate = SecCertificateCreateWithData(nil, certData as CFData)
+                    else
+                    {
+                        print("No certificate in result")
+                        return
+                    }
+                    
+                    guard let certificateChain = response.certificateChain else {
+                        print("No certificate chain in result")
+                        return
+                    }
+                    
+                    var musapCertChain: [MusapCertificate] = [MusapCertificate]()
+                    
+                    for cert in certificateChain {
+
+                        guard let certData = Data(base64Encoded: cert),
+                              let secCert = SecCertificateCreateWithData(nil, certData as CFData)
+                        else 
+                        {
+                            print("Could not create SecCertificate from certificateB64")
+                            return
+                        }
+                        
+                        guard let newMusapCert = MusapCertificate(cert: secCert) else {
+                            print("Failed to generate MusapCertificate()")
+                            return
+                        }
+                        
+                        musapCertChain.append(newMusapCert)
+                    }
+                    
+                    self.attestationSecCertificate = secCertificate
             
                     guard let publicKeyData = publickey.data(using: .utf8) else {
-                        print("could not turn publick ey string to data")
+                        print("could not turn publickey string to data")
                         return
                     }
                     
                     theKey =  MusapKey(
                         keyAlias:  req.getKeyAlias(),
+                        keyId:     UUID().uuidString,
                         sscdType:  ExternalSscd.SSCD_TYPE,
                         publicKey: PublicKey(publicKey: publicKeyData),
+                        certificate: MusapCertificate(cert: secCertificate),
+                        certificateChain: musapCertChain,
                         algorithm: KeyAlgorithm.RSA_2K,  //TODO: resolve this
-                        keyUri:    KeyURI(name: req.getKeyAlias(),
-                                          sscd: ExternalSscd.SSCD_TYPE,
-                                          loa: "loa2"
-                                         ) //TODO: What LoA?
+                        keyUri: nil
                     )
-                    theKey?.addAttribute(attr: KeyAttribute(name: ExternalSscd.ATTRIBUTE_MSISDN, value: theMsisdn))
-                    
-                    
                     
                 case .failure(let error):
                     print("bindKey()->musapLink->sign() error while binding key: \(error)")
@@ -125,6 +159,18 @@ public class ExternalSscd: MusapSscdProtocol {
                 throw MusapError.internalError
             }
             
+            let keyUri = KeyURI(key: musapKey)
+            musapKey.setKeyUri(value: keyUri)
+            musapKey.addAttribute(attr: KeyAttribute(name: ExternalSscd.ATTRIBUTE_MSISDN, value: theMsisdn))
+            
+            
+            guard let attestationCert = self.attestationSecCertificate else {
+                print("no attestation cert")
+                throw MusapError.internalError
+            }
+            
+            let attestAttr = KeyAttribute(name: "ATTEST", cert: attestationCert)
+            musapKey.addAttribute(attr: attestAttr)
             return musapKey
 
         } catch {
@@ -160,7 +206,9 @@ public class ExternalSscd: MusapSscdProtocol {
         semaphore.wait()
         
         let dataBase64 = req.getData().base64EncodedString(options: .lineLength64Characters)
-        
+        if request.attributes == nil {
+            request.attributes = [String: String]()
+        }
         request.attributes?[ExternalSscd.ATTRIBUTE_MSISDN] = theMsisdn
         request.clientid = self.clientid
         request.display  = req.getDisplayText()
@@ -213,21 +261,17 @@ public class ExternalSscd: MusapSscdProtocol {
         throw MusapError.internalError
     }
     
-    public func getSscdInfo() -> MusapSscd {
-        let sscd = MusapSscd(sscdName: self.settings.getSscdName(),
+    public func getSscdInfo() -> SscdInfo {
+        let sscd = SscdInfo(sscdName: self.settings.getSscdName(),
                              sscdType: ExternalSscd.SSCD_TYPE,
-                             sscdId: "", //TODO: Fix
+                             sscdId: self.getSetting(forKey: "id"),
                              country: "FI",
                              provider: "MUSAP LINK",
-                             keyGenSupported: false,
+                             keygenSupported: false,
                              algorithms: [KeyAlgorithm.RSA_2K],
                              formats: [SignatureFormat.RAW, SignatureFormat.CMS]
         )
         return sscd
-    }
-    
-    public func generateSscdId(key: MusapKey) -> String {
-        return ExternalSscd.SSCD_TYPE + "/" + (key.getAttributeValue(attrName: ExternalSscd.ATTRIBUTE_MSISDN) ?? "")
     }
     
     public func isKeygenSupported() -> Bool {
@@ -269,4 +313,21 @@ public class ExternalSscd: MusapSscdProtocol {
             }
         }
     }
+    
+    public func getSetting(forKey key: String) -> String? {
+        self.settings.getSetting(forKey: key)
+    }
+    
+    public func setSetting(key: String, value: String) {
+        self.settings.setSetting(key: key, value: value)
+    }
+    
+    public func getKeyAttestation() -> any KeyAttestationProtocol {
+        return UiccKeyAttestation(keyAttestationType: KeyAttestationType.UICC)
+    }
+    
+    public func attestKey(key: MusapKey) -> KeyAttestationResult {
+        return self.getKeyAttestation().getAttestationData(key: key)
+    }
+    
 }

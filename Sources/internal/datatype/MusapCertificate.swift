@@ -19,7 +19,6 @@ public class MusapCertificate: Codable {
         self.publicKey = publicKey
     }
     
-    
     public init?(cert: SecCertificate) {
         if let subjectCFString = SecCertificateCopySubjectSummary(cert) as String? {
             self.subject = subjectCFString
@@ -40,7 +39,6 @@ public class MusapCertificate: Codable {
             print("Error extracting public key: \((error?.takeRetainedValue()) as Error?)")
             return nil
         }
-
     }
     
     public func getSubject() -> String {
@@ -54,7 +52,19 @@ public class MusapCertificate: Codable {
     public func getPublicKey() -> PublicKey {
         return self.publicKey
     }
+
     
+    private func dataToSecCert()  -> SecCertificate? {        
+        if let cfData = CFDataCreate(nil, [UInt8](self.certificate), self.certificate.count) {
+            return SecCertificateCreateWithData(nil, cfData)
+        }
+        
+        return nil
+    }
+    
+    enum CertificateError: Error {
+        case parsingFailed
+    }
     
     
 }

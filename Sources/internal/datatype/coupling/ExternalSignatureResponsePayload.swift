@@ -11,14 +11,24 @@ public class ExternalSignatureResponsePayload: ResponsePayload {
     let signature: String?
     let publickey: String?
     let certificate: String?
+    let certificateChain: [String]?
     
     let transid: String
     let attributes: [String: String]?
     
-    init(signature: String?, publickey: String, certificate: String, transid: String, attributes: [String : String], status: String, errorCode: String?) {
+    init(signature: String?,
+         publickey: String,
+         certificate: String,
+         certificateChain: [String],
+         transid: String,
+         attributes: [String : String],
+         status: String,
+         errorCode: String?
+    ) {
         self.signature = signature
         self.publickey = publickey
         self.certificate = certificate
+        self.certificateChain = certificateChain
         self.transid = transid
         self.attributes = attributes
         super.init(status: status, errorCode: errorCode)
@@ -31,13 +41,15 @@ public class ExternalSignatureResponsePayload: ResponsePayload {
         signature = try container.decodeIfPresent(String.self, forKey: .signature)
         publickey = try container.decodeIfPresent(String.self, forKey: .publicKey)
         certificate = try container.decodeIfPresent(String.self, forKey: .certificate)
+        certificateChain = try container.decodeIfPresent([String].self, forKey: .certificateChain)
         transid = try container.decode(String.self, forKey: .transid)
         attributes = try container.decodeIfPresent([String: String].self, forKey: .attributes)
         
         // Call the superclass initializer
         let status = try container.decode(String.self, forKey: .status)
         let errorCode = try container.decodeIfPresent(String.self, forKey: .errorCode)
-        super.init(status: status, errorCode: errorCode)    }
+        super.init(status: status, errorCode: errorCode)
+    }
     
     public func isSuccess() -> Bool {
         return self.status.lowercased() == "success"
@@ -52,7 +64,25 @@ public class ExternalSignatureResponsePayload: ResponsePayload {
         return self.publickey
     }
     
+    public func getCertificate() -> String? {
+        return self.certificate
+    }
+    
     private enum CodingKeys: String, CodingKey {
-        case signature, publicKey = "publickey", certificate, transid = "transid", attributes, status, errorCode = "errorcode"
+        case signature, publicKey = "publickey", certificate, certificateChain = "certificate_chain", transid = "transid", attributes, status, errorCode = "errorcode"
+    }
+}
+
+extension ExternalSignatureResponsePayload: CustomStringConvertible {
+    public var description: String {
+        return """
+            - signature: \(signature ?? "nil")
+            - publickey: \(publickey ?? "nil")
+            - certificate \(certificate ?? "nil")
+            - certificateChain \(certificateChain ?? ["empty"])
+            - transid \(transid)
+            - attributes \(String(describing: attributes))
+            - status \(status)
+        """
     }
 }

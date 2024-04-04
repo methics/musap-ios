@@ -11,27 +11,29 @@ public class GenerateKeyTask {
 
     typealias CompletionHandler = (Result<MusapKey, MusapError>) -> Void
 
-    func generateKeyAsync(sscd: any MusapSscdProtocol, req: KeyGenReq, completion: @escaping CompletionHandler) async throws -> MusapKey {
+    func generateKeyAsync(sscd: MusapSscd, req: KeyGenReq, completion: @escaping CompletionHandler) async throws -> MusapKey {
         do {
-            let key = try await withCheckedThrowingContinuation { continuation in
-                do {
-                    let generatedKey = try sscd.generateKey(req: req)
-                    let activeSscd   = sscd.getSscdInfo()
-                    let sscdId       = sscd.generateSscdId(key: generatedKey)
-                    
-                    activeSscd.sscdId = sscdId
-                    generatedKey.setSscdId(value: sscdId)
-                    
-                    let storage = MetadataStorage()
-                    try storage.storeKey(key: generatedKey, sscd: activeSscd)
-
-                    continuation.resume(returning: generatedKey)
-                } catch {
-                    continuation.resume(throwing: error)
-                }
+            
+            let generatedKey = try sscd.generateKey(req: req)
+            
+            guard let activeSscd = sscd.getSscdInfo() else {
+                print("Could not get SscdInfo")
+                throw MusapError.illegalArgument
             }
-
-            return key
+            
+            guard let sscdId = sscd.getSscdId() else {
+                print("Could not get SSCD ID")
+                throw MusapError.internalError
+            }
+            
+            generatedKey.setSscdId(value: sscdId)
+            
+            let storage = MetadataStorage()
+            try storage.addKey(key: generatedKey, sscd: activeSscd)
+            
+            completion(.success(generatedKey))
+            
+            return generatedKey
         } catch {
             completion(.failure(MusapError.internalError))
             throw MusapError.internalError

@@ -8,6 +8,8 @@
 import Foundation
 
 public class ExternalSscdSettings: SscdSettings {
+
+    
     
     public static let SETTINGS_TIMEOUT   = "timeout"
     public static let SETTINGS_CLIENT_ID = "clientid"
@@ -45,11 +47,19 @@ public class ExternalSscdSettings: SscdSettings {
     }
     
     public func getSettings() -> [String : String]? {
-        return ["": ""]
+        return self.settings
     }
     
     public func getMusapLink() -> MusapLink? {
         return MusapClient.getMusapLink()
+    }
+    
+    public func setSetting(key: String, value: String) {
+        self.settings[key] = value
+    }
+    
+    public func getSetting(forKey key: String) -> String? {
+        return self.settings[key]
     }
     
     

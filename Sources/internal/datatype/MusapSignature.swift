@@ -13,14 +13,29 @@ public class MusapSignature {
     private let key:          MusapKey?
     private let algorithm:    SignatureAlgorithm?
     private let format:       SignatureFormat?
-    
+    private var attestationData: KeyAttestationResult?
 
     /// Create a new MUSAP signture object
-    public init(rawSignature: Data, key: MusapKey, algorithm: SignatureAlgorithm, format: SignatureFormat) {
+    public init(rawSignature: Data, key: MusapKey, algorithm: SignatureAlgorithm, format: SignatureFormat, attestationData: KeyAttestationResult? = nil) {
         self.rawSignature = rawSignature
         self.key          = key
         self.algorithm    = algorithm
         self.format       = format
+        self.attestationData = attestationData
+        
+        if let key = self.key {
+            let sscd = self.key?.getSscd()
+            
+            if let sscd = sscd {
+                self.attestationData = sscd.getKeyAttestation().getAttestationData(key: key)
+            } else {
+                self.attestationData = nil
+            }
+            
+        } else {
+            self.attestationData = nil
+        }
+        
     }
     
     /// Create a new raw signature without any meta-data
@@ -29,6 +44,7 @@ public class MusapSignature {
         self.key          = nil
         self.algorithm    = nil
         self.format       = nil
+        self.attestationData = nil
     }
     
     public init(rawSignature: Data, key: MusapKey) {
@@ -36,6 +52,7 @@ public class MusapSignature {
         self.key          = key
         self.algorithm    = nil
         self.format       = nil
+        self.attestationData = nil
     }
     
     public func getSignatureAlgorithm() -> SignatureAlgorithm? {
@@ -63,6 +80,14 @@ public class MusapSignature {
             return nil
         }
         return key.getPublicKey()
+    }
+    
+    public func setKeyAttestationResult(attestationData: KeyAttestationResult) -> Void {
+        self.attestationData = attestationData
+    }
+    
+    public func getKeyAttestationResult() -> KeyAttestationResult? {
+        return self.attestationData
     }
     
     

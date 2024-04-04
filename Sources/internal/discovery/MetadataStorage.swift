@@ -15,7 +15,7 @@ public class MetadataStorage {
     /**
      * Set that contains all known key names
      */
-    private static let KEY_NAME_SET = "keynames"
+    private static let KEY_ID_SET = "keyids"
     private static let SSCD_ID_SET  = "sscdids"
     
     /**
@@ -31,16 +31,16 @@ public class MetadataStorage {
     public init() {}
     
     /// Store a MusapKey
-    public func storeKey(key: MusapKey, sscd: MusapSscd) throws {
-        guard let keyName = key.getKeyAlias() else {
-            print("key name was nil")
+    public func addKey(key: MusapKey, sscd: SscdInfo) throws {
+        guard let keyId = key.getKeyId() else {
+            print("Key ID was nil, cant store key")
             throw MusapException.init(MusapError.missingParam)
         }
         
         print("storeKey debug MusapKey algo: \(String(describing: key.getAlgorithm()))")
         
-        // Create the key-specific store name using the prefix and the key name
-        let storeName = makeStoreName(keyName: keyName)
+        // Create the key-specific store name using the prefix and the key ID
+        let storeName = makeStoreName(keyId: keyId)
         
         // Encode the key to JSON and store it using the store name
         do {
@@ -52,29 +52,29 @@ public class MetadataStorage {
             throw MusapException(MusapError.internalError)
         }
         
-        // Insert the key name into the set of known key names and save it
-        var newKeyNames = getKeyNames()
-        newKeyNames.insert(keyName)
-        userDefaults.set(Array(newKeyNames), forKey: MetadataStorage.KEY_NAME_SET)
+        // Insert the key ID into the set of known key names and save it
+        var newKeyIds = getKeyIds()
+        newKeyIds.insert(keyId)
+        userDefaults.set(Array(newKeyIds), forKey: MetadataStorage.KEY_ID_SET)
         
         userDefaults.synchronize()
         self.addSscd(sscd: sscd)
-        print("Updated key names: \(newKeyNames)")
+        print("Updated key ID's: \(newKeyIds)")
     }
     
     /**
      List available MUSAP keys
      */
     public func listKeys() -> [MusapKey] {
-        let keyNames = getKeyNames()
+        let keyIds = getKeyIds()
         var keyList: [MusapKey] = []
 
-        for keyName in keyNames {
-            if let keyData = userDefaults.data(forKey: makeStoreName(keyName: keyName)),
+        for keyId in keyIds {
+            if let keyData = userDefaults.data(forKey: makeStoreName(keyId: keyId)),
                let key = try? JSONDecoder().decode(MusapKey.self, from: keyData) {
                 keyList.append(key)
             } else {
-                print("Missing key metadata JSON for key name \(keyName)")
+                print("Missing key metadata JSON for key ID: \(keyId)")
             }
         }
 
@@ -82,11 +82,11 @@ public class MetadataStorage {
     }
     
     public func listKeys(req: KeySearchReq) -> [MusapKey] {
-        let keyNames = self.getKeyNames()
+        let keyIds = self.getKeyIds()
         var keyList = [MusapKey]()
         
-        for keyName in keyNames {
-            let keyJson = self.getKeyJson(keyName: keyName)
+        for keyId in keyIds {
+            let keyJson = self.getKeyJson(keyId: keyId)
             if let jsonData = keyJson.data(using: .utf8) {
                 let decoder = JSONDecoder()
 
@@ -96,7 +96,7 @@ public class MetadataStorage {
                         keyList.append(key)
                     }
                 } catch {
-                    print("Error decoding JSON for keyName: \(keyName), error: \(error)")
+                    print("Error decoding JSON for keyID: \(keyId), error: \(error)")
                 }
             }
         }
@@ -108,18 +108,18 @@ public class MetadataStorage {
      Remove key metadata from storage
      */
     public func removeKey(key: MusapKey) -> Bool {
-        guard let keyName = key.getKeyAlias() else {
-            print("Can't remove key. Keyname was nil")
+        guard let keyId = key.getKeyId() else {
+            print("Can't remove key. Key ID was nil")
             return false
         }
         
-        var newKeyNames = getKeyNames()
-        newKeyNames.remove(keyName)
+        var newKeyIds = getKeyIds()
+        newKeyIds.remove(keyId)
 
         if let keyJson = try? JSONEncoder().encode(key) {
-            userDefaults.set(newKeyNames, forKey: MetadataStorage.KEY_NAME_SET)
+            userDefaults.set(newKeyIds, forKey: MetadataStorage.KEY_ID_SET)
             userDefaults.set(keyJson, forKey: makeStoreName(key: key))
-            userDefaults.removeObject(forKey: makeStoreName(keyName: keyName))
+            userDefaults.removeObject(forKey: makeStoreName(keyId: keyId))
             return true
         }
         return false
@@ -129,9 +129,9 @@ public class MetadataStorage {
     /**
      Store metadata of an active MUSAP SSCD
      */
-    public func addSscd(sscd: MusapSscd) {
-        guard let sscdId = sscd.sscdId else {
-            print("Cant addSscd: SSCD ID was nil")
+    public func addSscd(sscd: SscdInfo) {
+        guard let sscdId = sscd.getSscdId() else {
+            print("Cannot store MUSAP SSCD without an SSCD ID ")
             return
         }
         
@@ -140,28 +140,39 @@ public class MetadataStorage {
         if !sscdIds.contains(sscdId) {
             print("adding sscdid \(sscdId) to set")
             sscdIds.insert(sscdId)
+        } else {
+            // Dont add SSCD with same ID
         }
 
         if let sscdJson = try? JSONEncoder().encode(sscd) {
             userDefaults.set(Array(sscdIds), forKey: MetadataStorage.SSCD_ID_SET)
-            userDefaults.set(sscdJson, forKey: makeStoreName(sscd: sscd))
+            userDefaults.set(sscdJson, forKey: makeStoreName(sscd: sscd)!)
         } else {
             print("Adding SSCD failed")
         }
+    }
+    
+    public func removeSscd(sscd: SscdInfo) {
+        guard let sscdId = sscd.getSscdId() else {
+            return
+        }
+        
+        //TODO: finish
+        
     }
 
     /**
      List available active MUSAP SSCDs
      */
-    public func listActiveSscds() -> [MusapSscd] {
+    public func listActiveSscds() -> [SscdInfo] {
         let sscdIds = getSscdIds()
-        var sscdList: [MusapSscd] = []
+        var sscdList: [SscdInfo] = []
         
         for sscdId in sscdIds {
             print("Found sscdId: \(sscdId)")
             if let sscdData = self.getSscdJson(sscdId: sscdId) {
                 do {
-                    let sscd = try JSONDecoder().decode(MusapSscd.self, from: sscdData)
+                    let sscd = try JSONDecoder().decode(SscdInfo.self, from: sscdData)
                     sscdList.append(sscd)
                 } catch {
                     print("Error decoding sscd JSON: \(error)")
@@ -170,13 +181,14 @@ public class MetadataStorage {
                 print("Missing SSCD metadata JSON for SSCD ID: \(sscdId)")
             }
         }
-
+        print("Returning \(sscdList.count) active SSCD's")
         return sscdList
     }
+
     
-    private func getKeyNames() -> Set<String> {
+    private func getKeyIds() -> Set<String> {
         // Retrieve the array from UserDefaults and convert it back to a set
-        let keyNamesArray = userDefaults.array(forKey: MetadataStorage.KEY_NAME_SET) as? [String] ?? []
+        let keyNamesArray = userDefaults.array(forKey: MetadataStorage.KEY_ID_SET) as? [String] ?? []
         return Set(keyNamesArray)
     }
 
@@ -186,52 +198,56 @@ public class MetadataStorage {
             print("Found \(sscdIdsArray.count) sscd ids")
             return Set(sscdIdsArray)
         } else {
-            print("found 0 sscd IDs, returning empty Set")
             return Set()
         }
     }
-
+    
     private func makeStoreName(key: MusapKey) -> String {
-        guard let keyName = key.getKeyAlias() else {
-            fatalError("Cannot create store name for unnamed MUSAP key")
+        guard let keyId = key.getKeyId() else {
+            fatalError("Cannot create store name with no key id")
         }
-        return MetadataStorage.KEY_JSON_PREFIX + keyName
+        return MetadataStorage.KEY_JSON_PREFIX + keyId
     }
-
-    private func makeStoreName(sscd: MusapSscd) -> String {
-        guard let sscdId = sscd.sscdId else {
-            fatalError("Cannot create store name for MUSAP SSCD without an ID")
+    
+    private func makeStoreName(sscd: SscdInfo) -> String? {
+        guard let sscdId = sscd.getSscdId() else {
+            print("makeStoreName: no sscd id")
+            return nil
         }
         return MetadataStorage.SSCD_JSON_PREFIX + sscdId
     }
-
-    private func makeStoreName(keyName: String) -> String {
-        return MetadataStorage.KEY_JSON_PREFIX + keyName
+    
+    private func makeStoreName(keyId: String) -> String {
+        return MetadataStorage.KEY_JSON_PREFIX + keyId
     }
     
-    private func getKeyJson(keyName: String) -> String {
-        return self.makeStoreName(keyName: keyName)
+    
+    private func getKeyJson(keyId: String) -> String {
+        return self.makeStoreName(keyId: keyId)
     }
     
     public func printAllData() {
         // Print all key names
-        let keyNames = getKeyNames()
-        print("All Key Names: \(keyNames)")
+        //let keyNames = getKeyNames()
+        //print("All Key Names: \(keyNames)")
+        
+        let keyIds = self.getKeyIds()
+        print("All key IDs: \(keyIds)")
 
         // Print all SSCD IDs
         let sscdIds = getSscdIds()
         print("All SSCD IDs: \(sscdIds)")
 
         // Iterate through each key name and print its JSON
-        for keyName in keyNames {
-            if let keyData = userDefaults.data(forKey: makeStoreName(keyName: keyName)) {
-                print("Data for key '\(keyName)': \(keyData)")
+        for keyId in keyIds {
+            if let keyData = userDefaults.data(forKey: makeStoreName(keyId: keyId)) {
+                print("Data for key '\(keyId)': \(keyData)")
             }
         }
 
         // Iterate through each SSCD ID and print its JSON
         for sscdId in sscdIds {
-            if let sscdData = userDefaults.data(forKey: makeStoreName(keyName: sscdId)) {
+            if let sscdData = userDefaults.data(forKey: makeStoreName(keyId: sscdId)) {
                 print("Data for SSCD ID '\(sscdId)': \(sscdData)")
             }
         }
@@ -245,12 +261,12 @@ public class MetadataStorage {
     
     public func addImportData(data: MusapImportData) throws {
         let activeSscds  = self.listActiveSscds()
-        let enabledSscds = MusapClient.listEnabledSscds() ?? []
+        let enabledSscds = MusapClient.listEnabledSscds() ?? [MusapSscd]()
         let activeKeys   = self.listKeys()
 
         for sscd in data.sscds ?? [] {
-            let alreadyExists = activeSscds.contains { $0.sscdId == sscd.sscdId }
-            let isSscdTypeEnabled = enabledSscds.contains { $0.getSscdInfo().sscdType == sscd.sscdType }
+            let alreadyExists = activeSscds.contains { $0.getSscdId() == sscd.getSscdId() }
+            let isSscdTypeEnabled = enabledSscds.contains { $0.getSscdInfo()?.getSscdType() == sscd.getSscdType() }
 
             if alreadyExists || !isSscdTypeEnabled {
                 continue
@@ -259,20 +275,28 @@ public class MetadataStorage {
         }
 
         let uniqueKeys = Set(activeKeys.map { $0.getKeyUri() })
+        
         for key in data.keys ?? [] {
             if uniqueKeys.contains(key.getKeyUri()) {
                 continue
             }
-
+            /*
             guard let sscd = key.getSscdImplementation()?.getSscdInfo() else {
                 throw MusapError.unknownKey
             }
-
+             */
+            guard let sscd = key.getSscd() else {
+                return
+            }
+            
             do {
-                print("Storing key to \(sscd.sscdName ?? "Unknown")")
-                try self.storeKey(key: key, sscd: sscd)
+                print("Storing key to \(String(describing: sscd.getSscdInfo()?.getSscdName()))")
+                guard let sscdInfo = sscd.getSscdInfo() else {
+                    throw MusapError.internalError
+                }
+                try self.addKey(key: key, sscd: sscdInfo)
             } catch {
-                print("Could not store key to \(sscd.sscdName ?? "Unknown")")
+                print("Could not store key to \(String(describing: sscd.getSscdInfo()?.getSscdName()))")
                 throw MusapError.internalError
             }
         }
@@ -294,7 +318,7 @@ public class MetadataStorage {
             return false
         }
         
-        let keyJson = self.getKeyJson(keyName: keyId)
+        let keyJson = self.getKeyJson(keyId: keyId)
         guard let keyJsonData = keyJson.data(using: .utf8) else {
             print("Error decoding JSON to MusapKey, can't update metadata")
             return false
@@ -333,13 +357,13 @@ public class MetadataStorage {
             }
         }
         
-        guard let sscd = oldKey.getSscdImplementation()?.getSscdInfo() else {
+        guard let sscd = oldKey.getSscdInfo() else {
             print("Can't update key, could nto find SSCD where it belongs")
             return false
         }
         
         do {
-            try self.storeKey(key: oldKey, sscd: sscd)
+            try self.addKey(key: oldKey, sscd: sscd)
         } catch {
             return false
         }

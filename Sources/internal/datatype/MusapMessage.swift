@@ -26,7 +26,7 @@ public class MusapMessage: Codable {
          transid:   String,
          requestid: String,
          mac:       String,
-         iv:        String
+         iv:        String?
     ) {
         self.payload = payload
         self.musapid = musapid
@@ -41,6 +41,30 @@ public class MusapMessage: Codable {
     init() {
         
     }
+    
+    public func getIdentifier() -> String? {
+        if (self.transid != nil) {
+            return self.transid
+        } else {
+            return self.musapid
+        }
+    }
 
     
+}
+
+extension MusapMessage: CustomStringConvertible {
+    public var description: String {
+        return """
+        MusapMessage:
+        - payload: \(payload ?? "nil")
+        - musapid: \(musapid ?? "nil")
+        - type: \(type ?? "nil")
+        - uuid: \(uuid ?? "nil")
+        - transid: \(transid ?? "nil")
+        - requestid: \(requestid ?? "nil")
+        - mac: \(mac ?? "nil")
+        - iv: \(iv ?? "nil")
+        """
+    }
 }

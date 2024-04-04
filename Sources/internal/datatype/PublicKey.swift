@@ -39,7 +39,6 @@ public class PublicKey: Codable {
         return pem
     }
     
-    //TODO: Do we even need this?
     public func toSecKey(keyType: String) -> SecKey? {
         let keyData = publickeyDer
         
@@ -66,6 +65,7 @@ public class PublicKey: Codable {
         return secKey
     }
     
+    /// Turns yubikey PIV key type to SecKey
     public func toSecKey(keyType: YKFPIVKeyType) -> SecKey? {
         let keyData = publickeyDer
         

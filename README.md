@@ -191,20 +191,22 @@ Operation to bind an existing SSCD and keys with MUSAP.
 
 ```swift
 
-let dtbd = "data to display"
+let dtbd = self.payload?.getDisplayText() ?? "Default databa to be displayed"
 
 guard let link = MusapClient.getMusapLink() else {
-    print("NO link")
+    print("No link available. Use MusapClient.enableLink(...) first")
     return
 }
 
-let settings = ExternalSscdSettings(clientId: "1")
+let clientId = "LOCAL" // Possible client ID's are specified in musaplink.conf
+
+let settings = ExternalSscdSettings(clientId: clientId)
 let sscd = ExternalSscd(settings: settings, clientid: "1", musapLink: link)
 
 let keyBindReq = KeyBindReq(
     keyAlias: "keyForMusap",
-    did: "did",
-    role: "role",
+    did: "SOME_DID",
+    role: "personal",
     stepUpPolicy: StepUpPolicy(),
     attributes: [KeyAttribute](),
     generateNewKey: true,
