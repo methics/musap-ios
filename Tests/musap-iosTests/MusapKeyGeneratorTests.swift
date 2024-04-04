@@ -18,6 +18,7 @@ final class MusapKeyGeneratorTests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
 
+    // This test needs real device or keychain access for simulators
     func testHkdfStatic_Success() {
         do {
             let base64KeyString = try MusapKeyGenerator.hkdfStatic(false)
@@ -25,13 +26,7 @@ final class MusapKeyGeneratorTests: XCTestCase {
             // Additional checks can be done on the base64KeyString for length or format.
         } catch {
             XCTFail("hkdfStatic should not throw an error for the success scenario.")
-        }
-    }
-
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
+            print(error)
         }
     }
 

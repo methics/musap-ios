@@ -44,7 +44,9 @@ class MetadataStorageTests: XCTestCase {
      */
 
     func testStoreAndListSSCDs() {
-        let testSSCD = MusapSscd(impl: SecureEnclaveSscd())
+        let seSscd = SecureEnclaveSscd()
+        MusapClient.enableSscd(sscd: seSscd, sscdId: "123")
+        let testSSCD = MusapSscd(impl: seSscd)
         let testInfo = testSSCD.getSscdInfo()
 
         metadataStorage.addSscd(sscd: testInfo!)

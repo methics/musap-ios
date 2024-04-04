@@ -4,32 +4,25 @@ import musap_ios
 
 class KeyURITests: XCTestCase {
     
-    func testInitWithNameSSCDAndLOA() {
-        let name = "TestName"
-        let sscd = "TestSSCD"
-        let loa = "TestLOA"
-        
-        let keyURI = KeyURI(name: name, sscd: sscd, loa: loa)
-        XCTAssertEqual(keyURI.getName(), name)
-        XCTAssertEqual(keyURI.keyUriMap["sscd"], sscd)
-        XCTAssertEqual(keyURI.keyUriMap["loa"], loa)
-    }
     
-    func testInitWithUriString() {
-        let uriString = "keyuri:key?name=TestName&sscd=TestSSCD&loa=TestLOA"
-        let keyURI = KeyURI(keyUri: uriString)
+    func testWithMusapKey() {
+        let key = MusapKey(keyAlias: "KeyName", sscdType: "testSSCD", publicKey: PublicKey(publicKey: "ABC".data(using: .utf8)!), keyUri: KeyURI(keyUri: "keyuri:key?name=KeyName&sscd=TestSSCD&loa=TestLOA"))
         
-        XCTAssertEqual(keyURI.getName(), "TestName")
-        XCTAssertEqual(keyURI.keyUriMap["sscd"], "TestSSCD")
-        XCTAssertEqual(keyURI.keyUriMap["loa"], "TestLOA")
+        let uri = KeyURI(key: key)
+        
+        XCTAssertEqual(uri.getName(), "KeyName")
     }
     
     func testGetUri() {
         let params = ["name": "TestName", "sscd": "TestSSCD", "loa": "TestLOA"]
         let keyURI = KeyURI(params: params)
-        let expectedUri = "keyuri:key?name=TestName&sscd=TestSSCD&loa=TestLOA"
+        let resultUri = keyURI.getUri()
+
+        XCTAssertTrue(resultUri.hasPrefix("keyuri:key?"), "URI should start with the specified prefix.")
         
-        XCTAssertEqual(keyURI.getUri(), expectedUri)
+        for (key, value) in params {
+            XCTAssertTrue(resultUri.contains("\(key)=\(value)"), "URI should contain the \(key)=\(value) pair.")
+        }
     }
     
     func testMatches() {

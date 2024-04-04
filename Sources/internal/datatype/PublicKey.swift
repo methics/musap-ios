@@ -65,6 +65,7 @@ public class PublicKey: Codable {
         return secKey
     }
     
+    /// Turns yubikey PIV key type to SecKey
     public func toSecKey(keyType: YKFPIVKeyType) -> SecKey? {
         let keyData = publickeyDer
         

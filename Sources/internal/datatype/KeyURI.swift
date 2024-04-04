@@ -29,7 +29,7 @@ public class KeyURI: Codable, Equatable, Hashable {
     public static let CREATED_DATE = "created-date"
     
     
-    public var keyUriMap: [String: String] = [:]
+    private var keyUriMap: [String: String] = [:]
     
     
     public init(name: String?, sscd: String?, loa: String?) {

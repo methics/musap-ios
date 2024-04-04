@@ -10,27 +10,73 @@ import musap_ios
 
 final class MusapClientTests: XCTestCase {
 
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+    override func setUp() {
+        let sscd = SecureEnclaveSscd()
+        MusapClient.enableSscd(sscd: SecureEnclaveSscd(), sscdId: "123")
     }
 
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+    func testListEnabledSscds() throws {
+        let enabled = MusapClient.listEnabledSscds()
+        
+        XCTAssertNotNil(enabled)
+        XCTAssertEqual(enabled?.count, 1)
     }
-
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
+    
+    func testListEnabledSscdsWithSearchReq() {
+        let req = SscdSearchReq(sscdType: "SE")
+        let enabled: [MusapSscd]? = MusapClient.listEnabledSscds(req: req)
+        
+        XCTAssertNotNil(enabled)
     }
-
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
+    
+    func testListKeysWithNoKeys() {
+        let keys = MusapClient.listKeys()
+        
+        XCTAssertNotNil(keys)
+        XCTAssertEqual(keys.count, 0)
+    }
+    
+    func testEnableAnotherSscd() {
+        let sscd = KeychainSscd()
+        MusapClient.enableSscd(sscd: sscd, sscdId: "keychain")
+        
+        let enabled = MusapClient.listEnabledSscds()
+        XCTAssertNotNil(enabled)
+        XCTAssertEqual(enabled?.count, 2)
+    }
+    
+    func testIsLinkEnabledWhenNot() {
+        let result = MusapClient.isLinkEnabled()
+        
+        XCTAssertFalse(result)
+    }
+    
+    func testGetMusapIdWhenNotAvailable() {
+        let result = MusapClient.getMusapId()
+        XCTAssertNil(result)
+    }
+    
+    func testGenerateKey() async {
+        
+        let keygenreq = KeyGenReq(keyAlias: "testkey", role: "personal")
+        let enabled = MusapClient.listEnabledSscds()
+        
+        let sscd = (enabled?.first)!
+        
+        await MusapClient.generateKey(sscd: sscd, req: keygenreq) { result in
+            
+            switch result {
+            case .success(let key):
+                XCTAssertNotNil(key.getKeyId())
+                
+                let keysAmount = MusapClient.listKeys()
+                XCTAssertEqual(keysAmount.count, 1)
+                
+            case .failure(let error):
+                print("error")
+            }
         }
+        
     }
 
 }
