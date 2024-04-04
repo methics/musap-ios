@@ -36,12 +36,12 @@ public class KeyBindReq {
         self.displayText = displayText
     }
     
-    private func addAttribute(key: String, value: String) -> Void {
+    public func addAttribute(key: String, value: String) -> Void {
         let keyAttribute = KeyAttribute(name: key, value: value)
         self.attributes.append(keyAttribute)
     }
     
-    private func addAttribute(attribute: KeyAttribute) {
+    public func addAttribute(attribute: KeyAttribute) {
         self.attributes.append(attribute)
     }
     

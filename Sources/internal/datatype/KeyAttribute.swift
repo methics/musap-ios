@@ -47,7 +47,7 @@ public struct KeyAttribute: Codable {
             return nil
         }
         
-        return Data(base64Encoded: value, options: .ignoreUnknownCharacters)
+        return Data(base64Encoded: value)
     }
     
     

@@ -23,5 +23,9 @@ let package = Package(
                 .product(name: "YubiKit", package: "yubikit-ios") // Explicitly declare the product and package name
             ],
             path: "Sources"),
+        .testTarget(
+            name: "musap-iosTests",
+            dependencies: ["musap-ios"]
+        )
     ]
 )
