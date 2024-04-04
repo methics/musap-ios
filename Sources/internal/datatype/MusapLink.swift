@@ -508,10 +508,17 @@ public class MusapLink: Encodable, Decodable {
             }
             
             msg.payload = holder.getPayload()
+            
+            guard msg.payload != nil else {
+                print("Could not get payload in sendRequest")
+                completion(nil, MusapError.internalError)
+                return
+            }
+            
             msg.iv = holder.getIv()
         
             do {
-                msg.mac = try MusapLink.mac.generate(message: msg.payload ?? "", iv: msg.iv ?? "", transId: msg.transid, type: msgType)
+                msg.mac = try MusapLink.mac.generate(message: msg.payload ?? "", iv: msg.iv ?? "", transId: msg.getIdentifier(), type: msgType)
 
             } catch {
                 print("error: \(error)")
