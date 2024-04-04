@@ -511,7 +511,7 @@ public class MusapLink: Encodable, Decodable {
             msg.iv = holder.getIv()
         
             do {
-                msg.mac = try MusapLink.mac.generate(message: payload, iv: msg.iv ?? "", transId: msg.transid, type: msgType)
+                msg.mac = try MusapLink.mac.generate(message: msg.payload ?? "", iv: msg.iv ?? "", transId: msg.transid, type: msgType)
 
             } catch {
                 print("error: \(error)")
