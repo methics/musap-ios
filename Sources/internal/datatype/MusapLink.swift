@@ -499,9 +499,9 @@ public class MusapLink: Encodable, Decodable {
         if shouldEncrypt && msgType != MusapLink.ENROLL_MSG_TYPE {
             print("Encrypting message")
             
-            guard let holder = self.getPayload(payloadBase64: payload, shouldEncrypt: shouldEncrypt),
-                  let iv = msg.iv
-            else {
+            guard let holder = self.getPayload(payloadBase64: payload, shouldEncrypt: shouldEncrypt)
+            else 
+            {
                 print("Could not get PayloadHolder or IV")
                 completion(nil, MusapError.internalError)
                 return
@@ -511,7 +511,7 @@ public class MusapLink: Encodable, Decodable {
             msg.iv = holder.getIv()
         
             do {
-                msg.mac = try MusapLink.mac.generate(message: payload, iv: iv, transId: msg.transid, type: msgType)
+                msg.mac = try MusapLink.mac.generate(message: payload, iv: msg.iv ?? "", transId: msg.transid, type: msgType)
 
             } catch {
                 print("error: \(error)")
@@ -569,6 +569,7 @@ public class MusapLink: Encodable, Decodable {
 
         task.resume()
     }
+    
     
     private func pollForSignature(transId: String, completion: @escaping (Result<ExternalSignatureResponsePayload, Error>) -> Void) {
         print("Polling for signature")

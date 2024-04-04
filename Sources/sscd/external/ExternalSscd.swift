@@ -13,7 +13,7 @@ import Security
  * SSCD that uses MUSAP Link to request signatures with the "externalsign" Coupling API call
  */
 public class ExternalSscd: MusapSscdProtocol {
-    
+
     public typealias CustomSscdSettings = ExternalSscdSettings
     
     static let SSCD_TYPE           = "External Signature"
