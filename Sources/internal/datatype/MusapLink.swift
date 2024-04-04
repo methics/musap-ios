@@ -225,7 +225,7 @@ public class MusapLink: Encodable, Decodable {
     }
     
     public func sendKeygenCallback(key: MusapKey, txnId: String) throws {
-        
+        print("Sending keygen callback")
         let payload = SignatureCallbackPayload(key: key)
         
         let msg = MusapMessage()
@@ -272,6 +272,7 @@ public class MusapLink: Encodable, Decodable {
     }
     
     public func sendSignatureCallback(signature: MusapSignature, transId: String) throws {
+        print("Sending signature callback")
         let payload = SignatureCallbackPayload(linkid: nil, signature: signature)
         payload.attestationResult = signature.getKeyAttestationResult()
         
@@ -403,6 +404,7 @@ public class MusapLink: Encodable, Decodable {
                         print("status: Failed")
                         completion(.failure(MusapError.internalError))
                     } else {
+                        print("sign() success")
                         completion(.success(resp))
                     }
                 }
@@ -518,6 +520,7 @@ public class MusapLink: Encodable, Decodable {
             msg.iv = holder.getIv()
         
             do {
+                print("generating MAC in sendRequest (completion handler)")
                 msg.mac = try MusapLink.mac.generate(message: msg.payload ?? "", iv: msg.iv ?? "", transId: msg.getIdentifier(), type: msgType)
 
             } catch {
@@ -591,16 +594,19 @@ public class MusapLink: Encodable, Decodable {
                 
                     switch result {
                     case .failure:
+                        print("Polling was a failure")
                         isPollingDone = true
                         DispatchQueue.main.async {
                             completion(.failure(MusapError.internalError))
                         }
                     case .success(let response):
+                        print("Polling was a success")
                         isPollingDone = true
                         DispatchQueue.main.async {
                             completion(.success(response))
                         }
                     case .keepPolling:
+                        print("Keep polling")
                         break
                     }
                     
