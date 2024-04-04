@@ -149,93 +149,6 @@ public class MusapLink: Encodable, Decodable {
         throw MusapError.internalError //TODO: MusapLink.couplingError or something
     }
     
-    
-    
-    /*
-    /**
-      Couple this MUSAP with a MUSAP Link.
-      This performs networking operations.
-     - parameters:
-       - returns: RelyingParty if pairing was a success
-     */
-    public func couple(couplingCode: String, musapid: String) async throws -> RelyingParty {
-        let payload = LinkAccountPayload(couplingcode: couplingCode, musapid: musapid)
-        
-        let msg = MusapMessage()
-        msg.type = MusapLink.COUPLE_MSG_TYPE
-        
-        if let payload = payload.getBase64Encoded() {
-            msg.payload = payload
-        } else {
-            print("MusapLink.couple(): Failed to get base64")
-            throw MusapError.internalError
-        }
-        
-        guard let url = URL(string: self.url) else {
-            print("MusapLink.couple(): Failed get URL")
-            throw MusapError.internalError
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        let encoder = JSONEncoder()
-        do {
-            let jsonData = try encoder.encode(msg)
-            request.httpBody = jsonData
-            
-            // To see from xcode what we are getting for debugging
-            if let jsonString = String(data: jsonData, encoding: .utf8) {
-                print("COUPLING request body: \(jsonString)")
-            }
-            
-        } catch {
-            print("error encoding json: \(error)")
-
-            throw MusapError.internalError
-        }
-        
-        let (data, response) = try await URLSession.shared.data(for: request)
-        
-        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-            print("MusapLink.couple(): HTTP ERROR?")
-            throw MusapError.internalError
-        }
-        
-        do {
-            // Form a MusapMessage from server response
-            let musapMessage = try JSONDecoder().decode(MusapMessage.self, from: data)
-            
-            // Make sure payload is there, and turn it into data from base64encoded str
-            guard let payloadBase64 = musapMessage.payload,
-                  let payloadData = Data(base64Encoded: payloadBase64) 
-            else {
-                print("Failed to turn payload to data")
-                throw MusapError.internalError
-            }
-            
-            print("JSON: \(String(describing: String(data: payloadData, encoding: .utf8)))")
-            
-            // Turn the data to LinkAccountResponsePayload
-            let linkAccountResponsePayload = try JSONDecoder().decode(LinkAccountResponsePayload.self, from: payloadData)
-            //TODO: This should probably error better
-
-            // Get the Link ID and RP name
-            let linkId = linkAccountResponsePayload.linkid
-            let rpName = linkAccountResponsePayload.name
-            
-            let rp = RelyingParty(name: rpName, linkId: linkId)
-            return rp
-            
-        } catch {
-            print("Error while coupling: \(error)")
-        }
-        
-        throw MusapError.internalError
-    }
-     */
-    
     public func poll() async throws -> PollResponsePayload? {
         let msg = MusapMessage()
         msg.type = MusapLink.POLL_MSG_TYPE
@@ -584,10 +497,12 @@ public class MusapLink: Encodable, Decodable {
         }
         
         if shouldEncrypt && msgType != MusapLink.ENROLL_MSG_TYPE {
+            print("Encrypting message")
             
             guard let holder = self.getPayload(payloadBase64: payload, shouldEncrypt: shouldEncrypt),
                   let iv = msg.iv
             else {
+                print("Could not get PayloadHolder or IV")
                 completion(nil, MusapError.internalError)
                 return
             }
@@ -749,9 +664,10 @@ public class MusapLink: Encodable, Decodable {
     }
     
     private func getPayload(payloadBase64: String, shouldEncrypt: Bool) -> PayloadHolder? {
+        print("Getting payload")
         if shouldEncrypt {
             guard let payloadHolder = MusapLink.encryption.encrypt(message: payloadBase64) else {
-                print("COuld not encrypt payloadBase64")
+                print("Could not encrypt payloadBase64")
                 return nil
             }
             return payloadHolder

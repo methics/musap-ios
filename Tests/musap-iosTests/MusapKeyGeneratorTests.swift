@@ -25,7 +25,7 @@ final class MusapKeyGeneratorTests: XCTestCase {
             XCTAssertNotNil(base64KeyString, "The base64KeyString should not be nil")
             // Additional checks can be done on the base64KeyString for length or format.
         } catch {
-            XCTFail("hkdfStatic should not throw an error for the success scenario.")
+            XCTFail("This will fail unless ran on a real device")
             print(error)
         }
     }
