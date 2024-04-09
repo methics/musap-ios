@@ -17,7 +17,7 @@ struct MsisdnInputView: View {
                 .fontWeight(.bold)
             TextField("Enter MSISDN", text: $msisdn)
                 .multilineTextAlignment(.center)
-                .keyboardType(.numberPad)
+                .keyboardType(.phonePad)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding()
             
