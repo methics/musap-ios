@@ -486,12 +486,12 @@ MusapClient.sendSignatureCallback(signature: signature, txnId: transId) // void 
 
 ### MUSAP Library
 
-![Musap Library architecture image](docs/musap-lib-overview.png)
+Overall MUSAP Architecture is: 
+![MUSAP project architecture alt="MUSAP architecture" width="30" height="30](docs/Complete_MUSAP_Architecture_D4.png)
 
+For all users MUSAP provides at least two keystores to be interfaced with end-user-add:
+![MUSAP keystores alt="MUSAP" ](docs/Complete_MUSAP_avaliable_setup_with_2_keystores.png)
 
-### MUSAP Link
-
-![Musap Link library architecture](docs/link-library-architecture.png)
 
 ## Contributing
 
