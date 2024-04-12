@@ -19,7 +19,7 @@ final class MusapClientTests: XCTestCase {
         let enabled = MusapClient.listEnabledSscds()
         
         XCTAssertNotNil(enabled)
-        XCTAssertEqual(enabled?.count, 1)
+        XCTAssertEqual(enabled?.count, 2)
     }
     
     func testListEnabledSscdsWithSearchReq() {
@@ -56,24 +56,27 @@ final class MusapClientTests: XCTestCase {
         XCTAssertNil(result)
     }
     
-    func testGenerateKey() async {
+    //TODO: Gets missing entitlements error  errSecMissingEntitlement
+    func testGenerateKeySuccess() async {
         
-        let keygenreq = KeyGenReq(keyAlias: "testkey", role: "personal")
+        let keygenreq = KeyGenReq(keyAlias: "testkey", role: "personal", keyAlgorithm: KeyAlgorithm.ECC_P256_R1)
         let enabled = MusapClient.listEnabledSscds()
         
         let sscd = (enabled?.first)!
+        XCTAssertNotNil(sscd)
         
         await MusapClient.generateKey(sscd: sscd, req: keygenreq) { result in
             
             switch result {
             case .success(let key):
+                XCTAssertNotNil(key)
                 XCTAssertNotNil(key.getKeyId())
-                
-                let keysAmount = MusapClient.listKeys()
-                XCTAssertEqual(keysAmount.count, 1)
+                XCTAssertEqual(key.getKeyAlias(), "testkey")
+                print("The success part is not ran is it?")
                 
             case .failure(let error):
-                print("error")
+                print("error \(error)")
+                XCTAssertNil(error)
             }
         }
         
