@@ -41,7 +41,10 @@ class MetadataStorageTests: XCTestCase {
 
         let keys = metadataStorage.listKeys()
         XCTAssertEqual(keys.count, 1)
-        //XCTAssertEqual(keys.first, testKey)
+        
+        for key in keys {
+            XCTAssertEqual(key.getKeyId(), testKey.getKeyId())
+        }
     }
      
 
