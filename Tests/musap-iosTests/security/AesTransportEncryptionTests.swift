@@ -11,6 +11,8 @@ final class AesTransportEncryptionTests: XCTestCase {
     let expectedEncryptedBase64 = "WS1XGISmwEXYo60botyTPA=="
     let iv = "MTIzNDU2Nzg5ODc2NTQzMg=="
     let secret = "1234123456789878"
+    
+    let storage = MockKeyStorage()
 
     override func setUpWithError() throws {
         super.setUp()
@@ -23,7 +25,6 @@ final class AesTransportEncryptionTests: XCTestCase {
     }
 
     func testEncrypt() throws {
-        let storage = MockKeyStorage()
         let encryption = AesTransportEncryption(keyStorage: storage)
         
         guard let encodedKey = secret.data(using: .utf8)
@@ -45,7 +46,6 @@ final class AesTransportEncryptionTests: XCTestCase {
     }
     
     func testDecrypt() throws {
-        let storage = MockKeyStorage()
         let encryption = AesTransportEncryption(keyStorage: storage)
 
         guard let encodedKey = secret.data(using: .utf8),
@@ -61,4 +61,5 @@ final class AesTransportEncryptionTests: XCTestCase {
 
         XCTAssertEqual(decrypted, self.message, "Output is decrypted")
     }
+    
 }
