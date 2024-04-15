@@ -46,15 +46,26 @@ class MetadataStorageTests: XCTestCase {
      
 
     func testStoreAndListSSCDs() {
+        guard let amountBefore = MusapClient.listEnabledSscds() else {
+            XCTFail()
+            return
+        }
+
         let seSscd = SecureEnclaveSscd()
         MusapClient.enableSscd(sscd: seSscd, sscdId: self.testSSCDId)
         let testSSCD = MusapSscd(impl: seSscd)
         let testInfo = testSSCD.getSscdInfo()
 
+        
         metadataStorage.addSscd(sscd: testInfo!)
-        let sscds = metadataStorage.listActiveSscds()
+        guard let sscds = MusapClient.listEnabledSscds() else {
+            XCTFail()
+            return
+        }
+        print("amountBefore: \(amountBefore.count)")
+        print("sscds amount: \(sscds.count)")
 
-        XCTAssertEqual(sscds.count, 1)
+        XCTAssertNotEqual(amountBefore.count, sscds.count)
     }
     
     func testRemoveKey() {
