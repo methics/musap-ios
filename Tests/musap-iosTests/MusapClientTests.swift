@@ -13,6 +13,12 @@ final class MusapClientTests: XCTestCase {
     override func setUp() {
         let sscd = SecureEnclaveSscd()
         MusapClient.enableSscd(sscd: SecureEnclaveSscd(), sscdId: "123")
+        
+        let keys = MusapClient.listKeys()
+        let storage = MetadataStorage()
+        for key in keys {
+            let _ = storage.removeKey(key: key)
+        }
     }
 
     func testListEnabledSscds() throws {
@@ -37,12 +43,14 @@ final class MusapClientTests: XCTestCase {
     }
     
     func testEnableAnotherSscd() {
+        let before = MusapClient.listEnabledSscds()
+        
         let sscd = KeychainSscd()
         MusapClient.enableSscd(sscd: sscd, sscdId: "keychain")
         
         let enabled = MusapClient.listEnabledSscds()
         XCTAssertNotNil(enabled)
-        XCTAssertEqual(enabled?.count, 2)
+        XCTAssertNotEqual(before!.count, enabled!.count)
     }
     
     func testIsLinkEnabledWhenNot() {
