@@ -158,12 +158,40 @@ public class MetadataStorage {
         }
     }
     
-    public func removeSscd(sscd: SscdInfo) {
-        guard let sscdId = sscd.getSscdId() else {
-            return
+    public func removeSscd(sscd: SscdInfo) -> Bool {
+        guard let targetSscdId = sscd.getSscdId() else {
+            print("Could not get removal target SSCD ID")
+            return false
         }
         
-        //TODO: finish
+        print("Removing sscd: \(sscd.getSscdName())")
+        
+        let sscds = self.listActiveSscds()
+        
+        print("active SSCDs amount: \(sscds.count)")
+        
+        for s in sscds {
+            if let currentSscdId = s.getSscdId() {
+                if currentSscdId == targetSscdId {
+                    // Remove SSCD JSON
+                    UserDefaults.standard.removeObject(forKey: MetadataStorage.SSCD_JSON_PREFIX + targetSscdId)
+                    
+                    // Remove from SSCD ID SET
+                    var sscdIdSet = self.getSscdIds()
+                    sscdIdSet.remove(targetSscdId)
+                    
+                    print("Removed")
+
+                    // Save new set without the removed ID
+                    userDefaults.set(Array(sscdIdSet), forKey: MetadataStorage.SSCD_ID_SET)
+                    return true
+                }
+            } else {
+                print("Cant get SSCD ID")
+            }
+        }
+        
+        return false
         
     }
 

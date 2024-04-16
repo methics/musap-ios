@@ -64,5 +64,49 @@ final class MusapClientTests: XCTestCase {
         XCTAssertNil(result)
     }
     
+    func testRemoveSscd() {
+        self.addKeyToSscd()
+        
+        let activeSscds = MusapClient.listActiveSscds()
+        let before = activeSscds.count
+        print("Amount of SSCDs before remove: \(before)")
+        guard let sscdInfo = activeSscds.first?.getSscdInfo() else {
+            XCTFail()
+            return
+        }
+        
+        print("TEST: Trying to remove \(sscdInfo.getSscdName())")
+        let result = MusapClient.removeSscd(musapSscd: sscdInfo)
+        
+        XCTAssertTrue(result)
+        
+        let afterRemoveList = MusapClient.listActiveSscds() 
+        
+        XCTAssertNotEqual(afterRemoveList.count, before)
+        
+    }
+    
+    func addKeyToSscd() {
+        guard let keyData = "12345".data(using: .utf8) else {
+            return
+        }
+        
+        let uri = KeyURI(keyUri: "keyuri:key?name=KeyName&sscd=TestSSCD&loa=TestLOA")
+        let key = MusapKey(keyAlias: "MusapClientKey", keyId: "12345", sscdType: "SE", publicKey: PublicKey(publicKey: keyData), keyUri: uri)
+        
+        guard let sscd = MusapClient.listEnabledSscds() else {
+            return
+        }
+        
+        let someSscd = sscd.first
+        
+        do {
+            try MetadataStorage().addKey(key: key, sscd: (someSscd?.getSscdInfo())!)
+        } catch {
+            return
+        }
+        
+    }
+    
 
 }
