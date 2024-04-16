@@ -72,7 +72,6 @@ public class MusapLoa: Codable, Comparable {
         return loaString
     }
 
-    //TODO: Confirm the compareLoA works via unit tests
     public static func compareLoA(first: MusapLoa?, second: MusapLoa?) -> Bool {
         guard let first = first else {
             return false

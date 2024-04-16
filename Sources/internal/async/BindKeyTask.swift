@@ -11,7 +11,6 @@ public class BindKeyTask {
     
     typealias CompletionHandler = (Result<MusapKey, MusapError>) -> Void
     
-    //TODO: Test this thorougly
     func bindKey(req: KeyBindReq, sscd: MusapSscd) async throws -> MusapKey {
         do {
             let key = try sscd.bindKey(req: req)
