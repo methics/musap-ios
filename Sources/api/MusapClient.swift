@@ -322,8 +322,8 @@ public class MusapClient {
      - Parameters:
         - musapSscd: SSCD to remove
      */
-    public static func removeSscd(musapSscd: SscdInfo) {
-        
+    public static func removeSscd(musapSscd: SscdInfo) -> Bool {
+        return MetadataStorage().removeSscd(sscd: musapSscd)
     }
     
     /**
