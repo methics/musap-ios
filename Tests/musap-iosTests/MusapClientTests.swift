@@ -45,8 +45,8 @@ final class MusapClientTests: XCTestCase {
     func testEnableAnotherSscd() {
         let before = MusapClient.listEnabledSscds()
         
-        let sscd = KeychainSscd()
-        MusapClient.enableSscd(sscd: sscd, sscdId: "keychain")
+        let sscd = YubikeySscd()
+        MusapClient.enableSscd(sscd: sscd, sscdId: "yubikey")
         
         let enabled = MusapClient.listEnabledSscds()
         XCTAssertNotNil(enabled)

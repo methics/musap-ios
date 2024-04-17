@@ -53,7 +53,7 @@ class MetadataStorageTests: XCTestCase {
             XCTFail()
             return
         }
-
+        
         let seSscd = SecureEnclaveSscd()
         MusapClient.enableSscd(sscd: seSscd, sscdId: self.testSSCDId)
         let testSSCD = MusapSscd(impl: seSscd)
@@ -127,14 +127,73 @@ class MetadataStorageTests: XCTestCase {
     
     func testRemoveSscd() {
         
+        self.enableSscdAddKey()
+        
+        let sscds = MusapClient.listActiveSscds()
+        
+        guard let sscdToRemove = sscds.first?.getSscdInfo() else {
+            XCTFail("No SSCDs to remove")
+            return
+        }
+        
+        let before = sscds.count
+        
+        let storage = MetadataStorage()
+        let result = storage.removeSscd(sscd: sscdToRemove)
+        
+        XCTAssertTrue(result)
+        
+        let currentSscdsAmount = MusapClient.listActiveSscds().count
+        
+        XCTAssertNotEqual(before, currentSscdsAmount)
     }
     
     func testAddImportData() {
+        let storage = MetadataStorage()
+        let importData = storage.getImportData()
+        
+        // get sscds and keys, remove them and try to add import data
+        let sscds = MusapClient.listActiveSscds()
+        let keys = MusapClient.listKeys()
+        
+        for key in keys {
+            let _ = MusapClient.removeKey(musapKey: key)
+        }
+        
+        for sscd in sscds {
+            let _ = MusapClient.removeSscd(musapSscd: sscd.getSscdInfo()!)
+        }
+        
+        do {
+            try storage.addImportData(data: importData)
+        } catch {
+            XCTFail("storage.addImportData threw")
+        }
         
     }
     
     func testGetImportData() {
+        let storage = MetadataStorage()
+        let importData = storage.getImportData()
         
+        XCTAssertNotNil(importData.keys)
+        XCTAssertNotNil(importData.sscds)
+    }
+    
+    func enableSscdAddKey() {
+        let kcSscd = KeychainSscd()
+        MusapClient.enableSscd(sscd: kcSscd, sscdId: self.testKeyId)
+        
+        let testSSCD = MusapSscd(impl: kcSscd)
+        let testInfo = testSSCD.getSscdInfo()
+        
+        let originalKey = MusapKey(keyAlias: self.testKeyAlias,  keyId: "12345", sscdType: kcSscd.getSscdInfo().getSscdType(), publicKey: PublicKey(publicKey: key), keyUri: KeyURI(keyUri: "keyuri:key?name=TestName&sscd=TestSSCD&loa=TestLOA"))
+                
+        do {
+            try metadataStorage.addKey(key: originalKey, sscd: testInfo!)
+        } catch {
+            print("Could not add key")
+        }
     }
     
 
