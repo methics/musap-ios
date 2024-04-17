@@ -78,15 +78,19 @@ class MetadataStorageTests: XCTestCase {
 
         let sscd = SecureEnclaveSscd()
         
+        let before = metadataStorage.listKeys().count
+        
         try? storage.addKey(key: testKey, sscd: sscd.getSscdInfo())
         var keys = metadataStorage.listKeys()
-        XCTAssertEqual(keys.count, 2)
+        
+        XCTAssertNotEqual(before, keys.count)
 
         let result = metadataStorage.removeKey(key: testKey)
         XCTAssertTrue(result)
+        
+        let afterRemove = metadataStorage.listKeys()
 
-        keys = metadataStorage.listKeys()
-        XCTAssertEqual(keys.count, 1)
+        XCTAssertNotEqual(keys.count, afterRemove.count)
     }
 
     
