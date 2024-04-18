@@ -38,5 +38,5 @@ jobs:
       run: xcodebuild test -scheme musap-ios -destination 'platform=iOS Simulator,name=iPhone 14,OS=16.2'
       
     - name: Shutdown iOS Simulator
-      run: xcrun simctl shutdown $device_id
+      run: xcrun simctl shutdown all
 
