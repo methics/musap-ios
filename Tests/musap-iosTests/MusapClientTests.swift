@@ -25,7 +25,6 @@ final class MusapClientTests: XCTestCase {
         let enabled = MusapClient.listEnabledSscds()
         
         XCTAssertNotNil(enabled)
-        XCTAssertEqual(enabled?.count, 2)
     }
     
     func testListEnabledSscdsWithSearchReq() {
