@@ -25,6 +25,9 @@ jobs:
     - name: Install Dependencies
       run: xcodebuild -resolvePackageDependencies
 
+    - name: List available simulators
+      run: xcrun simctl list devicetypes
+
     - name: Start iOS Simulator
       run: |
         device_id=$(xcrun simctl create MyTestDevice com.apple.CoreSimulator.SimDeviceType.iPhone-13, com.apple.CoreSimulator.SimRuntime.iOS-15-5)
