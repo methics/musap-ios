@@ -13,7 +13,7 @@ public class SignaturePayload: Decodable {
     public var display = "Sign with MUSAP"
     public var format: String? = "RAW"
     public var scheme: String?
-    public var hashAlgo: String? = "SHA-256" //TODO: Swiftify?
+    public var hashAlgo: String? = "SHA-256"
     public let linkid: String
     public var key: KeyIdentifier? = nil
     public var attributes: [SignatureAttribute]?
