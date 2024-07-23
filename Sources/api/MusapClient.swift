@@ -8,7 +8,7 @@
 import Foundation
 
 public class MusapClient {
-    
+
     /**
      Generate a keypair and store the key metadata to MUSAP.
      - Parameters:
@@ -47,7 +47,7 @@ public class MusapClient {
             completion(.failure(MusapError.bindUnsupported))
         }
     }
-    
+
     /**
      Signs data using a specified SSCD.
 
@@ -68,14 +68,14 @@ public class MusapClient {
             completion(.failure(MusapError.internalError))
         }
     }
-    
+
     /**
      List SSCDs supported by this MUSAP library. To add an SSCD to this list, MusapClient.enableSscd() first.
      - Returns: An array of enabled MusapSscd
      */
     public static func listEnabledSscds() -> [MusapSscd]? {
         let enabledSscds = KeyDiscoveryAPI(storage: MetadataStorage()).listEnabledSscds()
-        
+
         print("found \(enabledSscds.count) SSCD's")
         var musapSscds = [MusapSscd]()
         for sscd in enabledSscds {
@@ -83,7 +83,7 @@ public class MusapClient {
         }
         return musapSscds
     }
-    
+
     /**
      List SSCDs supported by this MUSAP library. To add an SSCD to this list, MusapClient.enableSscd() first.
      - Parameters:
@@ -95,7 +95,7 @@ public class MusapClient {
             return [MusapSscd]()
         }
         var result = [MusapSscd]()
-        
+
         for sscd in enabledSscds {
             guard let s = sscd.getSscdInfo() else {
                 continue
@@ -104,10 +104,10 @@ public class MusapClient {
                 result.append(sscd)
             }
         }
-        
+
         return result
     }
-    
+
     /**
      Lists enabled SSCDs based on specified search criteria.
 
@@ -117,13 +117,13 @@ public class MusapClient {
      */
     public static func listEnabledSscds(req: SscdSearchReq) -> [any MusapSscdProtocol] {
         let keyDiscovery = KeyDiscoveryAPI(storage: MetadataStorage())
-        
+
         return keyDiscovery.listMatchingSscds(req: req)
     }
-    
+
     /**
      Lists active SSCDs with user-generated or bound keys.
-     
+
      - Returns: An array of active SSCDs that can generate or bind keys.
      */
     public static func listActiveSscds() -> [MusapSscd] {
@@ -133,23 +133,23 @@ public class MusapClient {
         }
         var activeSscds: [SscdInfo]  = MetadataStorage().listActiveSscds()
         var result = [MusapSscd]()
-        
+
         print("Got \(activeSscds.count) active SSCD's")
-        
+
         for sscd in enabledSscds {
             guard let sscdId = sscd.getSscdId() else {
                 print("No SSCD ID for enabled SSCD, continue")
                 continue
             }
-            
+
             if activeSscds.contains(where: { $0.getSscdId() == sscdId}) {
                 result.append(sscd)
             }
         }
-        
+
         return result
     }
-    
+
     /**
      Lists active SSCDs based on specified search criteria.
 
@@ -161,7 +161,7 @@ public class MusapClient {
         let keyDiscovery = KeyDiscoveryAPI(storage: MetadataStorage())
         let activeSscds = self.listActiveSscds()
         var result = [MusapSscd]()
-        
+
         for sscd in activeSscds {
             guard let sscdInfo = sscd.getSscdInfo() else {
                 continue
@@ -170,10 +170,10 @@ public class MusapClient {
                 result.append(sscd)
             }
         }
-        
+
         return result
     }
-    
+
     /**
      Lists all available Musap Keys.
 
@@ -184,7 +184,7 @@ public class MusapClient {
         print("Found: \(keys.count) keys from storage")
         return keys
     }
-    
+
     /**
      Lists keys matching given search parameters.
 
@@ -205,11 +205,11 @@ public class MusapClient {
      */
     public static func enableSscd(sscd: any MusapSscdProtocol, sscdId: String) {
         sscd.getSettings().setSetting(key: "id", value: sscdId)
-        
+
         let keyDiscovery = KeyDiscoveryAPI(storage: MetadataStorage())
         keyDiscovery.enableSscd(sscd)
     }
-    
+
     /**
      Retrieves a `MusapKey` based on a given KeyURI string.
 
@@ -220,18 +220,18 @@ public class MusapClient {
     public static func getKeyByUri(keyUri: String) -> MusapKey? {
         let keyList = MetadataStorage().listKeys()
         let keyUri = KeyURI(keyUri: keyUri)
-        
+
         for key in keyList {
             if let loopKeyUri = key.getKeyUri() {
-                if loopKeyUri.keyUriMatches(keyUri: keyUri) {
+                if loopKeyUri.matches(keyUri: keyUri) {
                     return key
                 }
             }
         }
-        
+
         return nil
     }
-    
+
     /**
      Retrieves a `MusapKey` based on a provided KeyURI object.
 
@@ -241,7 +241,7 @@ public class MusapClient {
      */
     public static func getKeyByUri(keyUriObject: KeyURI) -> MusapKey? {
         let keyList = MetadataStorage().listKeys()
-        
+
         for key in keyList {
             if let loopKeyUri = key.getKeyUri() {
                 if loopKeyUri.keyUriMatches(keyUri: keyUriObject) {
@@ -249,20 +249,20 @@ public class MusapClient {
                 }
             }
         }
-        
+
         return nil
     }
-    
+
     /**
     Get a key by KeyID
     - Parameters:
        - keyId: Key ID as string
      - Returns: MusapKey or nil
-     
+
      */
     public static func getKeyByKeyId(keyId: String) -> MusapKey? {
         let keyList = MetadataStorage().listKeys()
-        
+
         for key in keyList {
             if let loopKeyId = key.getKeyId() {
                 if loopKeyId == keyId {
@@ -270,10 +270,10 @@ public class MusapClient {
                 }
             }
         }
-        
+
         return nil
     }
-    
+
     /**
      Imports MUSAP key data and SSCD details from JSON.
 
@@ -286,11 +286,11 @@ public class MusapClient {
         guard let importData = MusapImportData.fromJson(jsonString: data) else {
             throw MusapError.internalError
         }
-        
+
         try storage.addImportData(data: importData)
-        
+
     }
-    
+
     /**
      Exports MUSAP key data and SSCD details as a JSON string.
 
@@ -298,15 +298,15 @@ public class MusapClient {
      */
     public static func exportData() -> String? {
         let storage = MetadataStorage()
-        
+
         guard let exportData = storage.getImportData().toJson() else {
             print("Could not export data")
             return nil
         }
-        
+
         return exportData
     }
-    
+
     /**
      Remove a key from MUSAP.
      - Parameters:
@@ -316,7 +316,7 @@ public class MusapClient {
     public static func removeKey(musapKey: MusapKey) -> Bool {
         return KeyDiscoveryAPI(storage: MetadataStorage()).removeKey(key: musapKey)
     }
-    
+
     /**
      Remove an active SSCD from MUSAP
      - Parameters:
@@ -325,7 +325,7 @@ public class MusapClient {
     public static func removeSscd(musapSscd: SscdInfo) -> Bool {
         return MetadataStorage().removeSscd(sscd: musapSscd)
     }
-    
+
     /**
      List enrolled relying parties
       - Returns: List of relying parties or nil
@@ -333,7 +333,7 @@ public class MusapClient {
     public static func listRelyingParties() -> [RelyingParty]? {
         return MusapStorage().listRelyingParties()
     }
-    
+
     /**
      Remove a previously linked Relying Party from this MUSAP app.
      - Parameters:
@@ -342,7 +342,7 @@ public class MusapClient {
     public static func removeRelyingParty(relyingParty: RelyingParty) -> Bool {
         return MusapStorage().removeRelyingParty(rp: relyingParty)
     }
-    
+
     /**
         Enable a MUSAP Link connection
         Enabling allows the MUSAP Link to securely request signatures from this MUSAP.
@@ -362,14 +362,14 @@ public class MusapClient {
             return nil
         }
     }
-    
+
     /**
      Disable the MUSAP Link connection
      */
     public static func disableLink() -> Void {
         MusapStorage().removeLink()
     }
-    
+
     /**
     Send SignatureCallback to MUSAP Link
      - Parameters:
@@ -381,22 +381,22 @@ public class MusapClient {
             print("sendSignatureCallback Error: Can't getMusapLink()")
             return
         }
-        
+
         guard let musapId = self.getMusapId() else {
             print("sendSignatureCallback Error: Can't get musap ID")
             return
         }
-        
+
         link.setMusapId(musapId: musapId)
-        
+
         do {
             try SignatureCallbackTask().runTask(link: link, signature: signature, txnId: txnId)
         } catch {
             print("sendSignatureCallback Error: \(error)")
         }
-        
+
     }
-    
+
     /**
      Send a GenerateKeyCallback to MUSAP Link
         - Parameters:
@@ -409,25 +409,25 @@ public class MusapClient {
         else {
             return
         }
-        
+
         link.setMusapId(musapId: musapId)
-        
+
         do {
             try KeygenCallbackTask().runTask(link: link, key: key, txnId: txnId)
         } catch {
             print("sendKeygenCallback Error: \(error)")
         }
-        
+
     }
-    
+
     /**
             Send an updated APNs token to the MUSAP Link. If MUSAP Link is not enabled, this does nothing.
      */
     public static func updateApnsToken(apnsToken: String) {
         // TODO: Complete
     }
-    
-    
+
+
     /**
       Poll MUSAP Link for an incoming signature request. This should be called periodically and/or
       when a notification wakes up the application.
@@ -440,10 +440,10 @@ public class MusapClient {
             completion(.failure(MusapError.internalError))
             return
         }
-        
+
         do {
             let pollResponsePayload = try await PollTask(link: link).pollAsync() { result in
-                
+
                 switch result {
                 case .success(let payload):
                     completion(.success(payload))
@@ -452,14 +452,14 @@ public class MusapClient {
                     completion(.failure(error))
                     return
                 }
-                
+
             }
         } catch {
             completion(.failure(MusapError.internalError))
         }
-        
+
     }
-    
+
     /**
     Check if MUSAP Link has been enabled.
     - returns: Bool
@@ -467,7 +467,7 @@ public class MusapClient {
     public static func isLinkEnabled() -> Bool {
         return self.getMusapId() != nil
     }
-    
+
     /**
     Update previously saved key metadata
      - Parameters:
@@ -477,7 +477,7 @@ public class MusapClient {
         let storage = MetadataStorage()
         return storage.updateKeyMetaData(req: req)
     }
-    
+
     /**
     Get saved MUSAP ID.
      - Returns: MUSAP ID as string or nil
@@ -485,7 +485,7 @@ public class MusapClient {
     public static func getMusapId() -> String? {
         return MusapStorage().getMusapId()
     }
-    
+
     /**
     Get MUSAP Link
      - returns: MusapLink or nil
@@ -493,7 +493,7 @@ public class MusapClient {
     public static func getMusapLink() -> MusapLink? {
         return MusapStorage().getMusaplink()
     }
-    
+
     /**
      Request coupling with an RP.
      This requires a coupling code which can be retrieved by the web service via the MUSAP Link API.
@@ -506,12 +506,12 @@ public class MusapClient {
             print("Error in coupling with relying party: No Musap ID")
             return
         }
-        
+
         guard let link = self.getMusapLink() else {
             print("No musap link")
             return
         }
-        
+
         do {
             let rp = try await CoupleTask().couple(link: link, couplingCode: couplingCode, appId: musapId)
             completion(.success(rp))
@@ -519,9 +519,9 @@ public class MusapClient {
             print("Error in coupleWithRelyingParty: \(error)")
             completion(.failure(MusapError.internalError))
         }
-        
+
     }
-    
-    
+
+
 }
 
