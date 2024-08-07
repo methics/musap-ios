@@ -75,7 +75,7 @@ public class MusapClient {
      */
     public static func listEnabledSscds() -> [MusapSscd]? {
         let enabledSscds = KeyDiscoveryAPI(storage: MetadataStorage()).listEnabledSscds()
-
+        
         print("found \(enabledSscds.count) SSCD's")
         var musapSscds = [MusapSscd]()
         for sscd in enabledSscds {
@@ -146,10 +146,10 @@ public class MusapClient {
                 result.append(sscd)
             }
         }
-
+        
         return result
     }
-
+    
     /**
      Lists active SSCDs based on specified search criteria.
 
@@ -161,7 +161,7 @@ public class MusapClient {
         let keyDiscovery = KeyDiscoveryAPI(storage: MetadataStorage())
         let activeSscds = self.listActiveSscds()
         var result = [MusapSscd]()
-
+        
         for sscd in activeSscds {
             guard let sscdInfo = sscd.getSscdInfo() else {
                 continue
@@ -170,10 +170,10 @@ public class MusapClient {
                 result.append(sscd)
             }
         }
-
+        
         return result
     }
-
+    
     /**
      Lists all available Musap Keys.
 
@@ -298,15 +298,15 @@ public class MusapClient {
      */
     public static func exportData() -> String? {
         let storage = MetadataStorage()
-
+        
         guard let exportData = storage.getImportData().toJson() else {
             print("Could not export data")
             return nil
         }
-
+        
         return exportData
     }
-
+    
     /**
      Remove a key from MUSAP.
      - Parameters:
@@ -316,7 +316,7 @@ public class MusapClient {
     public static func removeKey(musapKey: MusapKey) -> Bool {
         return KeyDiscoveryAPI(storage: MetadataStorage()).removeKey(key: musapKey)
     }
-
+    
     /**
      Remove an active SSCD from MUSAP
      - Parameters:
@@ -325,7 +325,7 @@ public class MusapClient {
     public static func removeSscd(musapSscd: SscdInfo) -> Bool {
         return MetadataStorage().removeSscd(sscd: musapSscd)
     }
-
+    
     /**
      List enrolled relying parties
       - Returns: List of relying parties or nil
@@ -333,7 +333,7 @@ public class MusapClient {
     public static func listRelyingParties() -> [RelyingParty]? {
         return MusapStorage().listRelyingParties()
     }
-
+    
     /**
      Remove a previously linked Relying Party from this MUSAP app.
      - Parameters:
@@ -342,7 +342,7 @@ public class MusapClient {
     public static func removeRelyingParty(relyingParty: RelyingParty) -> Bool {
         return MusapStorage().removeRelyingParty(rp: relyingParty)
     }
-
+    
     /**
         Enable a MUSAP Link connection
         Enabling allows the MUSAP Link to securely request signatures from this MUSAP.
@@ -362,14 +362,14 @@ public class MusapClient {
             return nil
         }
     }
-
+    
     /**
      Disable the MUSAP Link connection
      */
     public static func disableLink() -> Void {
         MusapStorage().removeLink()
     }
-
+    
     /**
     Send SignatureCallback to MUSAP Link
      - Parameters:
@@ -409,25 +409,25 @@ public class MusapClient {
         else {
             return
         }
-
+        
         link.setMusapId(musapId: musapId)
-
+        
         do {
             try KeygenCallbackTask().runTask(link: link, key: key, txnId: txnId)
         } catch {
             print("sendKeygenCallback Error: \(error)")
         }
-
+        
     }
-
+    
     /**
             Send an updated APNs token to the MUSAP Link. If MUSAP Link is not enabled, this does nothing.
      */
     public static func updateApnsToken(apnsToken: String) {
         // TODO: Complete
     }
-
-
+    
+    
     /**
       Poll MUSAP Link for an incoming signature request. This should be called periodically and/or
       when a notification wakes up the application.
