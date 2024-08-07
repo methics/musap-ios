@@ -223,7 +223,7 @@ public class MusapClient {
 
         for key in keyList {
             if let loopKeyUri = key.getKeyUri() {
-                if loopKeyUri.matches(keyUri: keyUri) {
+                if loopKeyUri.keyUriMatches(keyUri: keyUri) {
                     return key
                 }
             }
