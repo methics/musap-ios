@@ -10,16 +10,16 @@ import Security
 import CommonCrypto
 
 public class SecureEnclaveSscd: MusapSscdProtocol {
-
+    
     public typealias CustomSscdSettings = SecureEnclaveSettings
-
+    
     static let SSCD_TYPE = "SE"
-
+    
     private let settings = SecureEnclaveSettings()
-
+    
     /// Required public init to make class on internal
     public init() {}
-
+    
     public func bindKey(req: KeyBindReq) throws -> MusapKey {
         // Old keys cannot be bound to musap?
         // Use generateKey instead
@@ -29,37 +29,37 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
     public func generateKey(req: KeyGenReq) throws -> MusapKey {
         print("Starting MusapKey generation")
         let sscd = self.getSscdInfo()
-
+        
         guard req.keyAlgorithm != nil else {
             print("No key algorithm was set")
             throw MusapException(MusapError.internalError)
         }
-
+        
         guard let algo = req.keyAlgorithm?.primitive,
               let bits = req.keyAlgorithm?.bits
         else {
             print("algorithm or bits were nil")
             throw MusapException(MusapError.invalidAlgorithm)
         }
-
+        
         guard algo as CFString == kSecAttrKeyTypeECSECPrimeRandom,
               bits == 256 || bits == 384 || bits == 512
         else {
             print("Algorithm was not kSecAttrKeyTypeECSECPrimeRandom, or bits wasnt 256")
             throw MusapException(MusapError.invalidAlgorithm)
         }
-
+        
         if self.doesKeyExistAlready(keyAlias: req.keyAlias) {
             print("Key exists with this keyname \(req.keyAlias)")
             throw MusapException.init(MusapError.internalError)
         }
-
+        
         let accessControl = SecAccessControlCreateWithFlags(
             kCFAllocatorDefault,
             kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
             [.privateKeyUsage, /*.biometryCurrentSet TODO: Make this value come from Settings??*/],
             nil)
-
+        
         let keyAttributes: [String: Any] = [
             kSecAttrKeyType as String: algo,
             kSecAttrKeySizeInBits as String: bits,
@@ -70,8 +70,8 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
                 kSecAttrApplicationTag as String: req.keyAlias.data(using: .utf8)
             ]
         ]
-
-
+        
+        
         var error: Unmanaged<CFError>?
         guard let privateKey = SecKeyCreateRandomKey(keyAttributes as CFDictionary, &error) else {
             if let errorRef = error {
@@ -81,27 +81,27 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
             } else {
                 print("No error? ")
             }
-
+            
             throw MusapError.internalError
         }
-
+        
         guard let publicKey = SecKeyCopyPublicKey(privateKey) else {
             print("Unable to get public key from the private key")
             throw MusapError.internalError
         }
-
+        
         guard let publicKeyData  = SecKeyCopyExternalRepresentation(publicKey, &error) as Data?,
               let publicKeyBytes = publicKeyData.withUnsafeBytes({ (ptr: UnsafeRawBufferPointer) in ptr.baseAddress })
         else {
             print("Could not form public key data")
             throw MusapError.internalError
         }
-
+        
         guard let keyAlgorithm = req.keyAlgorithm else {
             print("Key algorithm was not set in KeyGenReq, cant construct MusapKey")
             throw MusapError.internalError
         }
-
+        
         let publicKeyObj = PublicKey(publicKey: Data(bytes: publicKeyBytes, count: publicKeyData.count))
         let generatedKey = MusapKey(keyAlias:     req.keyAlias,
                                     keyId:       UUID().uuidString,
@@ -118,13 +118,13 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
         print("MusapKey generated!")
         return generatedKey
     }
-
+    
     public func sign(req: SignatureReq) throws -> MusapSignature {
         guard let keyAlias = req.key.getKeyAlias() else {
             print("Signing failed: keyName was empty")
             throw MusapError.internalError
         }
-
+        
         let query: [String: Any] = [
             kSecClass as String: kSecClassKey,
             kSecAttrApplicationTag as String: keyAlias.data(using: .utf8)!,
@@ -132,7 +132,7 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
             kSecReturnRef as String: true,
             kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave
         ]
-
+        
 
         var item: CFTypeRef?
         let status = SecItemCopyMatching(query as CFDictionary, &item)
@@ -140,7 +140,7 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
             print("Could not find key")
             throw MusapError.internalError
         }
-
+        
         let privateKey = item as! SecKey
         let dataToSign = req.data
         //let dataToSign = self.hashDataWithSHA512(data: req.data)
@@ -150,7 +150,7 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
         */
 
         var error: Unmanaged<CFError>?
-
+        
         /*
          Allowed signature algos:
             - ecdsaSignatureDigestX962
@@ -161,26 +161,26 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
             Can check with SecKeyIsAlgorithmSupported():
                 https://developer.apple.com/documentation/security/1644057-seckeyisalgorithmsupported
          */
-
-
-
+        
+        
+        
         //TODO: Optionally support requiring biometric authentication to allow using the keys
-
+        
         guard let signAlgorithm = req.algorithm.getAlgorithm() else {
             print("No sign algorithm in SignatureReq")
             throw MusapError.internalError
         }
-
+        
         guard let signature = SecKeyCreateSignature(privateKey, signAlgorithm, dataToSign as CFData, &error) else {
             print("Signing failed while SecKeyCreateSignature \(error)")
             throw MusapError.internalError
         }
-
+                
         let signatureData = signature as Data
-
+        
         return MusapSignature(rawSignature: signatureData, key: req.getKey(), algorithm: SignatureAlgorithm.init(algorithm: .ecdsaSignatureMessageX962SHA256), format: SignatureFormat.RAW)
     }
-
+    
     public func getSscdInfo() -> SscdInfo {
         let musapSscd = SscdInfo(
             sscdName:        "SE",
@@ -197,34 +197,34 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
             formats:         [SignatureFormat.RAW])
         return musapSscd
     }
-
+    
     public func isKeygenSupported() -> Bool {
         return self.getSscdInfo().isKeygenSupported()
     }
-
+    
     public func getSettings() -> SecureEnclaveSettings {
         return self.settings
     }
-
+    
     public func getSettings() -> [String : String]? {
         return self.settings.getSettings()
     }
-
+    
     public func resolveAlgorithmParameterSpec(req: KeyGenReq) -> SecKeyAlgorithm? {
         guard let algorithm = req.keyAlgorithm else {
             return SecKeyAlgorithm.ecdsaSignatureMessageX962SHA256
         }
-
+        
         if algorithm.isRsa() {
             return SecKeyAlgorithm.rsaSignatureMessagePKCS1v15SHA256
         } else {
             return SecKeyAlgorithm.ecdsaSignatureMessageX962SHA256
         }
     }
-
+    
     private func resolveAlgorithm(req: KeyGenReq) -> String {
         let algorithm = req.keyAlgorithm
-
+        
         guard let algorithm = req.keyAlgorithm else {
             return KeyAlgorithm.PRIMITIVE_EC
         }
@@ -232,7 +232,7 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
         if algorithm.isEc()  { return KeyAlgorithm.PRIMITIVE_EC  }
         return KeyAlgorithm.PRIMITIVE_EC
     }
-
+    
     private func doesKeyExistAlready(keyAlias: String) -> Bool {
         let query: [String: Any] = [
             kSecClass as String: kSecClassKey,
@@ -259,7 +259,7 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
         }
         return false
     }
-
+    
     func hashDataWithSHA256(data: Data) -> Data {
         var hash = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
         data.withUnsafeBytes {
@@ -267,7 +267,7 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
         }
         return Data(hash)
     }
-
+    
     func hashDataWithSHA384(data: Data) -> Data {
         var hash = [UInt8](repeating: 0, count: Int(CC_SHA384_DIGEST_LENGTH))
         data.withUnsafeBytes {
@@ -275,7 +275,7 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
         }
         return Data(hash)
     }
-
+    
     func hashDataWithSHA512(data: Data) -> Data {
         var hash = [UInt8](repeating: 0, count: Int(CC_SHA512_DIGEST_LENGTH))
         data.withUnsafeBytes {
@@ -283,19 +283,19 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
         }
         return Data(hash)
     }
-
+    
     public func getSetting(forKey key: String) -> String? {
         self.settings.getSetting(forKey: key)
     }
-
+    
     public func setSetting(key: String, value: String) {
         self.settings.setSetting(key: key, value: value)
     }
-
+    
     public func getKeyAttestation() -> any KeyAttestationProtocol {
         return NoKeyAttestation()
     }
-
+    
     public func attestKey(key: MusapKey) -> KeyAttestationResult {
         return KeyAttestationResult(attestationStatus: .INVALID)
     }
