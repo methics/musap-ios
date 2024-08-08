@@ -128,6 +128,7 @@ public class MusapLink: Encodable, Decodable {
                 throw MusapError.internalError
             }
             
+            print("Couple resp payload: \(payload)")
             guard let payloadData = payload.data(using: .utf8)
             else {
                 print("Could not turn payload to Data()")
