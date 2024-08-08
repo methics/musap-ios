@@ -486,28 +486,18 @@ public class MusapLink: Encodable, Decodable {
             throw MusapError.internalError
         }
         
-        print("trying to decode json from data")
-        //let responseMsg = try JSONDecoder().decode(MusapMessage.self, from: data)
         
-        let responseMsg = MusapMessage()
+        print("trying to decode json from data")
+        do {
+            let responseMsg = try JSONDecoder().decode(MusapMessage.self, from: data)
+            responseMsg.payload = self.parsePayload(respMsg: responseMsg, isEncrypted: shouldEncrypt)
 
-        print("trying to get payload")
-        if let jsonObject = try? JSONSerialization.jsonObject(with: data, options: []),
-           let jsonDict = jsonObject as? [String:Any] {
-            
-            print("JsonDictPayload: \(jsonDict)")
-            
-            if let payload = jsonDict["payload"] as? String {
-                responseMsg.payload = payload
-                print("THE PAYLOAD: " + payload)
-            }
-        } else {
-            print("Failed to parse JSON")
+        } catch {
+            print("JSONDecoder failed: \(error)")
         }
-                
-        //responseMsg.payload = self.parsePayload(respMsg: responseMsg, isEncrypted: shouldEncrypt)
+        
 
-        return responseMsg
+        return MusapMessage()
     }
 
     
