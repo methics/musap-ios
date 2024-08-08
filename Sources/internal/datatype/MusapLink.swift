@@ -495,6 +495,8 @@ public class MusapLink: Encodable, Decodable {
         if let jsonObject = try? JSONSerialization.jsonObject(with: data, options: []),
            let jsonDict = jsonObject as? [String:Any] {
             
+            print("JsonDictPayload: \(jsonDict)")
+            
             if let payload = jsonDict["payload"] as? String {
                 responseMsg.payload = payload
                 print("THE PAYLOAD: " + payload)
