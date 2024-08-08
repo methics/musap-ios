@@ -43,6 +43,9 @@ public class MusapKeyGenerator: KeyGenerator {
         
         print("MacKeyData b64: \(macKeyData.base64EncodedString())")
         print("transportKeyData b64: \(encKeyData.base64EncodedString())")
+        
+        print("mackey: \(macKeyData)")
+        print("transportKey \(encKeyData)")
 
         
         // Try to store keys in keychain
