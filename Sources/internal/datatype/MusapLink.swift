@@ -425,6 +425,8 @@ public class MusapLink: Encodable, Decodable {
             throw MusapError.internalError
         }
         
+        print("The URL: " + url.absoluteString)
+        
         guard let msgType = msg.type,
               let payload = msg.payload
         else {
