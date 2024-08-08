@@ -52,5 +52,17 @@ public class KeychainKeystorage: KeyStorage {
         return status == errSecSuccess
     }
     
+    public func removeKey(keyName: String) throws {
+        let deleteQuery: [String: Any] = [
+            kSecClass as String: kSecClassKey,
+            kSecAttrApplicationTag as String: keyName.data(using: .utf8)!
+        ]
+        
+        let status = SecItemDelete(deleteQuery as CFDictionary)
+        guard status == errSecSuccess || status == errSecItemNotFound else {
+            throw NSError(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: nil)
+        }
+    }
+    
     
 }
