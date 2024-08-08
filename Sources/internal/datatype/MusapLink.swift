@@ -489,6 +489,7 @@ public class MusapLink: Encodable, Decodable {
         
         print("trying to decode json from data")
         do {
+            print("DECODING JSON")
             let responseMsg = try JSONDecoder().decode(MusapMessage.self, from: data)
             responseMsg.payload = self.parsePayload(respMsg: responseMsg, isEncrypted: shouldEncrypt)
 
