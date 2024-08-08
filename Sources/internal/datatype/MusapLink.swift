@@ -481,9 +481,6 @@ public class MusapLink: Encodable, Decodable {
             print("Failed to convert data to string")
         }
         
-        
-         
-
         guard !data.isEmpty else {
             print("Data was empty")
             throw MusapError.internalError
@@ -500,6 +497,7 @@ public class MusapLink: Encodable, Decodable {
             
             if let payload = jsonDict["payload"] as? String {
                 responseMsg.payload = payload
+                print("THE PAYLOAD: " + payload)
             }
         }
                 
