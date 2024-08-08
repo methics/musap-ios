@@ -46,6 +46,10 @@ public class MusapKeyGenerator: KeyGenerator {
         try storage.storeKey(keyName: MusapKeyGenerator.MAC_KEY_ALIAS, keyData: macKeyData)
         try storage.storeKey(keyName: MusapKeyGenerator.TRANSPORT_KEY_ALIAS, keyData: encKeyData)
         
+        print("MAC KEY B64: \(macKeyData.base64EncodedData())")
+        print("TRANSPORT KEY B64: \(encKeyData.base64EncodedData())")
+        
+        
         return key.base64EncodedString()
     }
     

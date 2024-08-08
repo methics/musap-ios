@@ -681,6 +681,7 @@ public class MusapLink: Encodable, Decodable {
     private func getPayload(payloadBase64: String, shouldEncrypt: Bool) -> PayloadHolder? {
         print("Getting payload")
         if shouldEncrypt {
+            
             guard let payloadHolder = MusapLink.encryption.encrypt(message: payloadBase64) else {
                 print("Could not encrypt payloadBase64")
                 return nil
