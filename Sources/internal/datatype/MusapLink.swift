@@ -491,7 +491,7 @@ public class MusapLink: Encodable, Decodable {
         
         let responseMsg = MusapMessage()
 
-        
+        print("trying to get payload")
         if let jsonObject = try? JSONSerialization.jsonObject(with: data, options: []),
            let jsonDict = jsonObject as? [String:Any] {
             
@@ -499,6 +499,8 @@ public class MusapLink: Encodable, Decodable {
                 responseMsg.payload = payload
                 print("THE PAYLOAD: " + payload)
             }
+        } else {
+            print("Failed to parse JSON")
         }
                 
         //responseMsg.payload = self.parsePayload(respMsg: responseMsg, isEncrypted: shouldEncrypt)
