@@ -473,12 +473,14 @@ public class MusapLink: Encodable, Decodable {
         
         let (data, _) = try await URLSession.shared.data(for: request)
         
+        /*
         if let dataString = String(data: data, encoding: .utf8) {
             print("Response data as string:")
             print(dataString)
         } else {
             print("Failed to convert data to string")
         }
+         */
 
 
         guard !data.isEmpty else {
