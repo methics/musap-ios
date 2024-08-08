@@ -480,6 +480,8 @@ public class MusapLink: Encodable, Decodable {
         } else {
             print("Failed to convert data to string")
         }
+        
+        
          
 
         guard !data.isEmpty else {
@@ -488,10 +490,20 @@ public class MusapLink: Encodable, Decodable {
         }
         
         print("trying to decode json from data")
-        let responseMsg = try JSONDecoder().decode(MusapMessage.self, from: data)
+        //let responseMsg = try JSONDecoder().decode(MusapMessage.self, from: data)
         
-        print("Parsing payload")
-        responseMsg.payload = self.parsePayload(respMsg: responseMsg, isEncrypted: shouldEncrypt)
+        let responseMsg = MusapMessage()
+
+        
+        if let jsonObject = try? JSONSerialization.jsonObject(with: data, options: []),
+           let jsonDict = jsonObject as? [String:Any] {
+            
+            if let payload = jsonDict["payload"] as? String {
+                responseMsg.payload = payload
+            }
+        }
+                
+        //responseMsg.payload = self.parsePayload(respMsg: responseMsg, isEncrypted: shouldEncrypt)
 
         return responseMsg
     }
