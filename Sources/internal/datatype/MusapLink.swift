@@ -486,12 +486,15 @@ public class MusapLink: Encodable, Decodable {
             throw MusapError.internalError
         }
         
+        /*
         print("trying to decode json from data")
         let responseMsg = try JSONDecoder().decode(MusapMessage.self, from: data)
         
         print("Parsing payload")
         responseMsg.payload = self.parsePayload(respMsg: responseMsg, isEncrypted: shouldEncrypt)
-
+        */
+        let responseMsg = MusapMessage(payload: String(data: data, encoding: .utf8))
+         
         return responseMsg
     }
 
