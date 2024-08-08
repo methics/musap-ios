@@ -58,6 +58,7 @@ public class MusapLink: Encodable, Decodable {
         
         let payload = EnrollDataPayload(apnstoken: apnsToken, secret: secret)
         guard let payload = payload.getBase64Encoded() else {
+            print("Error encoding payload")
             throw MusapError.internalError
         }
         
@@ -469,6 +470,14 @@ public class MusapLink: Encodable, Decodable {
         print("Sending request...")
         
         let (data, _) = try await URLSession.shared.data(for: request)
+        
+        if let dataString = String(data: data, encoding: .utf8) {
+            print("Response data as string:")
+            print(dataString)
+        } else {
+            print("Failed to convert data to string")
+        }
+
 
         guard !data.isEmpty else {
             print("Data was empty")
