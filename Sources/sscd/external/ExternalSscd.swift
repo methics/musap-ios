@@ -130,8 +130,8 @@ public class ExternalSscd: MusapSscdProtocol {
                     
                     self.attestationSecCertificate = secCertificate
             
-                    guard let publicKeyData = publickey.data(using: .utf8) else {
-                        print("could not turn publickey string to data")
+                    guard let publicKeyData = Data(base64Encoded: publickey) else {
+                        print("Invalid base64 encoded public key")
                         return
                     }
                     
