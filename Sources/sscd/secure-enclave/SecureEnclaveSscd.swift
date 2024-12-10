@@ -97,6 +97,9 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
             throw MusapError.internalError
         }
         
+        print("SE publicKeyData: \(publicKeyData.base64EncodedString())")
+        print("SE publicKeyBites: \(Data(bytes: publicKeyBytes, count: publicKeyData.count).base64EncodedString())")
+        
         guard let keyAlgorithm = req.keyAlgorithm else {
             print("Key algorithm was not set in KeyGenReq, cant construct MusapKey")
             throw MusapError.internalError
