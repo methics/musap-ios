@@ -206,10 +206,6 @@ public class ExternalSscd: MusapSscdProtocol {
         semaphore.wait()
         
         let dataBase64 = req.getData().base64EncodedString(options: .lineLength64Characters)
-        if request.attributes == nil {
-            request.attributes = [String: String]()
-        }
-        request.attributes?[ExternalSscd.ATTRIBUTE_MSISDN] = theMsisdn
         request.clientid = self.clientid
         request.display  = req.getDisplayText()
         request.format   = req.getFormat().getFormat()
@@ -219,6 +215,11 @@ public class ExternalSscd: MusapSscdProtocol {
         
         if request.attributes == nil {
             request.attributes = [String: String]()
+        }
+    
+        
+        for (attr) in req.getAttributes() {
+            request.attributes?[attr.name] = attr.value
         }
         
         request.attributes?[ExternalSscd.ATTRIBUTE_MSISDN] = theMsisdn
