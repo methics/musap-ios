@@ -93,36 +93,79 @@ public class KeyURI: Codable, Equatable, Hashable {
         var keyUriMap = [String: String]()
         print("Parsing KeyURI: \(keyUri)")
 
-        guard let _ = keyUri.firstIndex(of: ",") else {
-            return keyUriMap
-        }
+        if keyUri.hasPrefix("keyuri:key") {
+            // Handle keyuri:key case
+            let cleanedUri = keyUri.replacingOccurrences(of: "keyuri:key?", with: "")
+            let pairs = cleanedUri.components(separatedBy: "&")
 
-        let parts = keyUri.replacingOccurrences(of: "mss:", with: "").components(separatedBy: ",")
-
-        for attribute in parts {
-            if attribute.contains("=") {
-                let split = attribute.components(separatedBy: "=")
-                guard split.count >= 2 else { continue }
-
-                let key = split[0]
-                let value = split[1]
-                print("Parsed \(key)=\(value)")
-                keyUriMap[key] = value
-            } else {
-                print("Ignoring invalid attribute \(attribute)")
+            for pair in pairs {
+                let components = pair.components(separatedBy: "=")
+                if components.count == 2 {
+                    let key = components[0]
+                    let value = components[1]
+                    keyUriMap[key] = value
+                    print("Parsed \(key)=\(value)")
+                } else {
+                    print("Ignoring invalid pair: \(pair)")
+                }
             }
+        } else if keyUri.hasPrefix("mss:") {
+            // Handle mss: case
+            guard keyUri.firstIndex(of: ",") != nil else {
+                return keyUriMap
+            }
+
+            let parts = keyUri.replacingOccurrences(of: "mss:", with: "").components(separatedBy: ",")
+
+            for attribute in parts {
+                if attribute.contains("=") {
+                    let split = attribute.components(separatedBy: "=")
+                    guard split.count >= 2 else { continue }
+
+                    let key = split[0]
+                    let value = split[1]
+                    print("Parsed \(key)=\(value)")
+                    keyUriMap[key] = value
+                } else {
+                    print("Ignoring invalid attribute \(attribute)")
+                }
+            }
+        } else {
+            print("Unsupported KeyURI format")
         }
-        print("parsed KeyURI to: \(keyUriMap)")
-    
+
+        print("Parsed KeyURI to: \(keyUriMap)")
         return keyUriMap
     }
-    
+
+    // The query parameters of keyUri in the MetadataStorage are in random order, so we compare each param separately
     public func matches(keyUri: KeyURI) -> Bool {
-        if self == keyUri { return true }
-        if self.getUri() == keyUri.getUri() { return true }
-        return false
-    }
-    
+        if self == keyUri {
+            return true
+        }
+
+        let selfKeys = Set(self.keyUriMap.keys)
+        let otherKeys = Set(keyUri.keyUriMap.keys)
+
+        guard selfKeys == otherKeys else {
+            return false
+        }
+
+        for key in selfKeys {
+            guard let selfValue = self.keyUriMap[key],
+                  let otherValue = keyUri.keyUriMap[key] else {
+                return false
+            }
+
+            // Directly compare the values
+            if selfValue != otherValue {
+                return false
+            }
+        }
+
+        return true
+   }
+
     public func getDisplayString(_ params: String...) -> String {
         if params.isEmpty {
             return self.getUri()
