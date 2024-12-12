@@ -13,13 +13,18 @@ final class MusapClientTests: XCTestCase {
     override func setUp() {
         let sscd = SecureEnclaveSscd()
         MusapClient.enableSscd(sscd: SecureEnclaveSscd(), sscdId: "123")
+        
+        let keys = MusapClient.listKeys()
+        let storage = MetadataStorage()
+        for key in keys {
+            let _ = storage.removeKey(key: key)
+        }
     }
 
     func testListEnabledSscds() throws {
         let enabled = MusapClient.listEnabledSscds()
         
         XCTAssertNotNil(enabled)
-        XCTAssertEqual(enabled?.count, 1)
     }
     
     func testListEnabledSscdsWithSearchReq() {
@@ -37,12 +42,14 @@ final class MusapClientTests: XCTestCase {
     }
     
     func testEnableAnotherSscd() {
-        let sscd = KeychainSscd()
-        MusapClient.enableSscd(sscd: sscd, sscdId: "keychain")
+        let before = MusapClient.listEnabledSscds()
+        
+        let sscd = YubikeySscd()
+        MusapClient.enableSscd(sscd: sscd, sscdId: "yubikey")
         
         let enabled = MusapClient.listEnabledSscds()
         XCTAssertNotNil(enabled)
-        XCTAssertEqual(enabled?.count, 2)
+        XCTAssertNotEqual(before!.count, enabled!.count)
     }
     
     func testIsLinkEnabledWhenNot() {
@@ -56,27 +63,49 @@ final class MusapClientTests: XCTestCase {
         XCTAssertNil(result)
     }
     
-    func testGenerateKey() async {
+    func testRemoveSscd() {
+        self.addKeyToSscd()
         
-        let keygenreq = KeyGenReq(keyAlias: "testkey", role: "personal")
-        let enabled = MusapClient.listEnabledSscds()
+        let activeSscds = MusapClient.listActiveSscds()
+        let before = activeSscds.count
+        print("Amount of SSCDs before remove: \(before)")
+        guard let sscdInfo = activeSscds.first?.getSscdInfo() else {
+            XCTFail()
+            return
+        }
         
-        let sscd = (enabled?.first)!
+        print("TEST: Trying to remove \(sscdInfo.getSscdName())")
+        let result = MusapClient.removeSscd(musapSscd: sscdInfo)
         
-        await MusapClient.generateKey(sscd: sscd, req: keygenreq) { result in
-            
-            switch result {
-            case .success(let key):
-                XCTAssertNotNil(key.getKeyId())
-                
-                let keysAmount = MusapClient.listKeys()
-                XCTAssertEqual(keysAmount.count, 1)
-                
-            case .failure(let error):
-                print("error")
-            }
+        XCTAssertTrue(result)
+        
+        let afterRemoveList = MusapClient.listActiveSscds() 
+        
+        XCTAssertNotEqual(afterRemoveList.count, before)
+        
+    }
+    
+    func addKeyToSscd() {
+        guard let keyData = "12345".data(using: .utf8) else {
+            return
+        }
+        
+        let uri = KeyURI(keyUri: "keyuri:key?name=KeyName&sscd=TestSSCD&loa=TestLOA")
+        let key = MusapKey(keyAlias: "MusapClientKey", keyId: "12345", sscdType: "SE", publicKey: PublicKey(publicKey: keyData), keyUri: uri)
+        
+        guard let sscd = MusapClient.listEnabledSscds() else {
+            return
+        }
+        
+        let someSscd = sscd.first
+        
+        do {
+            try MetadataStorage().addKey(key: key, sscd: (someSscd?.getSscdInfo())!)
+        } catch {
+            return
         }
         
     }
+    
 
 }

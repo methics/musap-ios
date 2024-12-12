@@ -56,7 +56,8 @@ public class KeySearchReq {
         let keyUriObj = KeyURI(keyUri: currentKeyUri)
         
         if keyUriObj == key.getKeyUri() {
-            //TODO: finish
+            //TODO: What else to compare?
+            return true
         }
         
         return true

@@ -43,11 +43,15 @@ public struct KeyAttribute: Codable {
     }
     
     public func getValueData() -> Data? {
-        guard let value = self.value else {
+        guard let value = self.value,
+              let valueAsData = value.data(using: .utf8)
+        else {
             return nil
         }
         
-        return Data(base64Encoded: value)
+        let valueB64 = valueAsData.base64EncodedData()
+        return Data(base64Encoded: valueB64)
+
     }
     
     

@@ -12,7 +12,7 @@ public class KeyBindReq {
     private var keyAlias: String
     private var did: String
     private var role: String
-    private var stepUpPolicy: StepUpPolicy //TODO: StepUpPolicy class
+    private var stepUpPolicy: StepUpPolicy
     private var attributes: [KeyAttribute]
     private var generateNewKey: Bool
     private var displayText: String
