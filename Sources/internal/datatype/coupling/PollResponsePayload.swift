@@ -24,8 +24,6 @@ public class PollResponsePayload: ResponsePayload {
     
     required init(from decoder: Decoder) throws {
         fatalError("init(from:) has not been implemented")
-        //TODO: PollResponsePayload is not created with json decoder, so this will definitely fatalError if it is done later on
-        // See MusapLink.poll() return PollResponsePayload()
     }
     
     public func toSignatureReq(key: MusapKey) -> SignatureReq? {

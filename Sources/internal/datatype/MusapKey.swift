@@ -192,7 +192,10 @@ public class MusapKey: Codable, Identifiable {
     }
     
     public func getSscdInfo() -> SscdInfo? {
-        if (self.sscdId == nil) { return nil }
+        if (self.sscdId == nil) { 
+            print("SSCD ID was nil")
+            return nil
+        }
         
         for sscd in MusapClient.listActiveSscds() {
             if (self.sscdId == sscd.getSscdId()) {
@@ -223,16 +226,17 @@ public class MusapKey: Codable, Identifiable {
             if sscdType == sscd.getSscdInfo()?.getSscdType() {
                 if self.sscdId == nil {
                     print("Found SSCD with type: \(sscdType)")
+                    return sscd
                 } else if self.sscdId == sscdId {
                     print("Found SSCD with type: \(sscdType) and id: \(String(describing: sscdId))")
                     return sscd
                 } else {
-                    print("SSCD type: \(sscd.getSscdInfo()?.getSscdType()) does not match our SSCD type: \(self.sscdId)")
+                    print("SSCD type: \(String(describing: sscd.getSscdInfo()?.getSscdType())) does not match our SSCD type: \(String(describing: self.sscdId))")
                 }
             }
             
         }
-        print("COuld not find SSCD implementation for key \(self.keyId)")
+        print("Could not find SSCD implementation for key \(String(describing: self.keyId))")
         return nil
         
     }

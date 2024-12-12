@@ -20,9 +20,7 @@ public class SignatureAlgorithm {
     public static let SHA256withRSAPSS = SecKeyAlgorithm.rsaSignatureMessagePSSSHA256
     public static let SHA384withRSAPSS = SecKeyAlgorithm.rsaSignatureMessagePSSSHA384
     public static let SHA512withRSAPSS = SecKeyAlgorithm.rsaSignatureMessagePSSSHA512
-    
-    //TODO: Support for NONEwithECDSA, NONEwithRSA, NONEwithRSASSA-PSS somehow
-    
+        
     private var algorithm: SecKeyAlgorithm?
 
     public init(algorithm: SecKeyAlgorithm?) {

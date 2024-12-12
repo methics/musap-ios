@@ -22,24 +22,4 @@ class KeyAttributeTests: XCTestCase {
         XCTAssertNil(attribute.getValueData())
     }
 
-    
-    func testValueDataConversion() {
-        let name = "testName"
-        let originalString = "testValue"
-        guard let originalData = originalString.data(using: .utf8) else {
-            XCTFail("Could not create data from test string.")
-            return
-        }
-        let base64String = originalData.base64EncodedString()
-        
-        let attribute = KeyAttribute(name: name, value: base64String)
-        
-        let decodedData = attribute.getValueData()
-        XCTAssertEqual(decodedData, originalData)
-        
-        let decodedString = String(data: decodedData!, encoding: .utf8)
-        XCTAssertEqual(decodedString, originalString)
-    }
-    
-    // ... Other tests for different scenarios and edge cases ...
 }

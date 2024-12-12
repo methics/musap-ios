@@ -42,6 +42,7 @@ public class MetadataStorage {
         // Create the key-specific store name using the prefix and the key ID
         let storeName = makeStoreName(keyId: keyId)
         
+        print("addKey storename: \(storeName)")
         // Encode the key to JSON and store it using the store name
         do {
             let keyJson = try JSONEncoder().encode(key)
@@ -86,19 +87,21 @@ public class MetadataStorage {
         var keyList = [MusapKey]()
         
         for keyId in keyIds {
-            let keyJson = self.getKeyJson(keyId: keyId)
-            if let jsonData = keyJson.data(using: .utf8) {
-                let decoder = JSONDecoder()
+            if let keyJson = self.getKeyJson(keyId: keyId) {
+                if let jsonData = keyJson.data(using: .utf8) {
+                    let decoder = JSONDecoder()
 
-                do {
-                    let key = try decoder.decode(MusapKey.self, from: jsonData)
-                    if (req.keyMatches(key: key)) {
-                        keyList.append(key)
+                    do {
+                        let key = try decoder.decode(MusapKey.self, from: jsonData)
+                        if (req.keyMatches(key: key)) {
+                            keyList.append(key)
+                        }
+                    } catch {
+                        print("Error decoding JSON for keyID: \(keyId), error: \(error)")
                     }
-                } catch {
-                    print("Error decoding JSON for keyID: \(keyId), error: \(error)")
                 }
             }
+
         }
         return keyList
         
@@ -115,9 +118,12 @@ public class MetadataStorage {
         
         var newKeyIds = getKeyIds()
         newKeyIds.remove(keyId)
+        
+        let newKeyIdsArray = Array(newKeyIds)
 
+        print("removeKey newKeyIds: \(newKeyIds)")
         if let keyJson = try? JSONEncoder().encode(key) {
-            userDefaults.set(newKeyIds, forKey: MetadataStorage.KEY_ID_SET)
+            userDefaults.set(newKeyIdsArray, forKey: MetadataStorage.KEY_ID_SET)
             userDefaults.set(keyJson, forKey: makeStoreName(key: key))
             userDefaults.removeObject(forKey: makeStoreName(keyId: keyId))
             return true
@@ -152,12 +158,40 @@ public class MetadataStorage {
         }
     }
     
-    public func removeSscd(sscd: SscdInfo) {
-        guard let sscdId = sscd.getSscdId() else {
-            return
+    public func removeSscd(sscd: SscdInfo) -> Bool {
+        guard let targetSscdId = sscd.getSscdId() else {
+            print("Could not get removal target SSCD ID")
+            return false
         }
         
-        //TODO: finish
+        print("Removing sscd: \(sscd.getSscdName())")
+        
+        let sscds = self.listActiveSscds()
+        
+        print("active SSCDs amount: \(sscds.count)")
+        
+        for s in sscds {
+            if let currentSscdId = s.getSscdId() {
+                if currentSscdId == targetSscdId {
+                    // Remove SSCD JSON
+                    UserDefaults.standard.removeObject(forKey: MetadataStorage.SSCD_JSON_PREFIX + targetSscdId)
+                    
+                    // Remove from SSCD ID SET
+                    var sscdIdSet = self.getSscdIds()
+                    sscdIdSet.remove(targetSscdId)
+                    
+                    print("Removed")
+
+                    // Save new set without the removed ID
+                    userDefaults.set(Array(sscdIdSet), forKey: MetadataStorage.SSCD_ID_SET)
+                    return true
+                }
+            } else {
+                print("Cant get SSCD ID")
+            }
+        }
+        
+        return false
         
     }
 
@@ -189,6 +223,7 @@ public class MetadataStorage {
     private func getKeyIds() -> Set<String> {
         // Retrieve the array from UserDefaults and convert it back to a set
         let keyNamesArray = userDefaults.array(forKey: MetadataStorage.KEY_ID_SET) as? [String] ?? []
+        print("getKeyIds: \(keyNamesArray)")
         return Set(keyNamesArray)
     }
 
@@ -222,8 +257,15 @@ public class MetadataStorage {
     }
     
     
-    private func getKeyJson(keyId: String) -> String {
-        return self.makeStoreName(keyId: keyId)
+    private func getKeyJson(keyId: String) -> String? {
+        let keyStoreName = self.makeStoreName(keyId: keyId)
+        
+        guard let keyJson = userDefaults.data(forKey: keyStoreName) else {
+            print("Could not find STRING for \(keyStoreName)")
+            return nil
+        }
+        
+        return String(decoding: keyJson, as: UTF8.self)
     }
     
     public func printAllData() {
@@ -318,7 +360,12 @@ public class MetadataStorage {
             return false
         }
         
-        let keyJson = self.getKeyJson(keyId: keyId)
+        guard let keyJson = self.getKeyJson(keyId: keyId) else {
+            print("updateKeyMetaData: cant getKeyJson")
+            return false
+        }
+        
+        print("KeyJSON: \(keyJson)")
         guard let keyJsonData = keyJson.data(using: .utf8) else {
             print("Error decoding JSON to MusapKey, can't update metadata")
             return false
@@ -334,11 +381,11 @@ public class MetadataStorage {
         if req.getAlias() != nil {
             oldKey.setKeyAlias(value: req.getAlias())
         }
-                
+        
         if req.getDid() != nil {
             oldKey.setDid(value: req.getDid())
         }
-         
+        
         if req.getState() != nil {
             oldKey.setState(value: req.getState())
         }
@@ -346,7 +393,7 @@ public class MetadataStorage {
         if let attributes = req.getAttributes() {
             if req.getAttributes() != nil {
                 for attr in attributes {
-    
+                    
                     if attr.value == nil {
                         oldKey.removeAttribute(nameToRemove: attr.name)
                     } else {
@@ -357,8 +404,8 @@ public class MetadataStorage {
             }
         }
         
-        guard let sscd = oldKey.getSscdInfo() else {
-            print("Can't update key, could nto find SSCD where it belongs")
+        guard let sscd = oldKey.getSscd()?.getSscdInfo() else {
+            print("Can't update key, could not find SSCD where it belongs")
             return false
         }
         
