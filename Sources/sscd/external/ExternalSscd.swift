@@ -130,8 +130,8 @@ public class ExternalSscd: MusapSscdProtocol {
                     
                     self.attestationSecCertificate = secCertificate
             
-                    guard let publicKeyData = publickey.data(using: .utf8) else {
-                        print("could not turn publickey string to data")
+                    guard let publicKeyData = Data(base64Encoded: publickey) else {
+                        print("Invalid base64 encoded public key")
                         return
                     }
                     
@@ -206,24 +206,18 @@ public class ExternalSscd: MusapSscdProtocol {
         semaphore.wait()
         
         let dataBase64 = req.getData().base64EncodedString(options: .lineLength64Characters)
+
+        request.attributes = Dictionary(uniqueKeysWithValues:
+            req.attributes.map { ($0.name, $0.value) }
+        )
+        request.attributes?[ExternalSscd.ATTRIBUTE_MSISDN] = theMsisdn
         request.clientid = self.clientid
         request.display  = req.getDisplayText()
         request.format   = req.getFormat().getFormat()
         request.data     = dataBase64
         
         print("ExternalSscd.sign() attributes: \(String(describing: request.attributes))")
-        
-        if request.attributes == nil {
-            request.attributes = [String: String]()
-        }
-    
-        
-        for (attr) in req.getAttributes() {
-            request.attributes?[attr.name] = attr.value
-        }
-        
-        request.attributes?[ExternalSscd.ATTRIBUTE_MSISDN] = theMsisdn
-        
+
         do {
             var theSignature: MusapSignature?
             
