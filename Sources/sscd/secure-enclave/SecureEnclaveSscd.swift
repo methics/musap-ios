@@ -36,7 +36,7 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
         }
         
         guard let algo = req.keyAlgorithm?.primitive,
-              let bits = req.keyAlgorithm?.bits 
+              let bits = req.keyAlgorithm?.bits
         else {
             print("algorithm or bits were nil")
             throw MusapException(MusapError.invalidAlgorithm)
@@ -142,9 +142,13 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
         }
         
         let privateKey = item as! SecKey
-        //let dataToSign = req.data
-        let dataToSign = self.hashDataWithSHA512(data: req.data)
-        
+        let dataToSign = req.data
+        //let dataToSign = self.hashDataWithSHA512(data: req.data)
+        /* FIXME SecKeyCreateSignature already hashes the data.
+         * Double-hashing will break the dataToBeSigned making it impossible to sign objects like JWTs.
+         * If there is a use case for doing an extra round of SHA512 hashing there should be a flag for it in SignatureReq
+        */
+
         var error: Unmanaged<CFError>?
         
         /*
