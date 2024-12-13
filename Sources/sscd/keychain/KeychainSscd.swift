@@ -41,7 +41,7 @@ public class KeychainSscd: MusapSscdProtocol {
         
         if self.doesKeyExistAlready(keyAlias: req.keyAlias) {
             print("Key exist with key alias: \(req.keyAlias)")
-            throw MusapException.init(MusapError.internalError)
+            throw MusapError.keyAlreadyExists
         }
         
         let keyAttributes: [String: Any] =

@@ -51,7 +51,7 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
         
         if self.doesKeyExistAlready(keyAlias: req.keyAlias) {
             print("Key exists with this keyname \(req.keyAlias)")
-            throw MusapException.init(MusapError.internalError)
+            throw MusapError.keyAlreadyExists
         }
         
         let accessControl = SecAccessControlCreateWithFlags(
