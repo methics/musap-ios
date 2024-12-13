@@ -56,9 +56,12 @@ public class ExternalSignatureResponsePayload: ResponsePayload {
     }
     
     public func getRawSignature() -> Data? {
-        if (self.signature == nil) { return nil }
-        return signature?.data(using: .utf8)
-    }
+        guard let signature = self.signature,
+              let sigData = Data(base64Encoded: signature) else {
+            return nil
+        }
+        return sigData
+     }
     
     public func getPublicKey() -> String? {
         return self.publickey
