@@ -8,7 +8,17 @@
 import Foundation
 
 public class KeychainKeystorage: KeyStorage {
+    
     public func storeKey(keyName: String, keyData: Data) throws {
+        
+        if keyExists(keyName: keyName) {
+            do {
+                try removeKey(keyName: keyName)
+            } catch {
+                throw MusapError.internalError
+            }
+        }
+    
         let addQuery: [String: Any] = [
             kSecClass as String: kSecClassKey,
             kSecAttrApplicationTag as String: keyName.data(using: .utf8)!,
