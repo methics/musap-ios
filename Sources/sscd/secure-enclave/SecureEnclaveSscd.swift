@@ -51,7 +51,7 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
         
         if self.doesKeyExistAlready(keyAlias: req.keyAlias) {
             print("Key exists with this keyname \(req.keyAlias)")
-            throw MusapException.init(MusapError.internalError)
+            throw MusapError.keyAlreadyExists
         }
         
         let accessControl = SecAccessControlCreateWithFlags(
@@ -96,6 +96,9 @@ public class SecureEnclaveSscd: MusapSscdProtocol {
             print("Could not form public key data")
             throw MusapError.internalError
         }
+        
+        print("SE publicKeyData: \(publicKeyData.base64EncodedString())")
+        print("SE publicKeyBites: \(Data(bytes: publicKeyBytes, count: publicKeyData.count).base64EncodedString())")
         
         guard let keyAlgorithm = req.keyAlgorithm else {
             print("Key algorithm was not set in KeyGenReq, cant construct MusapKey")

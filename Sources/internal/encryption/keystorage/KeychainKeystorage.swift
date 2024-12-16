@@ -8,7 +8,17 @@
 import Foundation
 
 public class KeychainKeystorage: KeyStorage {
+    
     public func storeKey(keyName: String, keyData: Data) throws {
+        
+        if keyExists(keyName: keyName) {
+            do {
+                try removeKey(keyName: keyName)
+            } catch {
+                throw MusapError.internalError
+            }
+        }
+    
         let addQuery: [String: Any] = [
             kSecClass as String: kSecClassKey,
             kSecAttrApplicationTag as String: keyName.data(using: .utf8)!,
@@ -50,6 +60,18 @@ public class KeychainKeystorage: KeyStorage {
         let status = SecItemCopyMatching(query as CFDictionary, &item)
         
         return status == errSecSuccess
+    }
+    
+    public func removeKey(keyName: String) throws {
+        let deleteQuery: [String: Any] = [
+            kSecClass as String: kSecClassKey,
+            kSecAttrApplicationTag as String: keyName.data(using: .utf8)!
+        ]
+        
+        let status = SecItemDelete(deleteQuery as CFDictionary)
+        guard status == errSecSuccess || status == errSecItemNotFound else {
+            throw NSError(domain: NSOSStatusErrorDomain, code: Int(status), userInfo: nil)
+        }
     }
     
     

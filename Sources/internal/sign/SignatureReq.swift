@@ -14,7 +14,7 @@ public class SignatureReq {
     public let algorithm:   SignatureAlgorithm
     public let format:      SignatureFormat
     public let displayText: String
-    public let attributes:  [SignatureAttribute]
+    public var attributes:  [SignatureAttribute]
     
     private var transId: String?
     

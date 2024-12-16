@@ -58,6 +58,7 @@ public class MusapLink: Encodable, Decodable {
         
         let payload = EnrollDataPayload(apnstoken: apnsToken, secret: secret)
         guard let payload = payload.getBase64Encoded() else {
+            print("Error encoding payload")
             throw MusapError.internalError
         }
         
@@ -127,6 +128,7 @@ public class MusapLink: Encodable, Decodable {
                 throw MusapError.internalError
             }
             
+            print("Couple resp payload: \(payload)")
             guard let payloadData = payload.data(using: .utf8)
             else {
                 print("Could not turn payload to Data()")
@@ -424,6 +426,8 @@ public class MusapLink: Encodable, Decodable {
             throw MusapError.internalError
         }
         
+        print("The URL: " + url.absoluteString)
+        
         guard let msgType = msg.type,
               let payload = msg.payload
         else {
@@ -469,18 +473,27 @@ public class MusapLink: Encodable, Decodable {
         print("Sending request...")
         
         let (data, _) = try await URLSession.shared.data(for: request)
-
+        
+        
+        if let dataString = String(data: data, encoding: .utf8) {
+            print("Response data as string:")
+            print(dataString)
+        } else {
+            print("Failed to convert data to string")
+        }
+        
         guard !data.isEmpty else {
             print("Data was empty")
             throw MusapError.internalError
         }
+        
         
         print("trying to decode json from data")
         let responseMsg = try JSONDecoder().decode(MusapMessage.self, from: data)
         
         print("Parsing payload")
         responseMsg.payload = self.parsePayload(respMsg: responseMsg, isEncrypted: shouldEncrypt)
-
+        
         return responseMsg
     }
 
@@ -681,6 +694,7 @@ public class MusapLink: Encodable, Decodable {
     private func getPayload(payloadBase64: String, shouldEncrypt: Bool) -> PayloadHolder? {
         print("Getting payload")
         if shouldEncrypt {
+            
             guard let payloadHolder = MusapLink.encryption.encrypt(message: payloadBase64) else {
                 print("Could not encrypt payloadBase64")
                 return nil
@@ -694,6 +708,8 @@ public class MusapLink: Encodable, Decodable {
     public func parsePayload(respMsg: MusapMessage, isEncrypted: Bool) -> String? {
         
         if isEncrypted {
+            
+            print("respMsg.payload = \(respMsg)")
             
             guard let payload = respMsg.payload else {
                 print("No payload, cant parse")
