@@ -41,6 +41,13 @@ public class MusapKeyGenerator: KeyGenerator {
         let macKeyData = derivedKeyData.prefix(32)
         let encKeyData = derivedKeyData.suffix(useAes256 ? 32 : 16)
         
+        print("MacKeyData b64: \(macKeyData.base64EncodedString())")
+        print("transportKeyData b64: \(encKeyData.base64EncodedString())")
+        
+        print("mackey: \(macKeyData)")
+        print("transportKey \(encKeyData)")
+
+        
         // Try to store keys in keychain
         let storage = KeychainKeystorage()
         try storage.storeKey(keyName: MusapKeyGenerator.MAC_KEY_ALIAS, keyData: macKeyData)

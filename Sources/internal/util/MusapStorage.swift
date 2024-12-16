@@ -97,6 +97,12 @@ public class MusapStorage {
      */
     public func storeLink(link: MusapLink) -> Void {
         print("Storing MusapLink")
+        
+        guard let musapId = link.getMusapId() else {
+            print("Error storing MusapLink: missing Musap ID")
+            return
+        }
+        
         let encoder = JSONEncoder()
         do {
             let jsonStringBase64 = try encoder.encode(link).base64EncodedString()
@@ -105,7 +111,7 @@ public class MusapStorage {
             print("error turning MusapLink to json string: \(error)")
         }
         
-        print("Stored MUSAP Link with MUSAP ID: \(String(describing: link.getMusapId()))")
+        print("Stored MUSAP Link with MUSAP ID: \(musapId)")
     }
     
     public func getMusaplink() -> MusapLink? {

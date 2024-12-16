@@ -19,14 +19,15 @@ public class MusapMessage: Codable {
     public var mac:       String?
     public var iv:        String?
     
-    public init(payload:   String,
-         musapid:   String,
-         type:      String,
-         uuid:      String,
-         transid:   String,
-         requestid: String,
-         mac:       String,
-         iv:        String?
+    public init(
+         payload:   String? = nil,
+         musapid:   String? = nil,
+         type:      String? = nil,
+         uuid:      String? = nil,
+         transid:   String? = nil,
+         requestid: String? = nil,
+         mac:       String? = nil,
+         iv:        String? = nil
     ) {
         self.payload = payload
         self.musapid = musapid

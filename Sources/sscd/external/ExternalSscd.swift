@@ -206,6 +206,7 @@ public class ExternalSscd: MusapSscdProtocol {
         semaphore.wait()
         
         let dataBase64 = req.getData().base64EncodedString(options: .lineLength64Characters)
+
         request.attributes = Dictionary(uniqueKeysWithValues:
             req.attributes.map { ($0.name, $0.value) }
         )
@@ -216,7 +217,7 @@ public class ExternalSscd: MusapSscdProtocol {
         request.data     = dataBase64
         
         print("ExternalSscd.sign() attributes: \(String(describing: request.attributes))")
-               
+
         do {
             var theSignature: MusapSignature?
             
