@@ -66,6 +66,7 @@ public class SignaturePayload: Decodable {
         var signatureAttributes: [SignatureAttribute] = []
         if let attrs = self.attributes {
             for (key, value) in attrs {
+                print("SignaturePayload: attributes: \(key) \(value)")
                 signatureAttributes.append(SignatureAttribute(name: key, value: value))
             }
         }
