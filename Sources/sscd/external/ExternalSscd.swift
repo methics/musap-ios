@@ -188,7 +188,7 @@ public class ExternalSscd: MusapSscdProtocol {
         let request = ExternalSignaturePayload(clientid: self.clientid)
         
         var theMsisdn: String? = nil // Eventually this gets set into the attributes
-        let msisdn = req.getAttribute(name: ExternalSscd.ATTRIBUTE_MSISDN)
+        let msisdn = req.key.getAttributeValue(attrName: ExternalSscd.ATTRIBUTE_MSISDN)
         
         let semaphore = DispatchSemaphore(value: 0)
         if msisdn == nil {
