@@ -142,7 +142,6 @@ public class ExternalSscd: MusapSscdProtocol {
                         algorithm: KeyAlgorithm.RSA_2K,  //TODO: resolve this
                         keyUri: nil
                     )
-                    theKey?.addAttribute(attr: KeyAttribute(name: ExternalSscd.ATTRIBUTE_MSISDN, value: theMsisdn))
                     
                 case .failure(let error):
                     print("bindKey()->musapLink->sign() error while binding key: \(error)")
@@ -161,6 +160,8 @@ public class ExternalSscd: MusapSscdProtocol {
             musapKey.setKeyUri(value: keyUri)
             musapKey.addAttribute(attr: KeyAttribute(name: ExternalSscd.ATTRIBUTE_MSISDN, value: theMsisdn))
             
+            print("MUSAP KEY ATTRIBUTES COUNT: \(String(describing: musapKey.getAttributes()?.count))")
+            print("MUSAP KEY MSISDN ATTRIBUTE: \(String(describing: musapKey.getAttribute(attrName: ExternalSscd.ATTRIBUTE_MSISDN)))")
             
             guard let attestationCert = self.attestationSecCertificate else {
                 print("no attestation cert")
