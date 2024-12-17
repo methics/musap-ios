@@ -132,6 +132,10 @@ public class ExternalSscd: MusapSscdProtocol {
                         return
                     }
                     
+                    req.getAttributes().forEach { attribute in
+                        print("External SSCD, found attribute: \(attribute.name) ")
+                    }
+                    
                     theKey =  MusapKey(
                         keyAlias:  req.getKeyAlias(),
                         keyId:     UUID().uuidString,
