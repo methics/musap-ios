@@ -139,6 +139,7 @@ public class ExternalSscd: MusapSscdProtocol {
                         publicKey: PublicKey(publicKey: publicKeyData),
                         certificate: MusapCertificate(cert: secCertificate),
                         certificateChain: musapCertChain,
+                        attributes: req.getAttributes(),
                         algorithm: KeyAlgorithm.RSA_2K,  //TODO: resolve this
                         keyUri: nil
                     )
