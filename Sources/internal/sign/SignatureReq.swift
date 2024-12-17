@@ -44,15 +44,11 @@ public class SignatureReq {
     }
     
     public func getAttributes() -> [SignatureAttribute] {
-        print("getting attributes: \(self.attributes)")
         return self.attributes
     }
     
     public func getAttribute(name: String) -> String? {
-        print("Looking for attribute: \(name)")
-        print("Found \(self.getAttributes().count) attributes")
         for attribute in self.getAttributes() {
-            print("found attribute: \(attribute.name)")
             if name == attribute.name {
                 return attribute.value
             }
