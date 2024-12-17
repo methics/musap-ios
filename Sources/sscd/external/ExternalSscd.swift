@@ -132,10 +132,6 @@ public class ExternalSscd: MusapSscdProtocol {
                         return
                     }
                     
-                    req.getAttributes().forEach { attribute in
-                        print("External SSCD, found attribute: \(attribute.name) ")
-                    }
-                    
                     theKey =  MusapKey(
                         keyAlias:  req.getKeyAlias(),
                         keyId:     UUID().uuidString,
@@ -143,10 +139,10 @@ public class ExternalSscd: MusapSscdProtocol {
                         publicKey: PublicKey(publicKey: publicKeyData),
                         certificate: MusapCertificate(cert: secCertificate),
                         certificateChain: musapCertChain,
-                        attributes: req.getAttributes(),
                         algorithm: KeyAlgorithm.RSA_2K,  //TODO: resolve this
                         keyUri: nil
                     )
+                    theKey?.addAttribute(attr: KeyAttribute(name: ExternalSscd.ATTRIBUTE_MSISDN, value: theMsisdn))
                     
                 case .failure(let error):
                     print("bindKey()->musapLink->sign() error while binding key: \(error)")
