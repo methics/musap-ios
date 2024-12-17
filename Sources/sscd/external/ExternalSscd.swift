@@ -64,11 +64,8 @@ public class ExternalSscd: MusapSscdProtocol {
         request.display  = req.getDisplayText()
         request.format   = "RAW"
 
-        if request.attributes == nil {
-            request.attributes = [String: String]()
-        }
-        
-        request.attributes?[ExternalSscd.ATTRIBUTE_MSISDN] = theMsisdn
+        request.attributes = [String: String]()
+        request.attributes![ExternalSscd.ATTRIBUTE_MSISDN] = theMsisdn
         
         do {
             var theKey: MusapKey?
@@ -210,6 +207,7 @@ public class ExternalSscd: MusapSscdProtocol {
         request.attributes = Dictionary(uniqueKeysWithValues:
             req.attributes.map { ($0.name, $0.value) }
         )
+                
         request.attributes?[ExternalSscd.ATTRIBUTE_MSISDN] = theMsisdn
         request.clientid = self.clientid
         request.display  = req.getDisplayText()

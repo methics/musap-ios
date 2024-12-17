@@ -24,21 +24,7 @@ public class SignatureReq {
         self.algorithm   = algorithm
         self.format      = format
         self.displayText = displayText
-            
-        // Initialize attributes with the provided ones
-        self.attributes = attributes
-        
-        // Add key attributes to the signature request
-        if let keyAttributes = key.getAttributes() {
-            for keyAttr in keyAttributes {
-                // Convert KeyAttribute to SignatureAttribute
-                let sigAttr = SignatureAttribute(name: keyAttr.name, value: keyAttr.value ?? "")
-                // Only add if not already present
-                if !self.attributes.contains(where: { $0.name == sigAttr.name }) {
-                    self.attributes.append(sigAttr)
-                }
-            }
-        }
+        self.attributes  = attributes
     }
     
     public func getKey() -> MusapKey {
