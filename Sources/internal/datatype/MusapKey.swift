@@ -166,6 +166,7 @@ public class MusapKey: Codable, Identifiable {
     this replaces the value with a new one
      */
     public func addAttribute(attr: KeyAttribute) {
+        print("Adding attribute: \(attr.name) with value: \(attr.value)")
         if var oldAttributes = self.attributes {
             for var oldAttr in oldAttributes {
                 if oldAttr.name.lowercased() == attr.name.lowercased() {
