@@ -70,6 +70,14 @@ public class MusapStorage {
     
     public func removeLink() -> Void {
         UserDefaults.standard.removeObject(forKey: MusapStorage.MUSAP_ID_PREF)
+        let storage = KeychainKeystorage()
+        do {
+            try storage.removeKey(keyName: "transportkey")
+            try storage.removeKey(keyName: "mackey")
+        } catch {
+            print("Failed to remove mac and/or transportkey")
+        }
+
     }
     
     public func listRelyingParties() -> [RelyingParty]? {
