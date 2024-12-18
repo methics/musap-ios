@@ -352,6 +352,11 @@ public class MusapClient {
        - apnsToken: apple push notification service token
      */
     public static func enableLink(url: String, apnsToken: String?) async -> MusapLink? {
+        
+        if (isLinkEnabled()) {
+            disableLink()
+        }
+        
         let link = MusapLink(url: url, musapId: nil)
         let enrollTask = EnrollDataTask(link: link, apnsToken: apnsToken)
         do {

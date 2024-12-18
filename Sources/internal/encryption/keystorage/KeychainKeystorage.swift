@@ -13,6 +13,7 @@ public class KeychainKeystorage: KeyStorage {
         
         if keyExists(keyName: keyName) {
             do {
+                print("Trying to remove a key with keyname \(keyName)")
                 try removeKey(keyName: keyName)
             } catch {
                 throw MusapError.internalError
