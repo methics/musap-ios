@@ -354,13 +354,21 @@ public class MusapClient {
     public static func enableLink(url: String, apnsToken: String?) async -> MusapLink? {
         
         if (isLinkEnabled()) {
+            print("found link: \(getMusapLink()?.getMusapId()) - disabling it")
             disableLink()
+            
+            print("Is link still enabled: \(isLinkEnabled())")
         }
+        
+        
+        
+        print("trying to enable link")
         
         let link = MusapLink(url: url, musapId: nil)
         let enrollTask = EnrollDataTask(link: link, apnsToken: apnsToken)
         do {
             let link = try await enrollTask.enrollData()
+            print("Link enabled!")
             return link
         } catch {
             print("error enabling link: \(error)")
