@@ -64,11 +64,8 @@ public class ExternalSscd: MusapSscdProtocol {
         request.display  = req.getDisplayText()
         request.format   = "RAW"
 
-        if request.attributes == nil {
-            request.attributes = [String: String]()
-        }
-        
-        request.attributes?[ExternalSscd.ATTRIBUTE_MSISDN] = theMsisdn
+        request.attributes = [String: String]()
+        request.attributes![ExternalSscd.ATTRIBUTE_MSISDN] = theMsisdn
         
         do {
             var theKey: MusapKey?
@@ -163,6 +160,8 @@ public class ExternalSscd: MusapSscdProtocol {
             musapKey.setKeyUri(value: keyUri)
             musapKey.addAttribute(attr: KeyAttribute(name: ExternalSscd.ATTRIBUTE_MSISDN, value: theMsisdn))
             
+            print("MUSAP KEY ATTRIBUTES COUNT: \(String(describing: musapKey.getAttributes()?.count))")
+            print("MUSAP KEY MSISDN ATTRIBUTE: \(String(describing: musapKey.getAttribute(attrName: ExternalSscd.ATTRIBUTE_MSISDN)))")
             
             guard let attestationCert = self.attestationSecCertificate else {
                 print("no attestation cert")
@@ -189,7 +188,7 @@ public class ExternalSscd: MusapSscdProtocol {
         let request = ExternalSignaturePayload(clientid: self.clientid)
         
         var theMsisdn: String? = nil // Eventually this gets set into the attributes
-        let msisdn = req.getAttribute(name: ExternalSscd.ATTRIBUTE_MSISDN)
+        let msisdn = req.key.getAttributeValue(attrName: ExternalSscd.ATTRIBUTE_MSISDN)
         
         let semaphore = DispatchSemaphore(value: 0)
         if msisdn == nil {
@@ -210,6 +209,7 @@ public class ExternalSscd: MusapSscdProtocol {
         request.attributes = Dictionary(uniqueKeysWithValues:
             req.attributes.map { ($0.name, $0.value) }
         )
+                
         request.attributes?[ExternalSscd.ATTRIBUTE_MSISDN] = theMsisdn
         request.clientid = self.clientid
         request.display  = req.getDisplayText()

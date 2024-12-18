@@ -19,6 +19,8 @@ public class ExternalSignaturePayload: Codable {
     public var timeout: String?
     public var transid: String?
     public var attributes: [String:String]?
+    public var keyid: String?
+    public var keyusages: [String]?
     
     
     init(clientid: String) {
