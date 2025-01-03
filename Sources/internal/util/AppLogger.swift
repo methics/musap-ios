@@ -2,7 +2,7 @@ import Foundation
 
 public class AppLogger {
     
-    static let shared = AppLogger()
+    public static let shared = AppLogger()
     
     public var isLoggingEnabled: Bool = true
     
