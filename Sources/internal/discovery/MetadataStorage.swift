@@ -39,6 +39,8 @@ public class MetadataStorage {
         
         print("storeKey debug MusapKey algo: \(String(describing: key.getAlgorithm()))")
         
+        print("Adding key with MSISDN attribute: \(key.getAttributeValue(attrName: "msisdn"))")
+        
         // Create the key-specific store name using the prefix and the key ID
         let storeName = makeStoreName(keyId: keyId)
         
