@@ -4,11 +4,11 @@ public class AppLogger {
     
     static let shared = AppLogger()
     
-    private var isLoggingEnabled: Bool = false
+    public var isLoggingEnabled: Bool = true
     
     private init() {}
     
-    func setLoggingEnabled(_ isEnabled: Bool) {
+    public func setLoggingEnabled(_ isEnabled: Bool) {
         isLoggingEnabled = isEnabled
     }
     
