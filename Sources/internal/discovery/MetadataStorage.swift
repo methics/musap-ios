@@ -32,6 +32,8 @@ public class MetadataStorage {
     
     /// Store a MusapKey
     public func addKey(key: MusapKey, sscd: SscdInfo) throws {
+        AppLogger.shared.log("Trying to store a key...")
+        
         guard let keyId = key.getKeyId() else {
             AppLogger.shared.log("Can't store key, Key ID was nil", .error)
             throw MusapError.missingParam
