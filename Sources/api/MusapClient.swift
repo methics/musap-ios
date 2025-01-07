@@ -143,7 +143,7 @@ public class MusapClient {
         
         for sscd in enabledSscds {
             guard let sscdId = sscd.getSscdId() else {
-                print("No SSCD ID for enabled SSCD, continue")
+                AppLogger.shared.log("No SSCD ID for enabled SSCD, continue")
                 continue
             }
             
@@ -208,7 +208,6 @@ public class MusapClient {
      */
     public static func listKeys(req: KeySearchReq) -> [MusapKey] {
         let keys = MetadataStorage().listKeys(req: req)
-        print("Found: \(keys.count) keys from storage")
         AppLogger.shared.log("Found \(keys.count) keys from storage matching the KeySearchReq")
         return keys
     }
@@ -328,7 +327,6 @@ public class MusapClient {
 
         AppLogger.shared.log("Trying to export MUSAP data")
         guard let exportData = storage.getImportData().toJson() else {
-            print("Could not export data")
             AppLogger.shared.log("Export failed. Could not export data.", .error)
             return nil
         }
@@ -387,7 +385,7 @@ public class MusapClient {
             let link = try await enrollTask.enrollData()
             return link
         } catch {
-            print("error enabling link: \(error)")
+            AppLogger.shared.log("Unable to enable MUSAP Link: \(error)")
             return nil
         }
     }
@@ -406,22 +404,24 @@ public class MusapClient {
         - txnId:     Transaction ID
      */
     public static func sendSignatureCallback(signature: MusapSignature, txnId: String) {
+        AppLogger.shared.log("Trying to send signature callback")
         guard let link = self.getMusapLink() else {
-            print("sendSignatureCallback Error: Can't getMusapLink()")
+            AppLogger.shared.log("Could not find MusapLink", .error)
             return
         }
         
         guard let musapId = self.getMusapId() else {
-            print("sendSignatureCallback Error: Can't get musap ID")
+            AppLogger.shared.log("Could not get MUSAP ID", .error)
             return
         }
         
         link.setMusapId(musapId: musapId)
         
         do {
+            AppLogger.shared.log("Sending callback with MUSAP ID: \(musapId)")
             try SignatureCallbackTask().runTask(link: link, signature: signature, txnId: txnId)
         } catch {
-            print("sendSignatureCallback Error: \(error)")
+            AppLogger.shared.log("Failed to send signature callback: \(error)")
         }
         
     }
@@ -433,6 +433,7 @@ public class MusapClient {
            - txnId: Transaction ID
      */
     public static func sendKeygenCallback(key: MusapKey, txnId: String) {
+        AppLogger.shared.log("Starting sendKeygenCallback", .debug)
         guard let link = self.getMusapLink(),
               let musapId = self.getMusapId()
         else {
@@ -442,9 +443,10 @@ public class MusapClient {
         link.setMusapId(musapId: musapId)
         
         do {
+            AppLogger.shared.log("Trying to send KeygenCallback with MUSAP ID: \(musapId)")
             try KeygenCallbackTask().runTask(link: link, key: key, txnId: txnId)
         } catch {
-            print("sendKeygenCallback Error: \(error)")
+            AppLogger.shared.log("Failed to send KeygenCallback: \(error)")
         }
         
     }
@@ -532,12 +534,12 @@ public class MusapClient {
      */
     public static func coupleWithRelyingParty(couplingCode: String, completion: @escaping (Result<RelyingParty, MusapError>) -> Void) async {
         guard let musapId = self.getMusapId() else {
-            print("Error in coupling with relying party: No Musap ID")
+            AppLogger.shared.log("Error coupling with relying party: No Musap ID")
             return
         }
         
         guard let link = self.getMusapLink() else {
-            print("No musap link")
+            AppLogger.shared.log("No MUSAP Link found, coupling failed")
             return
         }
         
@@ -545,7 +547,7 @@ public class MusapClient {
             let rp = try await CoupleTask().couple(link: link, couplingCode: couplingCode, appId: musapId)
             completion(.success(rp))
         } catch {
-            print("Error in coupleWithRelyingParty: \(error)")
+            AppLogger.shared.log("Error with coupling: \(error)")
             completion(.failure(MusapError.internalError))
         }
         
