@@ -90,8 +90,9 @@ public class KeyURI: Codable, Equatable, Hashable {
     }
     
     private func parseUri(_ keyUri: String) -> [String: String] {
+        AppLogger.shared.log("Trying to parse key URI: \(keyUri)")
+        
         var keyUriMap = [String: String]()
-        print("Parsing KeyURI: \(keyUri)")
 
         if keyUri.hasPrefix("keyuri:key") {
             // Handle keyuri:key case
@@ -104,9 +105,9 @@ public class KeyURI: Codable, Equatable, Hashable {
                     let key = components[0]
                     let value = components[1]
                     keyUriMap[key] = value
-                    print("Parsed \(key)=\(value)")
+                    AppLogger.shared.log("Parsed: \(key)=\(value)")
                 } else {
-                    print("Ignoring invalid pair: \(pair)")
+                    AppLogger.shared.log("Ignoring invalid pair \(pair)")
                 }
             }
         } else if keyUri.hasPrefix("mss:") {
@@ -124,17 +125,17 @@ public class KeyURI: Codable, Equatable, Hashable {
 
                     let key = split[0]
                     let value = split[1]
-                    print("Parsed \(key)=\(value)")
+                    AppLogger.shared.log("Parsed: \(key)=\(value)")
                     keyUriMap[key] = value
                 } else {
-                    print("Ignoring invalid attribute \(attribute)")
+                    AppLogger.shared.log("Ignoring invalid attribute: \(attribute)")
                 }
             }
         } else {
-            print("Unsupported KeyURI format")
+            AppLogger.shared.log("Unable to parse URI - unsupported format")
         }
 
-        print("Parsed KeyURI to: \(keyUriMap)")
+        AppLogger.shared.log("Parsed KeyURI to: \(keyUriMap)")
         return keyUriMap
     }
 
@@ -213,13 +214,13 @@ public class KeyURI: Codable, Equatable, Hashable {
     public func isPartialMatch(keyURI: KeyURI) -> Bool {
         for (key, givenValue) in keyURI.keyUriMap {
             guard let thisValue = self.keyUriMap[key]?.lowercased() else {
-                print("This KeyURI does not have param \(key)")
+                AppLogger.shared.log("This key uri does not have param \(key) - not a match")
                 return false
             }
 
             let givenValueLowercased = givenValue.lowercased()
             if !areParamsPartialMatch(thisParams: thisValue, searchParam: givenValueLowercased) {
-                print("Param \(thisValue) is not a partial match with \(givenValue)")
+                AppLogger.shared.log("Param \(thisValue) is not a partial match with \(givenValue)")
                 return false
             }
         }

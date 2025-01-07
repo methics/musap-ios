@@ -41,6 +41,7 @@ public class SignaturePayload: Decodable {
     }
     
     public func toSignatureReq(key: MusapKey) -> SignatureReq? {
+        AppLogger.shared.log("Trying to convert SignaturePayload to SignatureReq")
         let format = self.format ?? "RAW"
         let signatureFormat = SignatureFormat.fromString(format: format)
         let keyAlgo = key.getAlgorithm()
@@ -59,14 +60,14 @@ public class SignaturePayload: Decodable {
         }
         
         guard let dataBase64 = data.data(using: .utf8)?.base64EncodedData() else {
-            print("Cant turn base64 to data")
+            AppLogger.shared.log("Failed to turn base64 to Data()")
             return nil
         }
         
         var signatureAttributes: [SignatureAttribute] = []
         if let attrs = self.attributes {
             for (key, value) in attrs {
-                print("SignaturePayload: attributes: \(key) \(value)")
+                AppLogger.shared.log("Found signature attribute: \(key) : \(value)")
                 signatureAttributes.append(SignatureAttribute(name: key, value: value))
             }
         }
@@ -82,7 +83,7 @@ public class SignaturePayload: Decodable {
         return sigReq
     }
     
-    //TODO: finish
+    //TODO: 7th Jan 2025, this had "TODO: finish". Look into what android has and implement similar
     public func toKeygenReq() -> KeyGenReq? {
         let req = KeyGenReq(keyAlias: self.key?.keyAlias ?? "musap_key", role: "user")
         return req

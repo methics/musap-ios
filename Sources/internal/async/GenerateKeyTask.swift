@@ -13,16 +13,17 @@ public class GenerateKeyTask {
 
     func generateKeyAsync(sscd: MusapSscd, req: KeyGenReq, completion: @escaping CompletionHandler) async throws -> MusapKey {
         do {
+            AppLogger.shared.log("Trying to generate a key (async)")
             
             let generatedKey = try sscd.generateKey(req: req)
             
             guard let activeSscd = sscd.getSscdInfo() else {
-                print("Could not get SscdInfo")
+                AppLogger.shared.log("Failed to generate a key (async) - could not get SscdInfo")
                 throw MusapError.illegalArgument
             }
             
             guard let sscdId = sscd.getSscdId() else {
-                print("Could not get SSCD ID")
+                AppLogger.shared.log("Failed to generate a key (async) - could not get SSCD ID")
                 throw MusapError.internalError
             }
             

@@ -14,7 +14,7 @@ public class SignatureCallbackTask {
         do {
             try link.sendSignatureCallback(signature: signature, transId: txnId)
         } catch {
-            print("SignatureCallbackTask.runTask(): \(error)")
+            AppLogger.shared.log("Signature callback task failed with error \(error)")
             throw MusapError.internalError
         }
     }
