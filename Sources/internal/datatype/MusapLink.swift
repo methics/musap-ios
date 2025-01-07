@@ -16,7 +16,6 @@ public class MusapLink: Encodable, Decodable {
     private static let SIGN_MSG_TYPE         = "externalsignature"
     private static let KEY_CALLBACK_MSG_TYPE = "generatekeycallback"
     
-    
     private static let POLL_AMOUNT = 20
     
     private let url:     String
@@ -41,24 +40,24 @@ public class MusapLink: Encodable, Decodable {
         - Throws: MusapError
      */
     public func enroll(apnsToken: String?) async throws -> MusapLink {
-        //TODO: These throws need to be made better
+        AppLogger.shared.log("Trying to enroll. APNs token: \(apnsToken ?? "nil")")
+        
         var secret: String?
         
         do {
             secret = try MusapKeyGenerator.hkdfStatic()
-            print("Secret: \(String(describing: secret))")
+            AppLogger.shared.log("Transport secret: \(String(describing: secret))", .debug)
         } catch {
-            print("Error creating secret: \(error)")
+            AppLogger.shared.log("Error creating secret: \(error)", .error)
         }
         
         guard let secret = secret else {
-            print("No secret")
             throw MusapError.internalError
         }
         
         let payload = EnrollDataPayload(apnstoken: apnsToken, secret: secret)
         guard let payload = payload.getBase64Encoded() else {
-            print("Error encoding payload")
+            AppLogger.shared.log("Failed to get BASE64 encoded payload. Unable to enroll", .error)
             throw MusapError.internalError
         }
         
@@ -68,8 +67,9 @@ public class MusapLink: Encodable, Decodable {
         
         do {
             let musapMsg = try await self.sendRequest(msg, shouldEncrypt: true)
-            
-            print("payload: \(String(describing: musapMsg.payload))")
+        
+            AppLogger.shared.log("Payload: \(String(describing: musapMsg.payload))")
+        
             guard let payload = musapMsg.payload,
                   let payloadData = payload.data(using: .utf8)
             else {
@@ -83,12 +83,12 @@ public class MusapLink: Encodable, Decodable {
                 throw MusapError.internalError
             }
             
-            print("Musap ID: \(musapId)")
+            AppLogger.shared.log("Found MUSAP ID: \(musapId)")
+            
             self.musapId = musapId
             return self
-            
         } catch {
-            print("Error in enroll(): \(error)")
+            AppLogger.shared.log("Failed to enroll: \(error)")
             return self
         }
   
