@@ -33,25 +33,22 @@ public class MetadataStorage {
     /// Store a MusapKey
     public func addKey(key: MusapKey, sscd: SscdInfo) throws {
         guard let keyId = key.getKeyId() else {
-            print("Key ID was nil, cant store key")
-            throw MusapException.init(MusapError.missingParam)
+            AppLogger.shared.log("Can't store key, Key ID was nil", .error)
+            throw MusapError.missingParam
         }
-        
-        print("storeKey debug MusapKey algo: \(String(describing: key.getAlgorithm()))")
-        
-        print("Adding key with MSISDN attribute: \(key.getAttributeValue(attrName: "msisdn"))")
-        
+    
         // Create the key-specific store name using the prefix and the key ID
         let storeName = makeStoreName(keyId: keyId)
         
-        print("addKey storename: \(storeName)")
+        AppLogger.shared.log("Storing key with ID \(keyId) - storeName: \(storeName)", .debug)
+    
         // Encode the key to JSON and store it using the store name
         do {
             let keyJson = try JSONEncoder().encode(key)
             userDefaults.set(keyJson, forKey: storeName) // Use storeName to save the key JSON
-            print("Key stored with name: \(storeName)")
+            AppLogger.shared.log("Storing key with storename: \(storeName)")
         } catch {
-            print("Could not encode key to JSON: \(error)")
+            AppLogger.shared.log("Could not encode key to JSON: \(error)", .error)
             throw MusapException(MusapError.internalError)
         }
         
@@ -59,16 +56,20 @@ public class MetadataStorage {
         var newKeyIds = getKeyIds()
         newKeyIds.insert(keyId)
         userDefaults.set(Array(newKeyIds), forKey: MetadataStorage.KEY_ID_SET)
-        
         userDefaults.synchronize()
-        self.addSscd(sscd: sscd)
-        print("Updated key ID's: \(newKeyIds)")
+        
+        //TODO: is this needed?
+        try self.addSscd(sscd: sscd)
+        
+        AppLogger.shared.log("All key ID's: \(newKeyIds)")
     }
     
     /**
      List available MUSAP keys
      */
     public func listKeys() -> [MusapKey] {
+        AppLogger.shared.log("Trying to list MUSAP keys")
+        
         let keyIds = getKeyIds()
         var keyList: [MusapKey] = []
 
@@ -77,14 +78,17 @@ public class MetadataStorage {
                let key = try? JSONDecoder().decode(MusapKey.self, from: keyData) {
                 keyList.append(key)
             } else {
-                print("Missing key metadata JSON for key ID: \(keyId)")
+                AppLogger.shared.log("Missing key metadata JSON for key ID: \(keyId)")
             }
         }
 
+        AppLogger.shared.log("Found \(keyList.count) MUSAP keys)")
         return keyList
     }
     
     public func listKeys(req: KeySearchReq) -> [MusapKey] {
+        AppLogger.shared.log("Trying to list keys with search criteria")
+        
         let keyIds = self.getKeyIds()
         var keyList = [MusapKey]()
         
@@ -99,14 +103,15 @@ public class MetadataStorage {
                             keyList.append(key)
                         }
                     } catch {
-                        print("Error decoding JSON for keyID: \(keyId), error: \(error)")
+                        AppLogger.shared.log("Error decoding JSON for keyID: \(keyId), error: \(error)", .error)
                     }
                 }
             }
 
         }
-        return keyList
         
+        AppLogger.shared.log("Found \(keyList.count) keys")
+        return keyList
     }
     
     /**
@@ -114,7 +119,7 @@ public class MetadataStorage {
      */
     public func removeKey(key: MusapKey) -> Bool {
         guard let keyId = key.getKeyId() else {
-            print("Can't remove key. Key ID was nil")
+            AppLogger.shared.log("Can't remove key. Key ID was nil")
             return false
         }
         
@@ -122,14 +127,25 @@ public class MetadataStorage {
         newKeyIds.remove(keyId)
         
         let newKeyIdsArray = Array(newKeyIds)
-
-        print("removeKey newKeyIds: \(newKeyIds)")
-        if let keyJson = try? JSONEncoder().encode(key) {
-            userDefaults.set(newKeyIdsArray, forKey: MetadataStorage.KEY_ID_SET)
-            userDefaults.set(keyJson, forKey: makeStoreName(key: key))
-            userDefaults.removeObject(forKey: makeStoreName(keyId: keyId))
-            return true
+        
+        AppLogger.shared.log("Removed key. Current key ID's: \(newKeyIdsArray)")
+        
+        do {
+            let keyStoreName = try makeStoreName(key: key)
+            
+            if let keyJson = try? JSONEncoder().encode(key) {
+                userDefaults.set(newKeyIdsArray, forKey: MetadataStorage.KEY_ID_SET)
+                userDefaults.set(keyJson, forKey: keyStoreName)
+                userDefaults.removeObject(forKey: makeStoreName(keyId: keyId))
+                
+                AppLogger.shared.log("Successfully removed a key with ID: \(keyId).")
+                return true
+            }
+        } catch {
+            AppLogger.shared.log("Failed to remove key with ID: \(keyId). Error: \(error)", .error)
+            return false
         }
+        
         return false
     }
     
@@ -137,40 +153,42 @@ public class MetadataStorage {
     /**
      Store metadata of an active MUSAP SSCD
      */
-    public func addSscd(sscd: SscdInfo) {
+    public func addSscd(sscd: SscdInfo) throws {
+        AppLogger.shared.log("Trying to add a new SSCD with type: \(sscd.getSscdType())")
         guard let sscdId = sscd.getSscdId() else {
-            print("Cannot store MUSAP SSCD without an SSCD ID ")
+            AppLogger.shared.log("Failed to add a new SSCD. No SSCD ID")
             return
         }
         
         // Update SSCD id list with new SSCD ID
         var sscdIds = getSscdIds()
         if !sscdIds.contains(sscdId) {
-            print("adding sscdid \(sscdId) to set")
+            AppLogger.shared.log("Adding new SSCD ID: \(sscdId)")
             sscdIds.insert(sscdId)
         } else {
             // Dont add SSCD with same ID
+            AppLogger.shared.log("SSCD with this ID (\(sscdId) already exists).", .warning)
+            throw MusapError.sscdAlreadyExists
         }
 
         if let sscdJson = try? JSONEncoder().encode(sscd) {
             userDefaults.set(Array(sscdIds), forKey: MetadataStorage.SSCD_ID_SET)
-            userDefaults.set(sscdJson, forKey: makeStoreName(sscd: sscd)!)
+            userDefaults.set(sscdJson, forKey: try makeStoreName(sscd: sscd)!)
         } else {
-            print("Adding SSCD failed")
+            AppLogger.shared.log("Failed to save new SSCD", .error)
         }
     }
     
     public func removeSscd(sscd: SscdInfo) -> Bool {
+        AppLogger.shared.log("Trying to remove SSCD")
         guard let targetSscdId = sscd.getSscdId() else {
-            print("Could not get removal target SSCD ID")
+            AppLogger.shared.log("Could not find SSCD ID for SSCD removal")
             return false
         }
         
-        print("Removing sscd: \(sscd.getSscdName())")
-        
         let sscds = self.listActiveSscds()
         
-        print("active SSCDs amount: \(sscds.count)")
+        AppLogger.shared.log("Found \(sscds.count) active SSCDs")
         
         for s in sscds {
             if let currentSscdId = s.getSscdId() {
@@ -182,42 +200,45 @@ public class MetadataStorage {
                     var sscdIdSet = self.getSscdIds()
                     sscdIdSet.remove(targetSscdId)
                     
-                    print("Removed")
+                    AppLogger.shared.log("Successfully removed SSCD with ID: \(targetSscdId)")
 
                     // Save new set without the removed ID
                     userDefaults.set(Array(sscdIdSet), forKey: MetadataStorage.SSCD_ID_SET)
                     return true
                 }
             } else {
-                print("Cant get SSCD ID")
+                AppLogger.shared.log("Could not find SSCD ID for \(s.getSscdType()) while looping through SSCDs", .warning)
             }
         }
         
-        return false
+        AppLogger.shared.log("Deleting SSCD failed", .error)
         
+        return false
     }
 
     /**
      List available active MUSAP SSCDs
      */
     public func listActiveSscds() -> [SscdInfo] {
+        AppLogger.shared.log("Trying to list active SSCD's")
         let sscdIds = getSscdIds()
         var sscdList: [SscdInfo] = []
         
         for sscdId in sscdIds {
-            print("Found sscdId: \(sscdId)")
             if let sscdData = self.getSscdJson(sscdId: sscdId) {
                 do {
                     let sscd = try JSONDecoder().decode(SscdInfo.self, from: sscdData)
                     sscdList.append(sscd)
                 } catch {
-                    print("Error decoding sscd JSON: \(error)")
+                    AppLogger.shared.log("Failed to decode SSCD JSON: \(error)")
                 }
             } else {
-                print("Missing SSCD metadata JSON for SSCD ID: \(sscdId)")
+                AppLogger.shared.log("Missing SSCD metadata JSON for SSCD ID: \(sscdId)")
             }
         }
-        print("Returning \(sscdList.count) active SSCD's")
+        
+        AppLogger.shared.log("Found \(sscdList.count) active SSCD's")
+        
         return sscdList
     }
 
@@ -225,31 +246,40 @@ public class MetadataStorage {
     private func getKeyIds() -> Set<String> {
         // Retrieve the array from UserDefaults and convert it back to a set
         let keyNamesArray = userDefaults.array(forKey: MetadataStorage.KEY_ID_SET) as? [String] ?? []
-        print("getKeyIds: \(keyNamesArray)")
+        AppLogger.shared.log("Got key IDs: \(keyNamesArray)")
         return Set(keyNamesArray)
     }
 
     private func getSscdIds() -> Set<String> {
-        print("Getting SSCD IDs")
+        AppLogger.shared.log("Trying to get SSCD ID's")
+        
         if let sscdIdsArray = userDefaults.stringArray(forKey: MetadataStorage.SSCD_ID_SET) {
-            print("Found \(sscdIdsArray.count) sscd ids")
+            AppLogger.shared.log("Found \(sscdIdsArray.count) SSCD ID's")
             return Set(sscdIdsArray)
         } else {
+            AppLogger.shared.log("Found 0 SSCD ID's")
             return Set()
         }
     }
     
-    private func makeStoreName(key: MusapKey) -> String {
+    /**
+     Generates a string to target a specific key in storage by using a MUSAP Key
+     */
+    private func makeStoreName(key: MusapKey) throws -> String {
         guard let keyId = key.getKeyId() else {
-            fatalError("Cannot create store name with no key id")
+            AppLogger.shared.log("Key had no key id, can't create store name.", .error)
+            throw MusapError.unknownKey
         }
         return MetadataStorage.KEY_JSON_PREFIX + keyId
     }
     
-    private func makeStoreName(sscd: SscdInfo) -> String? {
+    /**
+     Generates a string to target a specific SSCD by using given SSCD Info
+     */
+    private func makeStoreName(sscd: SscdInfo) throws -> String? {
         guard let sscdId = sscd.getSscdId() else {
-            print("makeStoreName: no sscd id")
-            return nil
+            AppLogger.shared.log("Can't create a store name, SSCD ID is nil", .error)
+            throw MusapError.illegalArgument
         }
         return MetadataStorage.SSCD_JSON_PREFIX + sscdId
     }
@@ -260,10 +290,11 @@ public class MetadataStorage {
     
     
     private func getKeyJson(keyId: String) -> String? {
+        AppLogger.shared.log("Trying to get key JSON for keyid: \(keyId)")
         let keyStoreName = self.makeStoreName(keyId: keyId)
         
         guard let keyJson = userDefaults.data(forKey: keyStoreName) else {
-            print("Could not find STRING for \(keyStoreName)")
+            AppLogger.shared.log("Could not find data for \(keyStoreName)", .error)
             return nil
         }
         
@@ -271,28 +302,25 @@ public class MetadataStorage {
     }
     
     public func printAllData() {
-        // Print all key names
-        //let keyNames = getKeyNames()
-        //print("All Key Names: \(keyNames)")
+        AppLogger.shared.log("Printing all data...", .debug)
         
         let keyIds = self.getKeyIds()
-        print("All key IDs: \(keyIds)")
+        AppLogger.shared.log("All key ID's: \(keyIds)")
 
-        // Print all SSCD IDs
         let sscdIds = getSscdIds()
-        print("All SSCD IDs: \(sscdIds)")
+        AppLogger.shared.log("All SSCD ID's: \(sscdIds)")
 
         // Iterate through each key name and print its JSON
         for keyId in keyIds {
             if let keyData = userDefaults.data(forKey: makeStoreName(keyId: keyId)) {
-                print("Data for key '\(keyId)': \(keyData)")
+                AppLogger.shared.log("Data for key with id: \(keyId) - \(keyData.base64EncodedString())")
             }
         }
 
         // Iterate through each SSCD ID and print its JSON
         for sscdId in sscdIds {
             if let sscdData = userDefaults.data(forKey: makeStoreName(keyId: sscdId)) {
-                print("Data for SSCD ID '\(sscdId)': \(sscdData)")
+                AppLogger.shared.log("Data for SSCD with id: \(sscdId) - \(sscdData.base64EncodedString())")
             }
         }
     }
@@ -304,6 +332,7 @@ public class MetadataStorage {
     }
     
     public func addImportData(data: MusapImportData) throws {
+        AppLogger.shared.log("Adding import data...", .debug)
         let activeSscds  = self.listActiveSscds()
         let enabledSscds = MusapClient.listEnabledSscds() ?? [MusapSscd]()
         let activeKeys   = self.listKeys()
@@ -313,9 +342,10 @@ public class MetadataStorage {
             let isSscdTypeEnabled = enabledSscds.contains { $0.getSscdInfo()?.getSscdType() == sscd.getSscdType() }
 
             if alreadyExists || !isSscdTypeEnabled {
+                AppLogger.shared.log("Import data had a SSCD that already exists - skipped", .warning)
                 continue
             }
-            self.addSscd(sscd: sscd)
+            try self.addSscd(sscd: sscd)
         }
 
         let uniqueKeys = Set(activeKeys.map { $0.getKeyUri() })
@@ -334,61 +364,71 @@ public class MetadataStorage {
             }
             
             do {
-                print("Storing key to \(String(describing: sscd.getSscdInfo()?.getSscdName()))")
+                AppLogger.shared.log("Storing key to SSCD: \(String(describing: sscd.getSscdInfo()?.getSscdName()))")
                 guard let sscdInfo = sscd.getSscdInfo() else {
                     throw MusapError.internalError
                 }
                 try self.addKey(key: key, sscd: sscdInfo)
             } catch {
-                print("Could not store key to \(String(describing: sscd.getSscdInfo()?.getSscdName()))")
+                AppLogger.shared.log("Could not store key to SSCD: \(String(describing: sscd.getSscdInfo()?.getSscdName()))")
                 throw MusapError.internalError
             }
         }
     }
     
     private func getSscdJson(sscdId: String) -> Data? {
+        AppLogger.shared.log("Retrieving SSCD JSON as Data() with id: \(sscdId)")
         guard let sscdJson = UserDefaults.standard.data(forKey: MetadataStorage.SSCD_JSON_PREFIX + sscdId) else {
-            print("Could not find SSCD JSON for \(MetadataStorage.SSCD_JSON_PREFIX + sscdId)")
+            AppLogger.shared.log("Could not find SSCD with id: \(sscdId). Returning nil.")
             return nil
         }
+        
+        AppLogger.shared.log("Found SSCD JSON data for SSCD id: \(sscdId)")
         return sscdJson
     }
     
     public func updateKeyMetaData(req: UpdateKeyReq) -> Bool {
-        let targetKey = req.getKey()
+        AppLogger.shared.log("Trying to update key metadata")
         
+        let targetKey = req.getKey()
         guard let keyId = targetKey.getKeyId() else {
-            print("Can't update key metadata, keyid was nil")
+            AppLogger.shared.log("Can't update key metadata as keyId was nil", .error)
             return false
         }
         
         guard let keyJson = self.getKeyJson(keyId: keyId) else {
-            print("updateKeyMetaData: cant getKeyJson")
+            AppLogger.shared.log("Failed to update key metadata", .error)
             return false
         }
         
-        print("KeyJSON: \(keyJson)")
+        AppLogger.shared.log("Found key metadata: \(keyJson)", .debug)
+        
         guard let keyJsonData = keyJson.data(using: .utf8) else {
-            print("Error decoding JSON to MusapKey, can't update metadata")
+            AppLogger.shared.log("Error decoding JSON to MusapKey, can't update metadata", .error)
             return false
         }
+        
+        AppLogger.shared.log("Trying to decode JSON to MusapKey")
         
         // JSON to Musapkey
         let decoder = JSONDecoder()
         guard let oldKey = try? decoder.decode(MusapKey.self, from: keyJsonData) else {
-            print("Error: Decoding JSON to MusapKey failed")
+            AppLogger.shared.log("Error decoding JSON to MusapKey, can't update metadata")
             return false
         }
         
         if req.getAlias() != nil {
+            AppLogger.shared.log("Setting alias as \(req.getAlias() ?? "")")
             oldKey.setKeyAlias(value: req.getAlias())
         }
         
         if req.getDid() != nil {
+            AppLogger.shared.log("Setting DID as \(req.getDid() ?? "")")
             oldKey.setDid(value: req.getDid())
         }
         
         if req.getState() != nil {
+            AppLogger.shared.log("Setting state as \(req.getState() ?? "")")
             oldKey.setState(value: req.getState())
         }
         
@@ -407,18 +447,19 @@ public class MetadataStorage {
         }
         
         guard let sscd = oldKey.getSscd()?.getSscdInfo() else {
-            print("Can't update key, could not find SSCD where it belongs")
+            AppLogger.shared.log("Can't update key metadata, could not find SSCD the key belongs to", .error)
             return false
         }
         
         do {
             try self.addKey(key: oldKey, sscd: sscd)
         } catch {
+            AppLogger.shared.log("Storign key failed: \(error)")
             return false
         }
         
+        AppLogger.shared.log("Successfully updated key metadata")
         return true
-        
     }
     
 }

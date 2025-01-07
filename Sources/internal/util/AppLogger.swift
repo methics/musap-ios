@@ -14,7 +14,7 @@ public class AppLogger {
     
     func log(
         _ message: String,
-        level: LogLevel = .info,
+        _ level: LogLevel = .info,
         file: String = #file,
         function: String = #function,
         line: Int = #line

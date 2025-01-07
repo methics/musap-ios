@@ -40,14 +40,17 @@ public class KeyDiscoveryAPI {
     }
     
     public func enableSscd(_ sscd: any MusapSscdProtocol) -> Void {
+        AppLogger.shared.log("Trying to enable SSCD with name: \(sscd.getSscdInfo().getSscdName())")
         let isAlreadyEnabled = KeyDiscoveryAPI.enabledSscds.contains { existingSscd in
             existingSscd.getSscdInfo().getSscdName() == sscd.getSscdInfo().getSscdName()
         }
         // Dont add duplicate
         if isAlreadyEnabled {
+            AppLogger.shared.log("SSCD was already enabled, do nothing")
             return
         }
         
+        AppLogger.shared.log("Enabled SSCD with name: \(sscd.getSscdInfo().getSscdName())")
         KeyDiscoveryAPI.enabledSscds.append(sscd)
     }
     
@@ -69,6 +72,7 @@ public class KeyDiscoveryAPI {
     }
     
     public func removeKey(key: MusapKey) -> Bool {
+        AppLogger.shared.log("Trying to remove a key with alias: \(key.getKeyAlias() ?? "(no alias)")")
         return self.storage.removeKey(key: key)
     }
     
