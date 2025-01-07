@@ -20,22 +20,19 @@ public class CertificateKeyAttestation: KeyAttestationProtocol {
         result.setAttestationStatus(attestationStatus: KeyAttestationResult.AttestationStatus.UNDETERMINED)
         
         guard let chain = key.getCertificateChain() else {
-            print("No certificate chain")
+            AppLogger.shared.log("Unable to get attestation data due to not having certificate chain")
             return KeyAttestationResult(attestationStatus: KeyAttestationResult.AttestationStatus.INVALID)
         }
         
-        //let result = KeyAttestationResult(attestationType: self.getAttestationType())
-        
         result.setCertificateChain(certificateChain: chain)
          
-        
         guard let certificate = key.getCertificate() else {
             // there should always be certificate if there is a chain
             result.setAttestationStatus(attestationStatus: KeyAttestationResult.AttestationStatus.INVALID)
             return result
         }
-        result.setCertificate(certificate: certificate)
         
+        result.setCertificate(certificate: certificate)
         return result
     }
     
