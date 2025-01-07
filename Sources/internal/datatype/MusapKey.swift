@@ -143,7 +143,7 @@ public class MusapKey: Codable, Identifiable {
     
     public func getAttributeValue(attrName: String) -> String? {
         guard let attribute = self.getAttribute(attrName: attrName) else {
-            print("No value for attribute name: \(attrName)")
+            AppLogger.shared.log("No value for attribute name: \(attrName)")
             return nil
         }
         return attribute.value
@@ -151,7 +151,7 @@ public class MusapKey: Codable, Identifiable {
     
     public func removeAttribute(nameToRemove: String) {
         guard var attributes = self.attributes else {
-            print("Attributes were nil")
+            AppLogger.shared.log("Key Attributes were nil, unable to remove")
             return
         }
 
@@ -166,7 +166,7 @@ public class MusapKey: Codable, Identifiable {
     this replaces the value with a new one
      */
     public func addAttribute(attr: KeyAttribute) {
-        print("Adding attribute: \(attr.name) with value: \(String(describing: attr.value))")
+        AppLogger.shared.log("Trying to add attribute: \(attr.name) with value: \(String(describing: attr.value))")
         
         // Initialize attributes array if nil
         if self.attributes == nil {
@@ -181,7 +181,7 @@ public class MusapKey: Codable, Identifiable {
             self.attributes?.append(attr)
         }
         
-        print("Attributes after adding: \(String(describing: self.attributes))")
+        AppLogger.shared.log("Added attributes. Current attributes: \(String(describing: self.attributes))")
     }
     
     
@@ -189,7 +189,7 @@ public class MusapKey: Codable, Identifiable {
     //TODO: finish
     public func getDefaultKeyAlgorithm() -> SecKeyAlgorithm {
         guard let algorithm = self.algorithm else {
-            print("Unable to determine algorithm for key: \(String(describing: self.keyAlias))")
+            AppLogger.shared.log("Unable to determine algorithm for key: \(String(describing: self.keyAlias)) - Returning a guess", .warning)
             return SignatureAlgorithm.SHA256withECDSA
         }
         return SignatureAlgorithm.SHA256withECDSA
@@ -197,53 +197,59 @@ public class MusapKey: Codable, Identifiable {
     }
     
     public func getSscdInfo() -> SscdInfo? {
-        if (self.sscdId == nil) { 
-            print("SSCD ID was nil")
+        AppLogger.shared.log("Trying to get SSCD info")
+        if (self.sscdId == nil) {
+            AppLogger.shared.log("Unable to get SSCD info - no SSCD id", .error)
             return nil
         }
         
         for sscd in MusapClient.listActiveSscds() {
             if (self.sscdId == sscd.getSscdId()) {
+                AppLogger.shared.log("Found SSCD info")
                 return sscd.getSscdInfo()
             }
         }
         
+        AppLogger.shared.log("Unable to get SSCD Info - SSCD not found")
         return nil
     }
     
     public func getSscd() -> MusapSscd? {
+        AppLogger.shared.log("Trying to get SSCD")
         guard let sscdType = self.sscdType else {
-            print("No SSCD Type found")
+            AppLogger.shared.log("Unable to get SSCD - no SSCD type found in ", .error)
             return nil
         }
-        
-        print("Looking for an SSCD with type \(sscdType)")
         
         guard let enabledSscds = MusapClient.listEnabledSscds() else {
-            print("No enabled SSCD's")
+            AppLogger.shared.log("Unable to get SSCD - no enabled SSCD's", .error)
             return nil
         }
-    
+        
+        AppLogger.shared.log("Trying to find SSCD with type: \(sscdType)")
+        
         for sscd in enabledSscds {
             let sscdInfo = sscd.getSscdInfo()
             let sscdId   = sscd.getSettings().getSetting(forKey: "id")
             
             if sscdType == sscd.getSscdInfo()?.getSscdType() {
+                // Found same type of SSCD
                 if self.sscdId == nil {
-                    print("Found SSCD with type: \(sscdType)")
+                    AppLogger.shared.log("SSCD found!")
                     return sscd
                 } else if self.sscdId == sscdId {
-                    print("Found SSCD with type: \(sscdType) and id: \(String(describing: sscdId))")
+                    // Found a match by SSCD ID
+                    AppLogger.shared.log("Found SSCD with type \(sscdType) and ID: \(String(describing: sscdId))")
                     return sscd
                 } else {
-                    print("SSCD type: \(String(describing: sscd.getSscdInfo()?.getSscdType())) does not match our SSCD type: \(String(describing: self.sscdId))")
+                    AppLogger.shared.log("Found SSCD type did not match ours", .warning)
                 }
             }
             
         }
-        print("Could not find SSCD implementation for key \(String(describing: self.keyId))")
-        return nil
         
+        AppLogger.shared.log("Could not find SSCD implementation for key with id: \(self.keyId ?? "(empty ID)")")
+        return nil
     }
     
 }

@@ -36,7 +36,7 @@ public class MusapCertificate: Codable {
         if let publicKeyData = SecKeyCopyExternalRepresentation(publicKeyRef, &error) as Data? {
             self.publicKey = PublicKey(publicKey: publicKeyData)
         } else {
-            print("Error extracting public key: \((error?.takeRetainedValue()) as Error?)")
+            AppLogger.shared.log("Error extracting public key: \(error?.takeRetainedValue() as Error?)")
             return nil
         }
     }
