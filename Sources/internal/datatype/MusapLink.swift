@@ -103,39 +103,43 @@ public class MusapLink: Encodable, Decodable {
         - Returns: RelyingParty
      */
     public func couple(couplingCode: String, musapId: String) async throws -> RelyingParty {
+        AppLogger.shared.log("Trying to couple...")
+        
         let payload = LinkAccountPayload(couplingcode: couplingCode, musapid: musapId)
         
-        print("Payload MUSAP ID: \(payload.musapid)")
+        AppLogger.shared.log("MUSAP ID is: \(payload.musapid)")
         
         guard let payloadB64 = payload.getBase64Encoded() else {
-            print("Cant turn payload to Base64")
+            AppLogger.shared.log("Failed to couple, unable to get base64 encoded payload", .error)
             throw MusapError.internalError
         }
         
+        AppLogger.shared.log("Payload: \(payloadB64)")
         
-        print("payload as B64: \(payloadB64)")
         let msg = MusapMessage()
         msg.type = MusapLink.COUPLE_MSG_TYPE
         msg.payload = payloadB64
         msg.musapid = musapId
         
         do {
-            print("Trying to sendRequest...")
+            AppLogger.shared.log("Trying to send HTTP request to couple")
             let respMsg = try await self.sendRequest(msg, shouldEncrypt: true)
             
             guard let payload = respMsg.payload else {
-                print("Could not get paylaod from respMsg")
+                AppLogger.shared.log("Failed to couple - could not find payload in response", .error)
                 throw MusapError.internalError
             }
-            
-            print("Couple resp payload: \(payload)")
+        
+            AppLogger.shared.log("Coupling resp payload: \(payload)")
+        
             guard let payloadData = payload.data(using: .utf8)
             else {
                 print("Could not turn payload to Data()")
+                AppLogger.shared.log("Failed to couple - could not turn payload to Data()", .error)
                 throw MusapError.internalError
             }
             
-            print("Making linkAccountResponsePayload from payloadData")
+            AppLogger.shared.log("Generating LinkAccountResponsePayload from payloadData")
             let linkAccountResponsePayload = try JSONDecoder().decode(LinkAccountResponsePayload.self, from: payloadData)
             
             let linkId = linkAccountResponsePayload.linkid
@@ -143,12 +147,11 @@ public class MusapLink: Encodable, Decodable {
             
             let relyingParty = RelyingParty(name: rpName, linkId: linkId)
             return relyingParty
-            
         } catch {
-            print("error in MusapLink.couple(): \(error)")
+            AppLogger.shared.log("Failed to enroll with MUSAP Link: \(error)")
         }
         
-        throw MusapError.internalError //TODO: MusapLink.couplingError or something
+        throw MusapError.internalError
     }
     
     public func poll() async throws -> PollResponsePayload? {
