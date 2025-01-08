@@ -26,7 +26,7 @@ public class MusapImportData: Codable {
             let jsonData = try encoder.encode(self)
             return String(data: jsonData, encoding: .utf8)
         } catch {
-            print("Error encoding data: \(error)")
+            AppLogger.shared.log("Error encoding data: \(error)")
             return nil
         }
     }

@@ -18,6 +18,8 @@ public class MusapStorage {
      Stores a relying party
      */
     public func storeRelyingParty(rp: RelyingParty) -> Void {
+        AppLogger.shared.log("Trying to store a relying party with linkID:  (\(rp.getLinkId()))")
+
         var rpList = self.listRelyingParties()
         
         if rpList == nil {
@@ -32,7 +34,7 @@ public class MusapStorage {
             let jsonStr = try encoder.encode(rpList).base64EncodedString()
             self.storePrefValue(prefName: MusapStorage.RP_PREF, prefValue: jsonStr)
         } catch {
-            print("Failed to store a relying party")
+            AppLogger.shared.log("Failed to store a relying party: \(error)", .error)
         }
         
     }
@@ -59,7 +61,7 @@ public class MusapStorage {
                 let jsonStr = try encoder.encode(newRps).base64EncodedString()
                 self.storePrefValue(prefName: MusapStorage.RP_PREF, prefValue: jsonStr)
             } catch {
-                print("error when removing rp: \(error)")
+                AppLogger.shared.log("Failed to decrypt: \(error)")
             }
             
         }
@@ -86,7 +88,7 @@ public class MusapStorage {
             let relyingParties = try decoder.decode([RelyingParty].self, from: Data(jsonData))
             return relyingParties
         } catch {
-            print("Error decoding JSON: \(error)")
+            AppLogger.shared.log("Failed to decode JSON to relying party: \(error)", .error)
             return nil
         }
         
@@ -96,22 +98,24 @@ public class MusapStorage {
      Store the MUSAP Link
      */
     public func storeLink(link: MusapLink) -> Void {
-        print("Storing MusapLink")
+        AppLogger.shared.log("Trying to store MUSAP Link...")
         
         guard let musapId = link.getMusapId() else {
             print("Error storing MusapLink: missing Musap ID")
+            AppLogger.shared.log("Failed to store MUSAP Link, missing MUSAP ID", .error)
             return
         }
         
         let encoder = JSONEncoder()
+        
         do {
             let jsonStringBase64 = try encoder.encode(link).base64EncodedString()
             self.storePrefValue(prefName: MusapStorage.MUSAP_ID_PREF, prefValue: jsonStringBase64)
+            AppLogger.shared.log("Stored link with MUSAP ID: \(musapId)")
         } catch {
-            print("error turning MusapLink to json string: \(error)")
+            AppLogger.shared.log("Unable to encode MusapLink to JSON string", .error)
         }
         
-        print("Stored MUSAP Link with MUSAP ID: \(musapId)")
     }
     
     public func getMusaplink() -> MusapLink? {
@@ -127,7 +131,7 @@ public class MusapStorage {
             let musapLink = try decoder.decode(MusapLink.self, from: jsonData)
             return musapLink
         } catch {
-            print("error getting musap link: \(error)")
+            AppLogger.shared.log("Failed to get MUSAP Link: \(error)")
             return nil
         }
     }

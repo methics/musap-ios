@@ -29,22 +29,24 @@ public class AesTransportEncryption: TransportEncryption {
     }
     
     public func encrypt(message: String, iv: String?) -> PayloadHolder? {
+        AppLogger.shared.log("Starting to encrypt a message...")
+        
         guard let keyData = self.keyStorage.loadKey(keyName: MusapKeyGenerator.TRANSPORT_KEY_ALIAS),
               [16, 32].contains(keyData.count) // 16 bytes AES-128, 32 bytes AES-256
         else {
-            print("Invalid key or key length")
+            AppLogger.shared.log("Invalid key or key length", .error)
             return nil
         }
         
         guard let messageData = message.data(using: .utf8) else {
-            print("Cant turn message into data")
+            AppLogger.shared.log("Unable to message into Data()")
             return nil
         }
         
         if let iv = iv {
-            print("IV: \(iv)")
+            AppLogger.shared.log("IV: \(iv)")
         } else {
-            print("NO IV")
+            AppLogger.shared.log("No IV provided")
         }
         
         let iv = iv != nil ? Data(base64Encoded: iv!)! : randomIV()
@@ -74,20 +76,20 @@ public class AesTransportEncryption: TransportEncryption {
         }
 
         guard status == kCCSuccess else {
-            print("Error in encryption: \(status)")
+            AppLogger.shared.log("Failed to encrypt: \(status)", .error)
             return nil
         }
 
         let finalEncryptedData = encryptedData.prefix(numBytesEncrypted)
 
         return PayloadHolder(payload: finalEncryptedData.base64EncodedString(), iv: iv.base64EncodedString())
-        
     }
     
     public func decrypt(message: Data, iv: String) -> String? {
-        guard let keyData = self.keyStorage.loadKey(keyName: MusapKeyGenerator.TRANSPORT_KEY_ALIAS),
-              [16, 32].contains(keyData.count) else {
-            print("Invalid key or key length")
+        AppLogger.shared.log("Trying to decrypt a message...")
+        
+        guard let keyData = self.keyStorage.loadKey(keyName: MusapKeyGenerator.TRANSPORT_KEY_ALIAS), [16, 32].contains(keyData.count) else {
+            AppLogger.shared.log("Invalid key or key length", .error)
             return nil
         }
 
@@ -117,7 +119,7 @@ public class AesTransportEncryption: TransportEncryption {
         }
 
         guard status == kCCSuccess else {
-            print("Error in decryption: \(status)")
+            AppLogger.shared.log("Error in decryption: \(status)")
             return nil
         }
 

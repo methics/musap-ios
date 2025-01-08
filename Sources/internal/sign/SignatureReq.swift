@@ -66,7 +66,7 @@ public class SignatureReq {
     }
     
     public func setTransId(transId: String) {
-        print("Setting transId in SignatureReq")
+        AppLogger.shared.log("Setting transaciton in (\(transId)) in SignatureReq")
         self.transId = transId
     }
     
