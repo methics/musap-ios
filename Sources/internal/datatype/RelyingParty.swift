@@ -36,10 +36,9 @@ public class RelyingParty: Codable {
             let jsonData = try encoder.encode(self)
             return jsonData.base64EncodedString()
         } catch {
-            print("Error encoding object: \(error)")
+            AppLogger.shared.log("Error encoding RelyingParty to JSON B64 string: \(error)")
             return nil
         }
     }
-
     
 }

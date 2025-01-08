@@ -35,15 +35,17 @@ public class KeyDiscoveryAPI {
     }
     
     public func listActiveSscds() -> [SscdInfo] {
-        print("Listing active SSCDs")
+        AppLogger.shared.log("Listing active SSCD's")
         return storage.listActiveSscds()
     }
     
     public func enableSscd(_ sscd: any MusapSscdProtocol) -> Void {
         AppLogger.shared.log("Trying to enable SSCD with name: \(sscd.getSscdInfo().getSscdName())")
+        
         let isAlreadyEnabled = KeyDiscoveryAPI.enabledSscds.contains { existingSscd in
             existingSscd.getSscdInfo().getSscdName() == sscd.getSscdInfo().getSscdName()
         }
+        
         // Dont add duplicate
         if isAlreadyEnabled {
             AppLogger.shared.log("SSCD was already enabled, do nothing")
