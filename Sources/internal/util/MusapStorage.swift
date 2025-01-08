@@ -101,7 +101,6 @@ public class MusapStorage {
         AppLogger.shared.log("Trying to store MUSAP Link...")
         
         guard let musapId = link.getMusapId() else {
-            print("Error storing MusapLink: missing Musap ID")
             AppLogger.shared.log("Failed to store MUSAP Link, missing MUSAP ID", .error)
             return
         }
@@ -119,9 +118,15 @@ public class MusapStorage {
     }
     
     public func getMusaplink() -> MusapLink? {
-        guard let prefValue = self.getPrefValue(prefName: MusapStorage.MUSAP_ID_PREF),
-            let jsonData = Data(base64Encoded: prefValue)
-        else {
+        AppLogger.shared.log("Trying to get MUSAP Link...")
+        
+        guard let prefValue = self.getPrefValue(prefName: MusapStorage.MUSAP_ID_PREF) else {
+            AppLogger.shared.log("Failed to get MUSAP Link, missing MUSAP ID", .error)
+            return nil
+        }
+        
+        guard let jsonData = Data(base64Encoded: prefValue) else {
+            AppLogger.shared.log("Failed to turn prefValue to Data();")
             return nil
         }
         
