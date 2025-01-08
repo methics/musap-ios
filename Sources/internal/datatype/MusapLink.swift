@@ -134,7 +134,6 @@ public class MusapLink: Encodable, Decodable {
         
             guard let payloadData = payload.data(using: .utf8)
             else {
-                print("Could not turn payload to Data()")
                 AppLogger.shared.log("Failed to couple - could not turn payload to Data()", .error)
                 throw MusapError.internalError
             }
@@ -419,7 +418,7 @@ public class MusapLink: Encodable, Decodable {
                 }
             } catch {
                 DispatchQueue.main.async {
-                    print("musapLink.sign(): \(error)")
+                    AppLogger.shared.log("Error in signing: \(error)", .error)
                     completion(.failure(MusapError.internalError))
                 }
             }
