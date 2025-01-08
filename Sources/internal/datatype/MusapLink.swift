@@ -346,7 +346,6 @@ public class MusapLink: Encodable, Decodable {
 
         self.sendRequest(msg, shouldEncrypt: true) { respMsg, error in
             if let error = error {
-                print("sendRequest had an error: \(error)")
                 AppLogger.shared.log("Error: \(error)", .error)
                 
                 DispatchQueue.main.async {
@@ -459,7 +458,6 @@ public class MusapLink: Encodable, Decodable {
             }
             msg.iv = payloadHolder.getIv()
             
-            print("sendRequest IV: \(String(describing: msg.iv))")
             AppLogger.shared.log("Send request IV is: \(msg.iv ?? "(empty)")")
             
             do {
@@ -489,7 +487,6 @@ public class MusapLink: Encodable, Decodable {
         if let dataString = String(data: data, encoding: .utf8) {
             AppLogger.shared.log("Response as string: \(dataString)")
         } else {
-            print("Failed to convert data to string")
             AppLogger.shared.log("Failed to convert Data() to String", .error)
         }
         
@@ -509,25 +506,25 @@ public class MusapLink: Encodable, Decodable {
 
     
     public func sendRequest(_ msg: MusapMessage, shouldEncrypt: Bool, completion: @escaping (MusapMessage?, Error?) -> Void) {
-
-        print("ShouldEncrypt: \(shouldEncrypt)")
-        debugPrint("msg payload: \(String(describing: msg.payload))")
+        AppLogger.shared.log("Trying to send request. Should we encrypt?: \(shouldEncrypt)", .info)
         
         guard let msgType = msg.type,
               let payload = msg.payload
         else {
-            print("No msg type or payload defined")
+            AppLogger.shared.log("No message type or payload defined", .error)
             completion(nil, MusapError.internalError)
             return
         }
         
+        AppLogger.shared.log("Payload is: \(payload)")
+        
         if shouldEncrypt && msgType != MusapLink.ENROLL_MSG_TYPE {
-            print("Encrypting message")
+            AppLogger.shared.log("Encrypting message...", .info)
             
             guard let holder = self.getPayload(payloadBase64: payload, shouldEncrypt: shouldEncrypt)
             else 
             {
-                print("Could not get PayloadHolder or IV")
+                AppLogger.shared.log("Could not get PayloadHolder or IV", .error)
                 completion(nil, MusapError.internalError)
                 return
             }
@@ -535,7 +532,7 @@ public class MusapLink: Encodable, Decodable {
             msg.payload = holder.getPayload()
             
             guard msg.payload != nil else {
-                print("Could not get payload in sendRequest")
+                AppLogger.shared.log("No payload, can't send request", .error)
                 completion(nil, MusapError.internalError)
                 return
             }
@@ -543,24 +540,23 @@ public class MusapLink: Encodable, Decodable {
             msg.iv = holder.getIv()
         
             do {
-                print("generating MAC in sendRequest (completion handler)")
                 msg.mac = try MusapLink.mac.generate(message: msg.payload ?? "", iv: msg.iv ?? "", transId: msg.getIdentifier(), type: msgType)
-
+                AppLogger.shared.log("MAC string: \(msg.mac ?? "(empty)")")
             } catch {
-                print("error: \(error)")
+                AppLogger.shared.log("Error while generating MAC: \(error)", .error)
             }
         }
         
         guard let jsonData = try? JSONEncoder().encode(msg) else {
-            print("MusapLink.sendRequest(): Could not turn MusapMessage to JsonData")
+            AppLogger.shared.log("Could not decode MusapMessage to JSON", .error)
             completion(nil, NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to encode message"]))
             return
         }
         
-        print("sendRequest: JSON STRING OF REQUEST: \(jsonData.base64EncodedString())")
+        AppLogger.shared.log("JSON string: \(jsonData.base64EncodedString())")
         
         guard let url = URL(string: self.url) else {
-            print("MUsapLink.sendRequest(): No URL")
+            AppLogger.shared.log("Failed to send request, no URL", .error)
             completion(nil, MusapError.internalError)
             return
         }
@@ -572,31 +568,28 @@ public class MusapLink: Encodable, Decodable {
 
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
-                print("error in URLSession: \(error.localizedDescription)")
+                AppLogger.shared.log("Got HTTP error: \(error.localizedDescription)")
                 completion(nil, error)
                 return
             }
             
-            guard let data = data,
-                  !data.isEmpty
-            else 
-            {
-                print("sendRequest: No data")
+            guard let data = data, !data.isEmpty else {
+                AppLogger.shared.log("Got no data after sending request", .error)
                 completion(nil, nil)
                 return
             }
-            
-            print("sendRequest Data: \(data.base64EncodedString())")
+        
+            AppLogger.shared.log("Send request as B64 string: \(data.base64EncodedString())", .info)
             
             guard let responseMsg = try? JSONDecoder().decode(MusapMessage.self, from: data)
             else {
-                print("Failed to parse json to MusapMessage")
+                AppLogger.shared.log("Failed to decode MusapMessage to JSON")
                 completion(nil, NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to decode response"]))
                 return
             }
             
             responseMsg.payload = self.parsePayload(respMsg: responseMsg, isEncrypted: shouldEncrypt)
-            print("We completed sendRequest()")
+            AppLogger.shared.log("Completed sendRequest, payload: \(responseMsg.payload ?? "(empty)")")
             completion(responseMsg, nil)
         }
 
@@ -605,7 +598,7 @@ public class MusapLink: Encodable, Decodable {
     
     
     private func pollForSignature(transId: String, completion: @escaping (Result<ExternalSignatureResponsePayload, Error>) -> Void) {
-        print("Polling for signature")
+        AppLogger.shared.log("Polling for signature...")
         
         var isPollingDone = false
         
@@ -617,19 +610,20 @@ public class MusapLink: Encodable, Decodable {
                 
                     switch result {
                     case .failure:
-                        print("Polling was a failure")
+                        AppLogger.shared.log("Polling failed.", .error)
                         isPollingDone = true
                         DispatchQueue.main.async {
                             completion(.failure(MusapError.internalError))
                         }
                     case .success(let response):
-                        print("Polling was a success")
+                        AppLogger.shared.log("Polled successfully for signature: \(response.signature ?? "(empty)")")
+                        
                         isPollingDone = true
                         DispatchQueue.main.async {
                             completion(.success(response))
                         }
                     case .keepPolling:
-                        print("Keep polling")
+                        AppLogger.shared.log("Still polling...")
                         break
                     }
                     
@@ -649,10 +643,13 @@ public class MusapLink: Encodable, Decodable {
     }
     
     private func performPollIteration(transId: String, completion: @escaping (PollIterationResult) -> Void) {
+        AppLogger.shared.log("Performing poll iteration...")
+        
         let payload = ExternalSignaturePayload()
         payload.transid = transId
         
         guard let payloadBase64 = payload.getBase64Encoded() else {
+            AppLogger.shared.log("Payload as B64 was nil. Poll iteration failed.", .error)
             completion(.failure)
             return
         }
@@ -664,18 +661,19 @@ public class MusapLink: Encodable, Decodable {
         
         self.sendRequest(musapMsg, shouldEncrypt: true) { respMsg, error in
             if let error = error {
-                print("MusapLink.pollForSignature: Error in the link response - \(error.localizedDescription)")
+                AppLogger.shared.log("Error in poll iteration: \(error.localizedDescription)")
                 completion(.failure)
                 return
             }
             
             guard let respMsg = respMsg else {
-                print("sendRequest: No data or empty response")
+                AppLogger.shared.log("respMsg was nil", .error)
                 completion(.keepPolling)
                 return
             }
+                    
+            AppLogger.shared.log("Payload: \(respMsg.payload ?? "(empty)")")
             
-            print("Payload: \(String(describing: respMsg.payload))")
             guard let msgPayload = respMsg.payload,
                   let payloadData = msgPayload.data(using: .utf8) else {
                 completion(.failure)
@@ -684,13 +682,13 @@ public class MusapLink: Encodable, Decodable {
             
             if let resp = try? JSONDecoder().decode(ExternalSignatureResponsePayload.self, from: payloadData) {
                 if resp.status == "pending" {
-                    print("Status is pending")
+                    AppLogger.shared.log("Status is pending...")
                     completion(.keepPolling)
                 } else if resp.status == "failed" {
-                    print("Status was marked as failed")
+                    AppLogger.shared.log("Status was marked as failed", .error)
                     completion(.failure)
                 } else {
-                    print("Returning success")
+                    AppLogger.shared.log("Returning success: \(resp.isSuccess())")
                     completion(.success(resp))
                 }
             } else {
@@ -702,16 +700,19 @@ public class MusapLink: Encodable, Decodable {
     }
     
     private func getPayload(payloadBase64: String, shouldEncrypt: Bool) -> PayloadHolder? {
-        print("Getting payload")
+        AppLogger.shared.log("Trying to get payload...")
+
         if shouldEncrypt {
-            
             guard let payloadHolder = MusapLink.encryption.encrypt(message: payloadBase64) else {
-                print("Could not encrypt payloadBase64")
+                AppLogger.shared.log("Could not encrypt payloadBase64.", .error)
                 return nil
             }
+            
+            AppLogger.shared.log("Returning encrypted payload")
             return payloadHolder
         }
 
+        AppLogger.shared.log("Returning unencrypted payload", .info)
         return PayloadHolder(payload: payloadBase64, iv: nil)
     }
     
