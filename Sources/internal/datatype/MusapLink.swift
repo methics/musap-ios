@@ -463,7 +463,6 @@ public class MusapLink: Encodable, Decodable {
                 msg.mac = try MusapLink.mac.generate(message: msg.payload ?? "", iv: msg.iv ?? "", transId: msg.getIdentifier(), type: msgType)
 
             } catch {
-                print("Failed to generate mac")
                 AppLogger.shared.log("Failed to generate message authentication code", .error)
                 throw MusapError.internalError
             }
