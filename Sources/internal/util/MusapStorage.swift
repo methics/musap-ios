@@ -134,6 +134,8 @@ public class MusapStorage {
         
         do {
             let musapLink = try decoder.decode(MusapLink.self, from: jsonData)
+            AppLogger.shared.log("Got MUSAP Link with MUSAP ID: \(musapLink.getMusapId() ?? "(empty)")")
+            
             return musapLink
         } catch {
             AppLogger.shared.log("Failed to get MUSAP Link: \(error)")
@@ -155,6 +157,7 @@ public class MusapStorage {
     
     private func getPrefValue(prefName: String) -> String? {
         guard let value = UserDefaults.standard.string(forKey: prefName) else {
+            AppLogger.shared.log("Pref value not found with prefName: \(prefName)")
             return nil
         }
         return value
