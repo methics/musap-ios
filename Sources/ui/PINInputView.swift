@@ -30,6 +30,6 @@ struct PINInputView: View {
     }
 
     private func validatePIN() {
-        print("Entered PIN: \(pin)")
+        AppLogger.shared.log("Entered PIN is: \(pin)")
     }
 }
