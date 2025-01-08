@@ -34,7 +34,7 @@ public class ExternalSscd: MusapSscdProtocol {
     }
     
     public func bindKey(req: KeyBindReq) throws -> MusapKey {
-        print("Binding ExternalSscd")
+        AppLogger.shared.log("Starting bindKey...")
         
         let request: ExternalSignaturePayload = ExternalSignaturePayload(clientid: self.clientid)
         
@@ -43,6 +43,7 @@ public class ExternalSscd: MusapSscdProtocol {
         
         let semaphore = DispatchSemaphore(value: 0)
         if msisdn == nil {
+            AppLogger.shared.log("No MSISDN found, displaying UI to get it...")
             ExternalSscd.showEnterMsisdnDialog { msisdn in
                 theMsisdn = msisdn
                 semaphore.signal()
@@ -56,6 +57,7 @@ public class ExternalSscd: MusapSscdProtocol {
         
         let data = "Bind Key".data(using: .utf8)
         guard let base64Data = data?.base64EncodedString(options: .lineLength64Characters) else {
+            AppLogger.shared.log("Unable to bind key, invalid data")
             throw MusapError.internalError
         }
         
@@ -77,17 +79,17 @@ public class ExternalSscd: MusapSscdProtocol {
                 case .success(let response):
                     
                     guard let signature = response.signature else {
-                        print("no signature")
+                        AppLogger.shared.log("Unable to bind key, no signature", .error)
                         return
                     }
                             
                     guard let signatureData = signature.data(using: .utf8) else {
-                        print("Can't turn string to data")
+                        AppLogger.shared.log("Unable to turn signature to Data()", .error)
                         return
                     }
                                          
                     guard let publickey = response.publickey else {
-                        print("ExternalSscd.bindKey(): No Public Key")
+                        AppLogger.shared.log("No public key in result", .error)
                         return
                     }
                     
@@ -96,12 +98,12 @@ public class ExternalSscd: MusapSscdProtocol {
                           let secCertificate = SecCertificateCreateWithData(nil, certData as CFData)
                     else
                     {
-                        print("No certificate in result")
+                        AppLogger.shared.log("No certificate in result", .error)
                         return
                     }
                     
                     guard let certificateChain = response.certificateChain else {
-                        print("No certificate chain in result")
+                        AppLogger.shared.log("No certificate chain in result", .error)
                         return
                     }
                     
@@ -113,12 +115,12 @@ public class ExternalSscd: MusapSscdProtocol {
                               let secCert = SecCertificateCreateWithData(nil, certData as CFData)
                         else 
                         {
-                            print("Could not create SecCertificate from certificateB64")
+                            AppLogger.shared.log("Unable to create SecCertificate from cert base64", .error)
                             return
                         }
                         
                         guard let newMusapCert = MusapCertificate(cert: secCert) else {
-                            print("Failed to generate MusapCertificate()")
+                            AppLogger.shared.log("Failed to create MusapCertificate with secCert", .error)
                             return
                         }
                         
@@ -128,7 +130,7 @@ public class ExternalSscd: MusapSscdProtocol {
                     self.attestationSecCertificate = secCertificate
             
                     guard let publicKeyData = Data(base64Encoded: publickey) else {
-                        print("Invalid base64 encoded public key")
+                        AppLogger.shared.log("Invalid base64 encoded public key", .error)
                         return
                     }
                     
@@ -144,7 +146,7 @@ public class ExternalSscd: MusapSscdProtocol {
                     )
                     
                 case .failure(let error):
-                    print("bindKey()->musapLink->sign() error while binding key: \(error)")
+                    AppLogger.shared.log("Error while binding key: \(error)")
     
                 }
                 signSemaphore.signal()
@@ -152,7 +154,7 @@ public class ExternalSscd: MusapSscdProtocol {
             signSemaphore.wait()
         
             guard let musapKey = theKey else {
-                print("ExternalSscd.bindKey() - ERROR: No MUSAP KEY")
+                AppLogger.shared.log("Unable to bind key, no MUSAP key", .error)
                 throw MusapError.internalError
             }
             
@@ -160,11 +162,8 @@ public class ExternalSscd: MusapSscdProtocol {
             musapKey.setKeyUri(value: keyUri)
             musapKey.addAttribute(attr: KeyAttribute(name: ExternalSscd.ATTRIBUTE_MSISDN, value: theMsisdn))
             
-            print("MUSAP KEY ATTRIBUTES COUNT: \(String(describing: musapKey.getAttributes()?.count))")
-            print("MUSAP KEY MSISDN ATTRIBUTE: \(String(describing: musapKey.getAttribute(attrName: ExternalSscd.ATTRIBUTE_MSISDN)))")
-            
             guard let attestationCert = self.attestationSecCertificate else {
-                print("no attestation cert")
+                AppLogger.shared.log("No attestation certificate found", .error)
                 throw MusapError.internalError
             }
             
@@ -173,7 +172,7 @@ public class ExternalSscd: MusapSscdProtocol {
             return musapKey
 
         } catch {
-            print("error: \(error)")
+            AppLogger.shared.log("Error in bind key: \(error)", .error)
         }
         
         // If we get to here, some error happened
@@ -185,6 +184,8 @@ public class ExternalSscd: MusapSscdProtocol {
     }
     
     public func sign(req: SignatureReq) throws -> MusapSignature {
+        AppLogger.shared.log("Starting to sign with ExternalSscd...")
+        
         let request = ExternalSignaturePayload(clientid: self.clientid)
         
         var theMsisdn: String? = nil // Eventually this gets set into the attributes
@@ -193,7 +194,7 @@ public class ExternalSscd: MusapSscdProtocol {
         let semaphore = DispatchSemaphore(value: 0)
         if msisdn == nil {
             ExternalSscd.showEnterMsisdnDialog { msisdn in
-                print("Received MSISDN: \(msisdn)")
+                AppLogger.shared.log("Received MSISDN: \(msisdn)")
                 theMsisdn = msisdn
                 semaphore.signal()
             }
@@ -216,7 +217,7 @@ public class ExternalSscd: MusapSscdProtocol {
         request.format   = req.getFormat().getFormat()
         request.data     = dataBase64
         
-        print("ExternalSscd.sign() attributes: \(String(describing: request.attributes))")
+        AppLogger.shared.log("Signature Attributes: \(String(describing: request.attributes))")
 
         do {
             var theSignature: MusapSignature?
@@ -226,30 +227,31 @@ public class ExternalSscd: MusapSscdProtocol {
                 
                 switch result {
                 case .success(let response):
-                    print("Got success: \(response.isSuccess())")
+                    AppLogger.shared.log("Signing was success: \(response.isSuccess())")
                     guard let rawSignature = response.getRawSignature() else {
+                        AppLogger.shared.log("No raw signature found!", .error)
                         return
                     }
 
                     theSignature = MusapSignature(rawSignature: rawSignature, key: req.getKey(), algorithm: req.algorithm, format: req.format)
                     
                 case .failure(let error):
-                    print("an error occured: \(error)")
+                    AppLogger.shared.log("Error in signing: \(error)")
                 }
                 
                 signSemaphore.signal()
-                
             }
             
             signSemaphore.wait()
             guard let signature = theSignature else {
+                AppLogger.shared.log("Signing failed. No signature found.", .error)
                 throw MusapError.internalError
             }
             
             return signature
             
         } catch {
-            print("error in ExternalSscd.sign(): \(error)")
+            AppLogger.shared.log("Error with external sscd signing: \(error)", .error)
         }
         
         // If we got to here, some error happened
