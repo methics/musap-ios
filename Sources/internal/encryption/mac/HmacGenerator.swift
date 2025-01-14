@@ -19,22 +19,23 @@ public class HmacGenerator: MacGenerator {
     }
     
     public func generate(message: String, iv: String, transId: String?, type: String) throws -> String {
+        AppLogger.shared.log("Trying to generate HMAC")
         let hmacBytes = try self.generateHmacBytes(message: message, iv: iv, transId: transId, type: type)
         
         return self.toHexString(data: hmacBytes)
     }
     
     public func validate(message: String, iv: String, transId: String?, type: String, mac: String) throws -> Bool {
-        
-        
+        AppLogger.shared.log("Trying to validate HMAC", .info)
         let calculatedHmac = try self.generateHmacBytes(message: message, iv: iv, transId: transId, type: mac)
+        
         guard let receivedHmac = self.parseHex(mac) else {
-            print("Could not parseHex(mac)")
+            AppLogger.shared.log("Could not parseHex(mac)", .error)
             throw MusapError.internalError
         }
         
-        print("calculated Hmac: \(self.toHexString(data: calculatedHmac))")
-        print("Received Hmac: \(self.toHexString(data: receivedHmac))")
+        AppLogger.shared.log("Calculated HMAC (hex): \(self.toHexString(data: calculatedHmac))")
+        AppLogger.shared.log("Received HMAC (hex): \(self.toHexString(data: receivedHmac))")
         
         return calculatedHmac == receivedHmac
     }
@@ -58,21 +59,25 @@ public class HmacGenerator: MacGenerator {
     }
     
     private func generateHmacBytes(message: String, iv: String, transId: String?, type: String) throws -> Data {
-
-        print("Message= \(message) iv= \(iv) transId= \(transId ?? "") type=\(type)")
+        AppLogger.shared.log("Trying to generate HMAC bytes", .info)
+        AppLogger.shared.log("Message= \(message) iv= \(iv) transId= \(transId ?? "") type=\(type)")
         
         let input = (transId ?? "") + type + iv + message
         
-        print("INPUT: \(input)")
+        AppLogger.shared.log("Input: \(input)")
+        
         guard let macKey = self.keyStorage.loadKey(keyName: MusapKeyGenerator.MAC_KEY_ALIAS) else {
+            AppLogger.shared.log("Couldn't load MAC key", .error)
             throw MusapError.unknownKey
         }
         
         guard let inputData = input.data(using: .utf8) else {
+            AppLogger.shared.log("Could not turn input string to Data()", .error)
             throw MusapError.internalError
         }
     
         guard let hmacData = self.hmac(key: macKey, message: inputData) else {
+            AppLogger.shared.log("Could not generate HMAC Data()", .error)
             throw MusapError.internalError
         }
         

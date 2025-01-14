@@ -18,7 +18,7 @@ public class CoupleTask {
 
             return rp
         } catch {
-            print("Error while coupling: \(error)")
+            AppLogger.shared.log("Error while coupling: \(error)")
             throw MusapError.internalError
         }
     }

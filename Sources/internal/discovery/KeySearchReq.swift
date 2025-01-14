@@ -49,8 +49,7 @@ public class KeySearchReq {
     public func keyMatches(key: MusapKey) -> Bool {
         if ((self.keyAlgorithm == nil) != (key.getAlgorithm() != nil)) { return false }
         guard let currentKeyUri = self.keyUri else {
-            print("Current key uri is nil")
-            //Throw?
+            AppLogger.shared.log("Current Key URI is nil", .error)
             return false
         }
         let keyUriObj = KeyURI(keyUri: currentKeyUri)

@@ -26,22 +26,24 @@ public class MusapImportData: Codable {
             let jsonData = try encoder.encode(self)
             return String(data: jsonData, encoding: .utf8)
         } catch {
-            print("Error encoding data: \(error)")
+            AppLogger.shared.log("Error encoding data: \(error)")
             return nil
         }
     }
     
     public static func fromJson(jsonString: String) -> MusapImportData? {
+        AppLogger.shared.log("Trying to turn JSON into MusapImportData object")
         let decoder = JSONDecoder()
         if let jsonData = jsonString.data(using: .utf8) {
             do {
                 let data = try decoder.decode(MusapImportData.self, from: jsonData)
                 return data
             } catch {
-                print("Error decoding data: \(error)")
+                AppLogger.shared.log("Failed to decode expected JSON to MusapImportData: \(error)")
                 return nil
             }
         }
+        AppLogger.shared.log("Failed to decode expected JSON to MusapImportData", .error)
         return nil
     }
 

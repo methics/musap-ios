@@ -23,24 +23,27 @@ public class KeychainSscd: MusapSscdProtocol {
     }
     
     public func generateKey(req: KeyGenReq) throws -> MusapKey {
-        print("Starting MusapKey generation")
+        AppLogger.shared.log("Starting MusapKey generation")
         
         let sscd = self.getSscdInfo()
         
         guard req.keyAlgorithm != nil else {
-            print("No key algorithm was set")
+            AppLogger.shared.log("No algorithm was set, can't continue", .error)
             throw MusapException(MusapError.internalError)
         }
         
-        guard let algo = req.keyAlgorithm?.primitive,
-              let bits = req.keyAlgorithm?.bits
-        else {
-            print("algorithm or bits were nil")
-            throw MusapException(MusapError.invalidAlgorithm)
+        guard let algo = req.keyAlgorithm?.primitive else {
+            AppLogger.shared.log("No algorithm primitive was set, can't continue", .error)
+            throw MusapError.invalidAlgorithm
+        }
+        
+        guard let bits = req.keyAlgorithm?.bits else {
+            AppLogger.shared.log("No algorithm bits was set, con't continue", .error)
+            throw MusapError.invalidAlgorithm
         }
         
         if self.doesKeyExistAlready(keyAlias: req.keyAlias) {
-            print("Key exist with key alias: \(req.keyAlias)")
+            AppLogger.shared.log("Key already exists with key alias: \(req.keyAlias), can't continue")
             throw MusapError.keyAlreadyExists
         }
         
@@ -59,30 +62,29 @@ public class KeychainSscd: MusapSscdProtocol {
             if let errorRef = error {
                 let error = errorRef.takeRetainedValue()
                 let errorString = CFErrorCopyDescription(error)
-                print("Error creating private key: \(errorString as String?)")
-            } else {
-                print("No error? ")
+                AppLogger.shared.log("Error creating private key: \(errorString as String?)", .error)
             }
             
+            // can't continue
             throw MusapError.internalError
         }
         
         guard let publicKey = SecKeyCopyPublicKey(privateKey) else {
-            print("Unable to get public key from the private key")
+            AppLogger.shared.log("Unable to get public key with SecKeyCopyPublicKey()", .error)
             throw MusapError.internalError
         }
         
         guard let publicKeyData  = SecKeyCopyExternalRepresentation(publicKey, &error) as Data?,
               let publicKeyBytes = publicKeyData.withUnsafeBytes({ (ptr: UnsafeRawBufferPointer) in ptr.baseAddress })
         else {
-            print("Could not form public key data")
+            AppLogger.shared.log("Could not form public key data", .error)
             throw MusapError.internalError
         }
         
         let publicKeyObj = PublicKey(publicKey: Data(bytes: publicKeyBytes, count: publicKeyData.count))
         
         guard let keyAlgorithm = req.keyAlgorithm else {
-            print("Key algorithm was not set in KeyGenReq, cant construct MusapKey")
+            AppLogger.shared.log("Key algorithm was not set in KeyGenReq, can't construct MusapKey", .error)
             throw MusapError.internalError
         }
         
@@ -96,14 +98,14 @@ public class KeychainSscd: MusapSscdProtocol {
                                     keyUri: KeyURI(name: req.keyAlias, sscd: sscd.getSscdType(), loa: "loa2")
         )
                 
-                                    
-                                    
         return generatedKey
     }
     
     public func sign(req: SignatureReq) throws -> MusapSignature {
+        AppLogger.shared.log("Starting to sign with KeychainSscd...")
+        
         guard let keyAlias = req.key.getKeyAlias() else {
-            print("Signing failed: keyName was empty")
+            AppLogger.shared.log("No key alias was set", .error)
             throw MusapError.internalError
         }
         
@@ -118,9 +120,9 @@ public class KeychainSscd: MusapSscdProtocol {
         let status = SecItemCopyMatching(query as CFDictionary, &item)
         guard status == errSecSuccess else {
             if status == errSecItemNotFound {
-                print("key not found")
+                AppLogger.shared.log("Key not found", .error)
             } else {
-                print("Keychain error with status: \(status)")
+                AppLogger.shared.log("Keychain error with status: \(status)")
             }
             throw MusapError.internalError
         }
@@ -131,20 +133,20 @@ public class KeychainSscd: MusapSscdProtocol {
         var error: Unmanaged<CFError>?
         
         guard let algorithm = req.algorithm.getAlgorithm() else {
-            print("No algorithm in signature request")
+            AppLogger.shared.log("No algorithm was found in SignatuereReq", .error)
             throw MusapError.invalidAlgorithm
         }
         
         guard let signature = SecKeyCreateSignature(privateKey, algorithm, dataToSign as CFData, &error)
         else {
-            print("Signing failed")
+            AppLogger.shared.log("Signing failed, \(error.debugDescription)", .error)
             throw MusapError.internalError
         }
         
         let signatureData = signature as Data
         
+        AppLogger.shared.log("Returning MusapSignature")
         return MusapSignature(rawSignature: signatureData, key: req.key, algorithm: req.algorithm, format: req.format)
-        
     }
     
     public func getSscdInfo() -> SscdInfo {
@@ -194,13 +196,13 @@ public class KeychainSscd: MusapSscdProtocol {
 
         // If the status is errSecSuccess, a matching item already exists.
         if status == errSecSuccess {
-            print("Key seems to exist")
+            AppLogger.shared.log("Key exists already", .warning)
             return true
         } else if status == errSecItemNotFound {
-            print("Key doesnt exist with keyname: \(keyAlias)")
+            AppLogger.shared.log("No key exists with this Key alias: \(keyAlias)")
             return false
         } else {
-            print(status)
+            AppLogger.shared.log("Status: \(status)", .info)
         }
         return false
     }

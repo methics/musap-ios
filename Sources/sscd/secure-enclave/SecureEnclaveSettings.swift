@@ -20,11 +20,12 @@ public class SecureEnclaveSettings: SscdSettings {
     }
     
     public func setSetting(key: String, value: String) {
-        print("SecureEnclaveSettings.setSetting: \(key) value: \(value)")
+        AppLogger.shared.log("setSetting for: \(key): \(value)")
         self.settings[key] = value
         
         if self.settings[key] != value {
-            print("Settings were saved incorrectly.")
+            AppLogger.shared.log("Failed to save settings")
+            // Throw?
         }
     }
     

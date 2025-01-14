@@ -14,7 +14,7 @@ public class KeygenCallbackTask {
         do {
             try link.sendKeygenCallback(key: key, txnId: txnId)
         } catch {
-            print("KeygenCallbackTask error: \(error)")
+            AppLogger.shared.log("Keygen callback failed with error: \(error)")
             throw MusapError.internalError
         }
     }

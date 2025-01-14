@@ -76,7 +76,7 @@ public class MusapClient {
     public static func listEnabledSscds() -> [MusapSscd]? {
         let enabledSscds = KeyDiscoveryAPI(storage: MetadataStorage()).listEnabledSscds()
         
-        print("found \(enabledSscds.count) SSCD's")
+        AppLogger.shared.log("Listing SSCD's, found \(enabledSscds.count)", .debug)
         var musapSscds = [MusapSscd]()
         for sscd in enabledSscds {
             musapSscds.append(MusapSscd(impl: sscd))
@@ -91,9 +91,11 @@ public class MusapClient {
      - Returns: An array of MusapSscd or nil if no matches
      */
     public static func listEnabledSscds(req: SscdSearchReq) -> [MusapSscd]? {
+        AppLogger.shared.log("Trying to list SSCD's that match search options")
         guard let enabledSscds = self.listEnabledSscds() else {
             return [MusapSscd]()
         }
+        
         var result = [MusapSscd]()
         
         for sscd in enabledSscds {
@@ -104,6 +106,8 @@ public class MusapClient {
                 result.append(sscd)
             }
         }
+        
+        AppLogger.shared.log("Found \(result.count) SSCDs")
         
         return result
     }
@@ -127,18 +131,19 @@ public class MusapClient {
      - Returns: An array of active SSCDs that can generate or bind keys.
      */
     public static func listActiveSscds() -> [MusapSscd] {
+        AppLogger.shared.log("Trying to list active SSCDs", .debug)
         guard let enabledSscds: [MusapSscd] = listEnabledSscds() else {
-            print("No enabled sscds, returning empty list of MusapSscds")
+            AppLogger.shared.log("No enabled SSCD's found", .debug)
             return []
         }
         var activeSscds: [SscdInfo]  = MetadataStorage().listActiveSscds()
         var result = [MusapSscd]()
         
-        print("Got \(activeSscds.count) active SSCD's")
+        AppLogger.shared.log("Got \(activeSscds.count) active SSCD's", .debug)
         
         for sscd in enabledSscds {
             guard let sscdId = sscd.getSscdId() else {
-                print("No SSCD ID for enabled SSCD, continue")
+                AppLogger.shared.log("No SSCD ID for enabled SSCD, continue")
                 continue
             }
             
@@ -146,6 +151,8 @@ public class MusapClient {
                 result.append(sscd)
             }
         }
+        
+        AppLogger.shared.log("Found \(result.count) active SSCDs")
         
         return result
     }
@@ -158,8 +165,13 @@ public class MusapClient {
      - Returns: An array of active `MusapSscd` objects matching the search criteria.
      */
     public static func listActiveSscds(req: SscdSearchReq) -> [MusapSscd] {
-        let keyDiscovery = KeyDiscoveryAPI(storage: MetadataStorage())
         let activeSscds = self.listActiveSscds()
+        
+        guard activeSscds.count > 0 else {
+            AppLogger.shared.log("Got 0 active SSCD's")
+            return [MusapSscd]()
+        }
+        
         var result = [MusapSscd]()
         
         for sscd in activeSscds {
@@ -171,6 +183,8 @@ public class MusapClient {
             }
         }
         
+        AppLogger.shared.log("Found \(result.count) active SSCD's")
+        
         return result
     }
     
@@ -181,7 +195,7 @@ public class MusapClient {
      */
     public static func listKeys() -> [MusapKey] {
         let keys = MetadataStorage().listKeys()
-        print("Found: \(keys.count) keys from storage")
+        AppLogger.shared.log("Found \(keys.count) keys from storage")
         return keys
     }
     
@@ -194,7 +208,7 @@ public class MusapClient {
      */
     public static func listKeys(req: KeySearchReq) -> [MusapKey] {
         let keys = MetadataStorage().listKeys(req: req)
-        print("Found: \(keys.count) keys from storage")
+        AppLogger.shared.log("Found \(keys.count) keys from storage matching the KeySearchReq")
         return keys
     }
     /**
@@ -218,16 +232,20 @@ public class MusapClient {
      - Returns: An optional `MusapKey` matching the provided KeyURI.
      */
     public static func getKeyByUri(keyUri: String) -> MusapKey? {
+        AppLogger.shared.log("Trying to get key by URI: \(keyUri)")
         let keyList = MetadataStorage().listKeys()
         let keyUri = KeyURI(keyUri: keyUri)
         
         for key in keyList {
             if let loopKeyUri = key.getKeyUri() {
                 if loopKeyUri.keyUriMatches(keyUri: keyUri) {
+                    AppLogger.shared.log("Found key with URI: \(keyUri)")
                     return key
                 }
             }
         }
+        
+        AppLogger.shared.log("No key found matching URI: \(keyUri)")
         
         return nil
     }
@@ -240,16 +258,19 @@ public class MusapClient {
      - Returns: An optional `MusapKey` matching the KeyURI object.
      */
     public static func getKeyByUri(keyUriObject: KeyURI) -> MusapKey? {
+        AppLogger.shared.log("Trying to get key by URI: \(keyUriObject.getUri())")
         let keyList = MetadataStorage().listKeys()
         
         for key in keyList {
             if let loopKeyUri = key.getKeyUri() {
                 if loopKeyUri.keyUriMatches(keyUri: keyUriObject) {
+                    AppLogger.shared.log("Found key with alias: \(key.getKeyAlias() ?? "(no alias)")")
                     return key
                 }
             }
         }
         
+        AppLogger.shared.log("No key found with uri \(keyUriObject.getUri())")
         return nil
     }
     
@@ -261,16 +282,20 @@ public class MusapClient {
      
      */
     public static func getKeyByKeyId(keyId: String) -> MusapKey? {
+        AppLogger.shared.log("Trying to get key by id: \(keyId)")
+        
         let keyList = MetadataStorage().listKeys()
         
         for key in keyList {
             if let loopKeyId = key.getKeyId() {
                 if loopKeyId == keyId {
+                    AppLogger.shared.log("Found key with alias: \(key.getKeyAlias() ?? "(no alias)")")
                     return key
                 }
             }
         }
-        
+
+        AppLogger.shared.log("No key found with ID \(keyId)")
         return nil
     }
     
@@ -282,13 +307,14 @@ public class MusapClient {
      - Throws: `MusapError` if the data cannot be parsed or is invalid.
      */
     public static func importData(data: String) throws {
+        AppLogger.shared.log("Trying to import MUSAP key data")
+        
         let storage = MetadataStorage()
         guard let importData = MusapImportData.fromJson(jsonString: data) else {
             throw MusapError.internalError
         }
         
         try storage.addImportData(data: importData)
-        
     }
     
     /**
@@ -298,12 +324,13 @@ public class MusapClient {
      */
     public static func exportData() -> String? {
         let storage = MetadataStorage()
-        
+
+        AppLogger.shared.log("Trying to export MUSAP data")
         guard let exportData = storage.getImportData().toJson() else {
-            print("Could not export data")
+            AppLogger.shared.log("Export failed. Could not export data.", .error)
             return nil
         }
-        
+
         return exportData
     }
     
@@ -358,7 +385,7 @@ public class MusapClient {
             let link = try await enrollTask.enrollData()
             return link
         } catch {
-            print("error enabling link: \(error)")
+            AppLogger.shared.log("Unable to enable MUSAP Link: \(error)")
             return nil
         }
     }
@@ -377,22 +404,24 @@ public class MusapClient {
         - txnId:     Transaction ID
      */
     public static func sendSignatureCallback(signature: MusapSignature, txnId: String) {
+        AppLogger.shared.log("Trying to send signature callback")
         guard let link = self.getMusapLink() else {
-            print("sendSignatureCallback Error: Can't getMusapLink()")
+            AppLogger.shared.log("Could not find MusapLink", .error)
             return
         }
         
         guard let musapId = self.getMusapId() else {
-            print("sendSignatureCallback Error: Can't get musap ID")
+            AppLogger.shared.log("Could not get MUSAP ID", .error)
             return
         }
         
         link.setMusapId(musapId: musapId)
         
         do {
+            AppLogger.shared.log("Sending callback with MUSAP ID: \(musapId)")
             try SignatureCallbackTask().runTask(link: link, signature: signature, txnId: txnId)
         } catch {
-            print("sendSignatureCallback Error: \(error)")
+            AppLogger.shared.log("Failed to send signature callback: \(error)")
         }
         
     }
@@ -404,6 +433,7 @@ public class MusapClient {
            - txnId: Transaction ID
      */
     public static func sendKeygenCallback(key: MusapKey, txnId: String) {
+        AppLogger.shared.log("Starting sendKeygenCallback", .debug)
         guard let link = self.getMusapLink(),
               let musapId = self.getMusapId()
         else {
@@ -413,9 +443,10 @@ public class MusapClient {
         link.setMusapId(musapId: musapId)
         
         do {
+            AppLogger.shared.log("Trying to send KeygenCallback with MUSAP ID: \(musapId)")
             try KeygenCallbackTask().runTask(link: link, key: key, txnId: txnId)
         } catch {
-            print("sendKeygenCallback Error: \(error)")
+            AppLogger.shared.log("Failed to send KeygenCallback: \(error)")
         }
         
     }
@@ -503,12 +534,12 @@ public class MusapClient {
      */
     public static func coupleWithRelyingParty(couplingCode: String, completion: @escaping (Result<RelyingParty, MusapError>) -> Void) async {
         guard let musapId = self.getMusapId() else {
-            print("Error in coupling with relying party: No Musap ID")
+            AppLogger.shared.log("Error coupling with relying party: No Musap ID")
             return
         }
         
         guard let link = self.getMusapLink() else {
-            print("No musap link")
+            AppLogger.shared.log("No MUSAP Link found, coupling failed")
             return
         }
         
@@ -516,7 +547,7 @@ public class MusapClient {
             let rp = try await CoupleTask().couple(link: link, couplingCode: couplingCode, appId: musapId)
             completion(.success(rp))
         } catch {
-            print("Error in coupleWithRelyingParty: \(error)")
+            AppLogger.shared.log("Error with coupling: \(error)")
             completion(.failure(MusapError.internalError))
         }
         

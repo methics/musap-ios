@@ -40,18 +40,20 @@ public class YubikeySscd: MusapSscdProtocol {
     }
     
     public func generateKey(req: KeyGenReq) throws -> MusapKey {
+        AppLogger.shared.log("Starting key generation with Yubikey...")
+
         let sscd = self.getSscdInfo()
-        
         var thePin: String? = nil
         let semaphore = DispatchSemaphore(value: 0)
         
         YubikeySscd.displayEnterPin { pin in
-            print("Received PIN: \(pin)")
+            AppLogger.shared.log("Received PIN: \(pin)")
             semaphore.signal()
             thePin = pin
         }
 
         semaphore.wait()
+        
         guard let pin = thePin else {
             throw MusapError.internalError
         }
@@ -62,7 +64,7 @@ public class YubikeySscd: MusapSscdProtocol {
         let group = DispatchGroup()
         group.enter()
         
-        print("trying to generate key with yubikey...")
+        AppLogger.shared.log("Trying to generate key with yubikey..")
         self.yubiKeyGen(pin: pin, req: req) { result in
             switch result {
             case .success(let publicKey):
@@ -72,7 +74,7 @@ public class YubikeySscd: MusapSscdProtocol {
                 guard let publicKeyData  = SecKeyCopyExternalRepresentation(publicKey, &pubKeyError) as Data?,
                       let publicKeyBytes = publicKeyData.withUnsafeBytes({ (ptr: UnsafeRawBufferPointer) in ptr.baseAddress })
                 else {
-                    print("Could not form public key data")
+                    AppLogger.shared.log("Could not form public key data")
                     generationError = MusapError.internalError
                     return
                 }
@@ -80,32 +82,30 @@ public class YubikeySscd: MusapSscdProtocol {
                 let publicKeyObj = PublicKey(publicKey: Data(bytes: publicKeyBytes, count: publicKeyData.count))
                 
                 guard let keyAlgorithm = req.keyAlgorithm else {
-                    print("Key algorithm was not set in KeyGenReq, cant construct MusapKey")
+                    AppLogger.shared.log("Key algorithm was not set in KeyGenReq, can't construct MUSAP Key", .error)
                     generationError = MusapError.invalidAlgorithm
                     return
                 }
                 
                 guard let attestationSecCert = self.attestationSecCertificate else {
-                    print("No key attestation certificate found")
+                    AppLogger.shared.log("No key attestation certificate found", .error)
                     return
                 }
                 
                 let keyAttribute = KeyAttribute(name: YubikeySscd.ATTRIBUTE_ATTEST, cert: attestationSecCert)
                 
-                musapKey = MusapKey(keyAlias:  req.keyAlias,
-                                    keyId:     self.generatedKeyId,
-                                    sscdType:  YubikeySscd.SSCD_TYPE,
+                musapKey = MusapKey(keyAlias: req.keyAlias,
+                                    keyId: self.generatedKeyId,
+                                    sscdType: YubikeySscd.SSCD_TYPE,
                                     publicKey: publicKeyObj,
                                     attributes: [keyAttribute],
                                     loa: [MusapLoa.EIDAS_SUBSTANTIAL, MusapLoa.ISO_LOA3],
                                     algorithm: keyAlgorithm,
-                                    keyUri:    nil
-                )
+                                    keyUri: nil)
                 
                 break
-                
             case .failure(let error):
-                print(error)
+                AppLogger.shared.log("Got error: \(error)")
                 generationError = error
             }
             
@@ -129,20 +129,20 @@ public class YubikeySscd: MusapSscdProtocol {
     }
     
     public func sign(req: SignatureReq) throws -> MusapSignature {
-        print("Trying to sign with YubiKey")
+        AppLogger.shared.log("Trying to sign with YubiKey")
         var thePin: String? = nil
         let semaphore = DispatchSemaphore(value: 0)
         
         YubikeySscd.displayEnterPin { pin in
             thePin = pin
-            print("Got PIN: \(pin)")
+            AppLogger.shared.log("Got PIN: \(pin)")
             semaphore.signal()
         }
         
         semaphore.wait()
         
         guard let pin = thePin else {
-            print("PIN error")
+            AppLogger.shared.log("PIN was nil", .error)
             throw MusapError.internalError
         }
         
@@ -152,14 +152,15 @@ public class YubikeySscd: MusapSscdProtocol {
         var musapSignature: MusapSignature?
         var signError: Error?
         
-        print("Running yubiSign()")
+        AppLogger.shared.log("Starting to sign with yubikey")
+        
         self.yubiSign(pin: pin, req: req) { result in
             
             switch result {
             case .success(let data):
                 musapSignature = MusapSignature(rawSignature: data, key: req.getKey(), algorithm: req.algorithm, format: req.format)
             case .failure(let error):
-                print("error: \(error.localizedDescription)")
+                AppLogger.shared.log("Error with yubisign: \(error.localizedDescription)", .error)
                 signError = error
             }
             
@@ -219,14 +220,14 @@ public class YubikeySscd: MusapSscdProtocol {
             if let nfcConnection = yubiKeyconnection.nfcConnection {
                 nfcConnection.pivSession { session, error in
                     guard let session = session else {
-                        print("Could not get pivSession")
+                        AppLogger.shared.log("Could not get PIV session", .error)
                         return
                     }
                     
                     // We have PIV session
                     session.authenticate(withManagementKey: YubikeySscd.MANAGEMENT_KEY, type: .tripleDES()) { error in
                         guard error == nil else {
-                            print("error in yubikey authentication: \(String(describing: error))")
+                            AppLogger.shared.log("Error with yubikey authentication: \(String(describing: error))")
                             return
                         }
                         // Authentication OK with management key
@@ -241,8 +242,9 @@ public class YubikeySscd: MusapSscdProtocol {
                             session.attestKey(in: slot) { cert, error in
                                 
                                 if error != nil {
-                                    print("Error while key attesting: \(String(describing: error))")
+                                    AppLogger.shared.log("Key attestation error: \(String(describing: error))", .error)
                                 }
+                                
                                 if let cert = cert {
                                     if let certData = SecCertificateCopyData(cert) as Data? {
                                         let keyId = UUID().uuidString
@@ -250,11 +252,11 @@ public class YubikeySscd: MusapSscdProtocol {
                                         self.attestationCertificate = [keyId: certData]
                                         self.attestationSecCertificate = cert
                                     } else {
-                                        print("failed to SecCertificateCopyData")
+                                        AppLogger.shared.log("Failed to SecCertificateCopyData", .error)
                                     }
                                 } else {
                                     // failed attestation
-                                    print("Failed YubikeyAttestation")
+                                    AppLogger.shared.log("Failed YubikeyAttestation", .error)
                                 }
                             }
                         
@@ -287,7 +289,7 @@ public class YubikeySscd: MusapSscdProtocol {
                         
                             // Generate Key error
                             if error != nil {
-                                print("Key generation failed")
+                                AppLogger.shared.log("Key generation failed", .error)
                                 completion(.failure(MusapError.internalError))
                                 return
                             }
@@ -307,12 +309,12 @@ public class YubikeySscd: MusapSscdProtocol {
                 connection.pivSession { session, error in
                     
                     if let error = error {
-                        print("pivSession error: \(error)")
+                        AppLogger.shared.log("pivSession error: \(error)")
                         completion(.failure(error))
                     }
 
                     guard let session = session else {
-                        print("Could not get piv session")
+                        AppLogger.shared.log("Could not get pivSession", .error)
                         YubiKitManager.shared.stopNFCConnection(withErrorMessage: "Could not get PIV session")
                         return
                     }
@@ -330,16 +332,18 @@ public class YubikeySscd: MusapSscdProtocol {
                                 if retries > 0 {
                                     errorMsg = error.localizedDescription + " Retries left: \(retries)"
                                 }
-                                print("VerifyPin failed: \(String(describing: error)) Retries left: \(retries)")
+                                
+                                AppLogger.shared.log("VerifyPin failed: \(String(describing: error)) Retries left: \(retries)")
+                                
                                 YubiKitManager.shared.stopNFCConnection(withErrorMessage: errorMsg)
                                 completion(.failure(error))
                                 return
                             } else {
-                                print("YubiKey PIN verified successfully")
+                                AppLogger.shared.log("YubiKey PIN verified successfully")
                             }
                             
                             guard let algorithm = req.algorithm.getAlgorithm() else {
-                                print("No algorithm in SignatureRequest")
+                                AppLogger.shared.log("No algorithm in SignatureRequest", .error)
                                 YubiKitManager.shared.stopNFCConnection(withErrorMessage: "Unknown signature algorithm")
                                 completion(.failure(MusapError.invalidAlgorithm))
                                 return
@@ -360,10 +364,10 @@ public class YubikeySscd: MusapSscdProtocol {
                                 
                                 guard let signature = signature else {
                                     if let error = error  {
-                                        print("Signing failed: \(error.localizedDescription)")
+                                        AppLogger.shared.log("Signing failed: \(error.localizedDescription)", .error)
+                                        
                                         YubiKitManager.shared.stopNFCConnection(withErrorMessage: error.localizedDescription)
                                         completion(.failure(error))
-                                        
                                     }
                                     return
                                 }
@@ -375,7 +379,7 @@ public class YubikeySscd: MusapSscdProtocol {
                         }
                         
                         if let error = error {
-                            print("yubikey authentication error: \(String(describing: error.localizedDescription))")
+                            AppLogger.shared.log("Yubikey authentication error: \(String(describing: error.localizedDescription))")
                             completion(.failure(error))
                             return
                         }
@@ -406,7 +410,6 @@ public class YubikeySscd: MusapSscdProtocol {
         }
         
         return YKFPIVKeyType.unknown
-        
     }
     
     private func selectKeyType(req: SignatureReq) -> YKFPIVKeyType {
@@ -421,9 +424,9 @@ public class YubikeySscd: MusapSscdProtocol {
                 if keyAlgorithm.bits == 1024 { return YKFPIVKeyType.RSA1024 }
                 if keyAlgorithm.bits == 2048 { return YKFPIVKeyType.RSA2048 }
             }
-        } else {
         }
-        print("Couldnt detect key algorithm")
+        
+        AppLogger.shared.log("Couldnt detect key algorithm, returning unknown", .warning)
         return YKFPIVKeyType.unknown
     }
     

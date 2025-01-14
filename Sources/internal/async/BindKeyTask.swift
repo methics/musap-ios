@@ -14,21 +14,21 @@ public class BindKeyTask {
     func bindKey(req: KeyBindReq, sscd: MusapSscd) async throws -> MusapKey {
         do {
             let key = try sscd.bindKey(req: req)
-            print("BindKeyTask got MUSAP key")
+            AppLogger.shared.log("BindKeyTask got MUSAP key")
             
             let storage = MetadataStorage()
             
             guard let activeSscd = sscd.getSscdInfo() else {
-                print("BindKeyTask: Could not get SSCD Info")
+                AppLogger.shared.log("Binding key failed since we have no SSCD info")
                 throw MusapError.internalError
             }
-            
-            print("sscd id: \(String(describing: activeSscd.getSscdId()))")
-            
+                        
             guard let sscdId = sscd.getSscdId() else {
-                print("BindKeyTask: Could not get SSCD ID")
+                AppLogger.shared.log("Binding key failed since we have no SSCD ID")
                 throw MusapError.internalError
             }
+            
+            AppLogger.shared.log("SSCD ID: \(sscdId)")
             
             activeSscd.setSscdId(sscdId: sscdId)
             key.setSscdId(value: sscdId)

@@ -27,19 +27,22 @@ public class PollResponsePayload: ResponsePayload {
     }
     
     public func toSignatureReq(key: MusapKey) -> SignatureReq? {
+        AppLogger.shared.log("Trying to convert PollResponsePayload to SignatureReq")
         guard let req = self.signaturePayload.toSignatureReq(key: key) else {
-            print("toSignatureReq failed")
+            AppLogger.shared.log("Convertion to SignatureReq failed")
             return nil
         }
 
-        print("PollResponsePayload: setting transid to \(self.transId)")
+        AppLogger.shared.log("Setting PollResponsePayload transaction ID to \(self.transId)")
         req.setTransId(transId: self.transId)
         
         return req
     }
     
     public func toKeygenReq() -> KeyGenReq? {
+        AppLogger.shared.log("Trying to convert PollResponsePayload to KeyGenReq")
         guard let keyGenReq = self.signaturePayload.toKeygenReq() else {
+            AppLogger.shared.log("Failed converting to KeyGenReq")
             return nil
         }
         

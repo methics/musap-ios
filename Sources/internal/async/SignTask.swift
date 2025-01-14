@@ -12,7 +12,7 @@ public class SignTask {
     func sign(req: SignatureReq) async throws -> MusapSignature {
         let sscd = req.getKey().getSscd()
         guard let sscd = sscd else {
-            print("Could not find SSCD implementation")
+            AppLogger.shared.log("Sign task failed since we could not find SSCD implementation")
             throw MusapError.internalError
         }
         

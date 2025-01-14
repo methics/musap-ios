@@ -22,6 +22,7 @@ public enum MusapError: Error {
     case internalError
     case illegalArgument
     case keyAlreadyExists
+    case sscdAlreadyExists
     
     public var errorCode: Int {
         switch self {
@@ -37,6 +38,7 @@ public enum MusapError: Error {
         case .userCancel:         return 401
         case .keyBlocked:         return 402
         case .sscdBlocked:        return 403
+        case .sscdAlreadyExists:  return 404
         case .internalError:      return 900
         case .illegalArgument:    return 900
         }
@@ -68,6 +70,7 @@ public class MusapException: Error {
         case .userCancel:         return "user_cancel"
         case .keyBlocked:         return "key_blocked"
         case .sscdBlocked:        return "sscd_blocked"
+        case .sscdAlreadyExists:  return "sscd_already_exists"
         case .internalError:      return "internal_error"
         case .illegalArgument:    return "illegal_argument"
         }
